@@ -1,47 +1,51 @@
 {% extends "base.html" %}
+
+{% block title %}Просмотр товара{% endblock %}
+
 {% block content %}
 
-<h1 class="mb-4">Просмотр товара</h1>
+<div class="container mt-4">
+    <h1 class="mb-4">🔍 Просмотр товара</h1>
 
-<!-- 🚀 Показываем фото -->
-{% if product.image_filename %}
-    <div class="mb-4">
-        <img src="{{ url_for('static', filename='uploads/' + product.image_filename) }}" alt="{{ product.name }}" class="img-fluid" style="max-height: 300px;">
+    <div class="card mb-4">
+        <div class="row g-0">
+            
+            <!-- Если есть фото — показываем -->
+            {% if product.image_filename %}
+            <div class="col-md-4">
+                <img src="{{ url_for('static', filename='uploads/' + product.image_filename) }}" class="img-fluid rounded-start" alt="Фото товара">
+            </div>
+            {% endif %}
+
+            <div class="col-md-8">
+                <div class="card-body">
+
+                    <h3 class="card-title">{{ product.name }}</h3>
+
+                    {% if product.category %}
+                    <p class="card-text"><strong>Категория:</strong> {{ product.category.name }}</p>
+                    {% endif %}
+
+                    <p class="card-text"><strong>Описание:</strong> {{ product.description }}</p>
+                    <p class="card-text"><strong>Цена:</strong> {{ product.price }} €</p>
+                    <p class="card-text"><strong>Количество:</strong> {{ product.quantity }}</p>
+                    <p class="card-text"><small class="text-muted">Добавлено: {{ product.created_at.strftime('%Y-%m-%d %H:%M') }}</small></p>
+
+                    <!-- Кнопки управления -->
+                    <div class="mt-3">
+                        <a href="{{ url_for('edit', product_id=product.id) }}" class="btn btn-warning">Редактировать</a>
+                        <form action="{{ url_for('delete', product_id=product.id) }}" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-danger">Удалить</button>
+                        </form>
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary">Назад</a>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
     </div>
-{% endif %}
 
-<table class="table table-bordered">
-    <tr>
-        <th>ID</th>
-        <td>{{ product.id }}</td>
-    </tr>
-    <tr>
-        <th>Название</th>
-        <td>{{ product.name }}</td>
-    </tr>
-    <tr>
-        <th>Описание</th>
-        <td>{{ product.description or '-' }}</td>
-    </tr>
-    <tr>
-        <th>Категория</th>
-        <td>{{ product.category.name if product.category else '-' }}</td>
-    </tr>
-    <tr>
-        <th>Количество</th>
-        <td>{{ product.quantity }}</td>
-    </tr>
-    <tr>
-        <th>Цена</th>
-        <td>{{ "{:.2f}".format(product.price) }} €</td>
-    </tr>
-    <tr>
-        <th>Дата добавления</th>
-        <td>{{ product.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-    </tr>
-</table>
-
-<a href="{{ url_for('edit', product_id=product.id) }}" class="btn btn-warning">Редактировать</a>
-<a href="{{ url_for('index') }}" class="btn btn-secondary">Назад к списку</a>
+</div>
 
 {% endblock %}
