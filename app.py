@@ -16,6 +16,10 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 db = SQLAlchemy(app)
 
+# ВАЖНО: создаём таблицы при старте
+with app.app_context():
+    db.create_all()
+
 # Таблица категорий
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -33,20 +37,13 @@ class Product(db.Model):
     price = db.Column(db.Float, nullable=False, default=0.0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # Категория
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)
     category = db.relationship('Category', backref=db.backref('products', lazy=True))
 
-    # Фото
     image_filename = db.Column(db.String(200), nullable=True)
 
     def __repr__(self):
         return f'<Product {self.name}>'
-
-# Создание таблиц
-@app.before_first_request
-def create_tables():
-    db.create_all()
 
 # Главная страница
 @app.route('/')
@@ -55,22 +52,17 @@ def index():
     currency = request.args.get('currency', '€')
     category_id = request.args.get('category_id', type=int)
 
-    # Параметры сортировки
     sort = request.args.get('sort', 'id')
     order = request.args.get('order', 'asc')
 
-    # Базовый запрос
     query = Product.query
 
-    # Фильтр по поиску
     if search_query:
         query = query.filter(Product.name.ilike(f'%{search_query}%'))
 
-    # Фильтр по категории
     if category_id:
         query = query.filter(Product.category_id == category_id)
 
-    # Выбор колонки для сортировки
     if sort == 'price':
         sort_column = Product.price
     elif sort == 'quantity':
@@ -80,7 +72,6 @@ def index():
     else:
         sort_column = Product.id
 
-    # Порядок сортировки
     if order == 'desc':
         query = query.order_by(sort_column.desc())
     else:
@@ -89,12 +80,10 @@ def index():
     products = query.all()
     categories = Category.query.order_by(Category.name).all()
 
-    # Dashboard
     total_products = len(products)
     total_categories = len(categories)
     total_value = sum(p.price * p.quantity for p in products)
 
-    # Последние добавленные товары
     recent_products = Product.query.order_by(Product.created_at.desc()).limit(5).all()
 
     return render_template('index.html',
@@ -122,7 +111,6 @@ def create():
         price = request.form['price']
         category_id = request.form.get('category_id')
 
-        # Работа с изображением
         image_file = request.files.get('image')
         image_filename = None
         if image_file and image_file.filename:
@@ -191,6 +179,7 @@ def delete(product_id):
     db.session.commit()
     flash(f'Товар "{product.name}" удалён!', 'success')
     return redirect(url_for('index'))
+
 # Редактирование товара
 @app.route('/edit/<int:product_id>', methods=['GET', 'POST'])
 def edit(product_id):
@@ -206,7 +195,6 @@ def edit(product_id):
 
         product.category_id = category_id if category_id else None
 
-        # Обновление изображения (если загружено новое)
         image_file = request.files.get('image')
         if image_file and image_file.filename:
             filename = secure_filename(image_file.filename)
