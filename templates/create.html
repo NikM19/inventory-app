@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1 class="mb-4">Добавить новый товар</h1>
+
+<form method="POST" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label for="name" class="form-label">Название</label>
+        <input type="text" class="form-control" id="name" name="name" required>
+    </div>
+
+    <div class="mb-3">
+        <label for="description" class="form-label">Описание</label>
+        <textarea class="form-control" id="description" name="description"></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label for="quantity" class="form-label">Количество</label>
+        <input type="number" class="form-control" id="quantity" name="quantity" required>
+    </div>
+
+    <div class="mb-3">
+        <label for="price" class="form-label">Цена</label>
+        <input type="number" step="0.01" class="form-control" id="price" name="price" required>
+    </div>
+
+    <!-- Категория -->
+    <div class="mb-3">
+        <label for="category_id" class="form-label">Категория</label>
+        <select class="form-select" id="category_id" name="category_id">
+            <option value="">-- Без категории --</option>
+            {% for category in categories %}
+                <option value="{{ category.id }}">{{ category.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- 🚀 Добавляем выбор изображения -->
+    <div class="mb-3">
+        <label for="image" class="form-label">Фотография (необязательно)</label>
+        <input type="file" class="form-control" id="image" name="image" accept="image/*">
+    </div>
+
+    <button type="submit" class="btn btn-success">Сохранить</button>
+    <a href="{{ url_for('index') }}" class="btn btn-secondary">Отмена</a>
+</form>
+
+{% endblock %}

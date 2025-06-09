@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1 class="mb-4">Просмотр товара</h1>
+
+<!-- 🚀 Показываем фото -->
+{% if product.image_filename %}
+    <div class="mb-4">
+        <img src="{{ url_for('static', filename='uploads/' + product.image_filename) }}" alt="{{ product.name }}" class="img-fluid" style="max-height: 300px;">
+    </div>
+{% endif %}
+
+<table class="table table-bordered">
+    <tr>
+        <th>ID</th>
+        <td>{{ product.id }}</td>
+    </tr>
+    <tr>
+        <th>Название</th>
+        <td>{{ product.name }}</td>
+    </tr>
+    <tr>
+        <th>Описание</th>
+        <td>{{ product.description or '-' }}</td>
+    </tr>
+    <tr>
+        <th>Категория</th>
+        <td>{{ product.category.name if product.category else '-' }}</td>
+    </tr>
+    <tr>
+        <th>Количество</th>
+        <td>{{ product.quantity }}</td>
+    </tr>
+    <tr>
+        <th>Цена</th>
+        <td>{{ "{:.2f}".format(product.price) }} €</td>
+    </tr>
+    <tr>
+        <th>Дата добавления</th>
+        <td>{{ product.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+    </tr>
+</table>
+
+<a href="{{ url_for('edit', product_id=product.id) }}" class="btn btn-warning">Редактировать</a>
+<a href="{{ url_for('index') }}" class="btn btn-secondary">Назад к списку</a>
+
+{% endblock %}
