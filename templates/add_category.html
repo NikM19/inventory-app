@@ -1,16 +1,25 @@
 {% extends "base.html" %}
+
+{% block title %}Добавить категорию{% endblock %}
+
 {% block content %}
 
-<h1 class="mb-4">Добавить категорию</h1>
+<div class="container mt-4">
+    <h1 class="mb-4">➕ Добавить категорию</h1>
 
-<form method="POST">
-    <div class="mb-3">
-        <label for="name" class="form-label">Название категории</label>
-        <input type="text" class="form-control" id="name" name="name" required>
-    </div>
+    <form method="post" class="row g-3">
 
-    <button type="submit" class="btn btn-success">Сохранить</button>
-    <a href="{{ url_for('index') }}" class="btn btn-secondary">Отмена</a>
-</form>
+        <div class="col-md-6">
+            <label class="form-label">Название категории *</label>
+            <input type="text" name="name" class="form-control" required>
+        </div>
+
+        <div class="col-12 mt-4">
+            <button type="submit" class="btn btn-success">Добавить категорию</button>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">Отмена</a>
+        </div>
+
+    </form>
+</div>
 
 {% endblock %}
