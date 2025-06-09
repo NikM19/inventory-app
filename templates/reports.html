@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}📊 Отчёты{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <h1 class="mb-4">📊 Отчёты по товарам</h1>
+
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Категория</th>
+                <th>Кол-во товаров</th>
+                <th>Сумма (€)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in report_data %}
+            <tr>
+                <td>{{ row.category }}</td>
+                <td>{{ row.quantity }}</td>
+                <td>{{ "%.2f"|format(row.value) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr class="table-primary">
+                <th>ИТОГО</th>
+                <th>{{ total_quantity }}</th>
+                <th>{{ "%.2f"|format(total_value) }}</th>
+            </tr>
+        </tfoot>
+    </table>
+
+    <a href="{{ url_for('index') }}" class="btn btn-secondary">⬅️ Назад</a>
+
+</div>
+
+{% endblock %}
