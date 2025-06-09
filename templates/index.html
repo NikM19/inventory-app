@@ -1,144 +1,97 @@
 {% extends "base.html" %}
+
+{% block title %}Товары{% endblock %}
+
 {% block content %}
 
-<h1 class="mb-4">Список товаров</h1>
+<div class="container mt-4">
 
-<!-- 🚀 Строка поиска -->
-<form method="GET" action="{{ url_for('index') }}" class="mb-4 d-flex">
-    <input type="text" name="q" class="form-control me-2" placeholder="Поиск по названию..." value="{{ search_query }}">
-    <input type="hidden" name="currency" value="{{ currency }}">
-    <input type="hidden" name="sort" value="{{ sort }}">
-    <input type="hidden" name="order" value="{{ order }}">
-    <input type="hidden" name="category_id" value="{{ category_id }}">
-    <button type="submit" class="btn btn-outline-primary">Поиск</button>
-</form>
+    <h1 class="mb-4">📦 Учёт товаров</h1>
 
-<!-- 🚀 Фильтр по категории -->
-<form method="GET" action="{{ url_for('index') }}" class="mb-4 d-flex align-items-center">
-    <input type="hidden" name="q" value="{{ search_query }}">
-    <input type="hidden" name="currency" value="{{ currency }}">
-    <input type="hidden" name="sort" value="{{ sort }}">
-    <input type="hidden" name="order" value="{{ order }}">
-
-    <label for="category_id" class="me-2 mb-0">Категория:</label>
-    <select class="form-select me-2" id="category_id" name="category_id" onchange="this.form.submit()">
-        <option value="">Все категории</option>
-        {% for cat in categories %}
-            <option value="{{ cat.id }}" {% if category_id == cat.id %}selected{% endif %}>
-                {{ cat.name }}
-            </option>
-        {% endfor %}
-    </select>
-</form>
-
-<!-- 🚀 Dashboard -->
-<div class="row mb-4">
-    <div class="col-md-4">
-        <div class="card text-bg-light mb-3">
-            <div class="card-body">
-                <h5 class="card-title">Всего товаров</h5>
-                <p class="card-text fs-4">{{ total_products }}</p>
-            </div>
-        </div>
+    <!-- Панель управления -->
+    <div class="mb-3">
+        <a href="{{ url_for('create') }}" class="btn btn-success">Добавить товар</a>
+        <a href="{{ url_for('add_category') }}" class="btn btn-primary">Добавить категорию</a>
     </div>
-    <div class="col-md-4">
-        <div class="card text-bg-light mb-3">
-            <div class="card-body">
-                <h5 class="card-title">Категорий</h5>
-                <p class="card-text fs-4">{{ total_categories }}</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card text-bg-light mb-3">
-            <div class="card-body">
-                <h5 class="card-title">Общая стоимость</h5>
-                <p class="card-text fs-4">{{ "{:.2f}".format(total_value) }} {{ currency }}</p>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- 🚀 Последние добавленные товары -->
-<div class="card mb-4">
-    <div class="card-body">
-        <h5 class="card-title">Последние добавленные товары</h5>
-        <ul class="list-group list-group-flush">
-            {% for p in recent_products %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <a href="{{ url_for('view', product_id=p.id) }}">{{ p.name }}</a>
-                    <span class="text-muted small">{{ p.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
-                </li>
-            {% else %}
-                <li class="list-group-item">Нет товаров.</li>
+    <!-- Поиск и фильтр -->
+    <form method="get" action="{{ url_for('index') }}" class="row g-3 mb-4">
+        <div class="col-md-4">
+            <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Поиск по названию...">
+        </div>
+        <div class="col-md-3">
+            <select name="category_id" class="form-select">
+                <option value="">Все категории</option>
+                {% for category in categories %}
+                <option value="{{ category.id }}" {% if category_id == category.id %}selected{% endif %}>{{ category.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="currency" class="form-select">
+                <option value="€" {% if currency == '€' %}selected{% endif %}>Евро (€)</option>
+                <option value="$" {% if currency == '$' %}selected{% endif %}>Доллары ($)</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-secondary w-100">Применить</button>
+        </div>
+    </form>
+
+    <!-- Таблица товаров -->
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Название</th>
+                <th>Категория</th>
+                <th>Цена</th>
+                <th>Количество</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>{{ product.id }}</td>
+                <td>{{ product.name }}</td>
+                <td>{{ product.category.name if product.category else '' }}</td>
+                <td>{{ product.price }} {{ currency }}</td>
+                <td>{{ product.quantity }}</td>
+                <td>
+                    <a href="{{ url_for('view', product_id=product.id) }}" class="btn btn-sm btn-info">Просмотр</a>
+                    <a href="{{ url_for('edit', product_id=product.id) }}" class="btn btn-sm btn-warning">Редактировать</a>
+                    <form action="{{ url_for('delete', product_id=product.id) }}" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Dashboard -->
+    <div class="mt-5">
+        <h4>📊 Статистика:</h4>
+        <ul class="list-group">
+            <li class="list-group-item">Всего товаров: <strong>{{ total_products }}</strong></li>
+            <li class="list-group-item">Всего категорий: <strong>{{ total_categories }}</strong></li>
+            <li class="list-group-item">Общая стоимость: <strong>{{ total_value }} {{ currency }}</strong></li>
+        </ul>
+    </div>
+
+    <!-- Последние добавленные -->
+    <div class="mt-5">
+        <h4>🆕 Последние добавленные товары:</h4>
+        <ul class="list-group">
+            {% for product in recent_products %}
+            <li class="list-group-item">
+                {{ product.name }} ({{ product.price }} {{ currency }}) — {{ product.created_at.strftime('%Y-%m-%d %H:%M') }}
+            </li>
             {% endfor %}
         </ul>
     </div>
+
 </div>
-
-<!-- 🚀 Таблица товаров -->
-<table class="table table-striped table-hover table-responsive">
-    <thead class="table-dark">
-    <tr>
-        <th>ID</th>
-        <th>Название</th>
-        <th>Описание</th>
-        <th>Категория</th>
-        <th>
-            <a href="{{ url_for('index', q=search_query, currency=currency, sort='quantity', order='asc' if sort != 'quantity' or order == 'desc' else 'desc', category_id=category_id) }}">
-                Количество
-            </a>
-        </th>
-        <th>
-            <a href="{{ url_for('index', q=search_query, currency=currency, sort='price', order='asc' if sort != 'price' or order == 'desc' else 'desc', category_id=category_id) }}">
-                Цена
-            </a>
-        </th>
-        <th>
-            <a href="{{ url_for('index', q=search_query, currency=currency, sort='created_at', order='asc' if sort != 'created_at' or order == 'desc' else 'desc', category_id=category_id) }}">
-                Дата добавления
-            </a>
-        </th>
-        <th>Действия</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for product in products %}
-        <tr>
-            <td>{{ product.id }}</td>
-            <!-- 🚀 Мини-фото + Название -->
-            <td class="d-flex align-items-center">
-                {% if product.image_filename %}
-                    <img src="{{ url_for('static', filename='uploads/' + product.image_filename) }}" alt="{{ product.name }}" style="height: 50px; width: auto; margin-right: 10px;">
-                {% endif %}
-                <a href="{{ url_for('view', product_id=product.id) }}">
-                    {{ product.name }}
-                </a>
-            </td>
-            <td>{{ product.description or '-' }}</td>
-            <td>{{ product.category.name if product.category else '-' }}</td>
-            <td>{{ product.quantity }}</td>
-            <td>{{ "{:.2f}".format(product.price) }} {{ currency }}</td>
-            <td>{{ product.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-            <td>
-                <a href="{{ url_for('edit', product_id=product.id) }}" class="btn btn-sm btn-warning">Ред.</a>
-                <form action="{{ url_for('delete', product_id=product.id) }}" method="post" style="display:inline;">
-                    <button type="submit" class="btn btn-sm btn-danger"
-                            onclick="return confirm('Удалить товар &laquo;{{ product.name }}&raquo;?');">
-                        Удал.
-                    </button>
-                </form>
-            </td>
-        </tr>
-    {% else %}
-        <tr>
-            <td colspan="8" class="text-center">Нет товаров для отображения.</td>
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
-
-<a href="{{ url_for('create') }}" class="btn btn-success">Добавить новый товар</a>
-<a href="{{ url_for('add_category') }}" class="btn btn-outline-secondary ms-2">Добавить категорию</a>
 
 {% endblock %}
