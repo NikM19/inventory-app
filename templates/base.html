@@ -32,6 +32,10 @@
                     <a class="nav-link" href="{{ url_for('add_category') }}">📂 Добавить категорию</a>
                 </li>
 
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('reports') }}">📊 Отчёты</a>
+                </li>
+
             </ul>
         </div>
     </div>
@@ -54,7 +58,7 @@
 <!-- ✅ Контент -->
 {% block content %}{% endblock %}
 
-<!-- Bootstrap JS (для работы навбара, закрытия флеш-сообщений) -->
+<!-- Bootstrap JS (для работы навбара и flash) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
