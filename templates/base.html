@@ -1,53 +1,61 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Учет товаров</title>
-    <!-- Bootstrap 5 через CDN -->
+    <meta charset="utf-8">
+    <title>{% block title %}Inventory{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="{{ url_for('index') }}">Учет товаров</a>
-        <div class="collapse navbar-collapse">
+
+<!-- ✅ NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="{{ url_for('index') }}">📦 Inventory</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
+
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('index') }}">Список</a>
+                    <a class="nav-link" href="{{ url_for('index') }}">🏠 Главная</a>
                 </li>
+
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('create') }}">Добавить товар</a>
+                    <a class="nav-link" href="{{ url_for('create') }}">➕ Добавить товар</a>
                 </li>
+
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('index', currency='€') }}">€</a>
+                    <a class="nav-link" href="{{ url_for('add_category') }}">📂 Добавить категорию</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('index', currency='$') }}">$</a>
-                </li>
+
             </ul>
         </div>
     </div>
 </nav>
 
+<!-- ✅ FLASH Сообщения -->
 <div class="container">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
-        <div class="mt-2">
-          {% for category, message in messages %}
-            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-              {{ message }}
-              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-          {% endfor %}
-        </div>
+        {% for category, message in messages %}
+          <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
       {% endif %}
     {% endwith %}
-
-    {% block content %}
-    {% endblock %}
 </div>
 
+<!-- ✅ Контент -->
+{% block content %}{% endblock %}
+
+<!-- Bootstrap JS (для работы навбара, закрытия флеш-сообщений) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
