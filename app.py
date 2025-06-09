@@ -234,32 +234,6 @@ def reports():
                            report_data=report_data,
                            total_value=total_value,
                            total_quantity=total_quantity)
-                           # 📊 Страница ОТЧЁТЫ
-@app.route('/reports')
-def reports():
-    categories = Category.query.order_by(Category.name).all()
 
-    report_data = []
-    total_value = 0
-    total_quantity = 0
-
-    for category in categories:
-        products = Product.query.filter_by(category_id=category.id).all()
-        category_quantity = sum(p.quantity for p in products)
-        category_value = sum(p.price * p.quantity for p in products)
-
-        report_data.append({
-            'category': category.name,
-            'quantity': category_quantity,
-            'value': category_value
-        })
-
-        total_value += category_value
-        total_quantity += category_quantity
-
-    return render_template('reports.html',
-                           report_data=report_data,
-                           total_value=total_value,
-                           total_quantity=total_quantity)
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5111)
