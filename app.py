@@ -2,7 +2,7 @@ if not name or not quantity or not price:
             flash('Заполните все обязательные поля!', 'warning')
             return redirect(url_for('create'))
 
-        try:
+    try:
             quantity = int(quantity)
             price = float(price)
         except ValueError:
