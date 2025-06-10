@@ -1,8 +1,61 @@
-if not name or not quantity or not price:
+from flask import Flask, render_template, request, redirect, url_for, flash, send_file
+from flask_sqlalchemy import SQLAlchemy
+from werkzeug.utils import secure_filename
+import os
+import pandas as pd
+from io import BytesIO
+from datetime import datetime
+
+app = Flask(__name__)
+app.secret_key = 'your_secret_key'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///inventory.db'
+app.config['UPLOAD_FOLDER'] = 'static/uploads'
+db = SQLAlchemy(app)
+
+# Модели
+class Category(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False, unique=True)
+    products = db.relationship('Product', backref='category', lazy=True)
+
+class Product(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    quantity = db.Column(db.Integer, nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)
+    image_filename = db.Column(db.String(255), nullable=True)
+
+# Главная страница
+@app.route('/')
+def index():
+    products = Product.query.order_by(Product.created_at.desc()).all()
+    return render_template('index.html', products=products)
+
+# Добавление товара
+@app.route('/create', methods=['GET', 'POST'])
+def create():
+    categories = Category.query.order_by(Category.name).all()
+    if request.method == 'POST':
+        name = request.form['name']
+        description = request.form['description']
+        quantity = request.form['quantity']
+        price = request.form['price']
+        category_id = request.form.get('category_id')
+        image_file = request.files.get('image')
+
+        image_filename = None
+        if image_file and image_file.filename:
+            image_filename = secure_filename(image_file.filename)
+            image_file.save(os.path.join(app.config['UPLOAD_FOLDER'], image_filename))
+
+        if not name or not quantity or not price:
             flash('Заполните все обязательные поля!', 'warning')
             return redirect(url_for('create'))
 
-    try:
+        try:
             quantity = int(quantity)
             price = float(price)
         except ValueError:
@@ -30,7 +83,7 @@ def view(product_id):
     product = Product.query.get_or_404(product_id)
     return render_template('view.html', product=product)
 
-# Редактирование
+# Редактирование товара
 @app.route('/edit/<int:product_id>', methods=['GET', 'POST'])
 def edit(product_id):
     product = Product.query.get_or_404(product_id)
@@ -56,7 +109,7 @@ def edit(product_id):
 
     return render_template('edit.html', product=product, categories=categories)
 
-# Удаление
+# Удаление товара
 @app.route('/delete/<int:product_id>', methods=['POST'])
 def delete(product_id):
     product = Product.query.get_or_404(product_id)
@@ -65,7 +118,7 @@ def delete(product_id):
     flash(f'Товар "{product.name}" удалён!', 'success')
     return redirect(url_for('index'))
 
-# Категории
+# Добавление категории
 @app.route('/add_category', methods=['GET', 'POST'])
 def add_category():
     if request.method == 'POST':
@@ -86,13 +139,13 @@ def add_category():
 
     return render_template('add_category.html')
 
-# Страница отчётов
+# Отчёты
 @app.route('/reports')
 def reports():
     products = Product.query.order_by(Product.created_at.desc()).all()
     return render_template('reports.html', products=products)
 
-# Экспорт Excel
+# Экспорт в Excel
 @app.route('/export_excel')
 def export_excel():
     products = Product.query.all()
@@ -110,14 +163,10 @@ def export_excel():
     output = BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
         df.to_excel(writer, index=False, sheet_name='Products')
+
     output.seek(0)
+    return send_file(output, download_name='products.xlsx', as_attachment=True,
+                     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
-    return send_file(
-        output,
-        download_name='products.xlsx',
-        as_attachment=True,
-        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    )
-
-if name == '__main__':
+if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5111)
