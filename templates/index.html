@@ -9,30 +9,6 @@
     </div>
   </div>
 
-  <form class="row g-2 mb-3" method="get">
-    <div class="col-md-4">
-      <input type="text" name="q" class="form-control" placeholder="Поиск по названию…" value="{{ search_query }}">
-    </div>
-    <div class="col-md-3">
-      <select name="category_id" class="form-select">
-        <option value="">Все категории</option>
-        {% for category in categories %}
-        <option value="{{ category.id }}" {% if category.id == category_id %}selected{% endif %}>{{ category.name }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="col-md-2">
-      <select name="currency" class="form-select">
-        <option value="€" {% if currency == '€' %}selected{% endif %}>Евро (€)</option>
-        <option value="$" {% if currency == '$' %}selected{% endif %}>Доллары ($)</option>
-        <option value="₽" {% if currency == '₽' %}selected{% endif %}>Рубли (₽)</option>
-      </select>
-    </div>
-    <div class="col-md-3">
-      <button type="submit" class="btn btn-dark w-100">Применить</button>
-    </div>
-  </form>
-
   {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
     {% for category, message in messages %}
@@ -50,7 +26,6 @@
         <th>ID</th>
         <th>Название</th>
         <th>Категория</th>
-        <th>Цена</th>
         <th>Количество</th>
         <th>Действия</th>
       </tr>
@@ -70,8 +45,7 @@
           </a>
         </td>
         <td>{{ product.category.name if product.category else '' }}</td>
-        <td>{{ product.price }} {{ currency }}</td>
-        <td>{{ product.quantity }}</td>
+        <td>{{ product.quantity }} {{ product.unit }}</td>
         <td>
           <a href="{{ url_for('view', product_id=product.id) }}" class="btn btn-info btn-sm">Просмотр</a>
           <a href="{{ url_for('edit', product_id=product.id) }}" class="btn btn-warning btn-sm">Редактировать</a>
@@ -83,26 +57,5 @@
       {% endfor %}
     </tbody>
   </table>
-
-  <hr>
-
-  <h5 class="mb-3">📊 Статистика:</h5>
-  <ul class="list-group mb-4">
-    <li class="list-group-item">Всего товаров: <strong>{{ total_products }}</strong></li>
-    <li class="list-group-item">Всего категорий: <strong>{{ total_categories }}</strong></li>
-    <li class="list-group-item">Общая стоимость: <strong>{{ total_value }} {{ currency }}</strong></li>
-  </ul>
-
-  <h5 class="mb-3">🆕 Последние добавленные товары:</h5>
-  <ul class="list-group">
-    {% for product in recent_products %}
-    <li class="list-group-item">
-      <a href="{{ url_for('view', product_id=product.id) }}" class="text-decoration-none">
-        {{ product.name }} ({{ product.price }} {{ currency }})
-      </a>
-      — {{ product.created_at.strftime('%Y-%m-%d %H:%M') }}
-    </li>
-    {% endfor %}
-  </ul>
 </div>
 {% endblock %}

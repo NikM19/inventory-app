@@ -23,16 +23,12 @@ app.secret_key = os.getenv("SECRET_KEY", "dev_secret")
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# только для локального режима
 app.config["UPLOAD_FOLDER"] = os.path.join(app.root_path, "static", "uploads")
-
 db = SQLAlchemy(app)
 
-# Supabase (используется, когда USE_LOCAL_UPLOADS=False)
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-
 
 # ——————————————————————————————————————————————————————————
 #              Модели
@@ -43,64 +39,48 @@ class Category(db.Model):
     name = db.Column(db.String(100), nullable=False, unique=True)
     products = db.relationship("Product", backref="category", lazy=True)
 
-
 class Product(db.Model):
     __tablename__ = "products"
     id          = db.Column(db.Integer, primary_key=True)
     name        = db.Column(db.String(120), nullable=False)
-    description = db.Column(db.Text,    nullable=True)
-    quantity    = db.Column(db.Integer, nullable=False, default=0)
-    price       = db.Column(db.Numeric(10, 2), nullable=False, default=0)
+    description = db.Column(db.Text, nullable=True)
+    quantity    = db.Column(db.Numeric(10, 2), nullable=False, default=0)
+    unit        = db.Column(db.String(10), nullable=False, default="шт")
     created_at  = db.Column(db.DateTime, default=datetime.utcnow)
     category_id = db.Column(db.Integer, db.ForeignKey("categories.id"), nullable=True)
     image_url   = db.Column(db.Text, nullable=True)
 
-
 # ——————————————————————————————————————————————————————————
-#              Утильная функция: загрузка файла
+#              Загрузка файла
 # ——————————————————————————————————————————————————————————
 def upload_image(file_storage) -> str | None:
-    """
-    Если USE_LOCAL_UPLOADS=True — сохраняет локально и возвращает
-    относительный URL (/static/uploads/filename).
-    Иначе — заливка в Supabase Storage в бакет 'upload'
-    и возвращает публичный URL или бросает RuntimeError.
-    """
     if not file_storage or not file_storage.filename:
         return None
-
-    # делаем безопасное имя + префикс времени
     safe_name = secure_filename(file_storage.filename)
     timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
     filename  = f"{timestamp}_{safe_name}"
 
-    # 1) Локальный вариант
     if USE_LOCAL_UPLOADS:
         os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
         dst = os.path.join(app.config["UPLOAD_FOLDER"], filename)
         file_storage.save(dst)
         return url_for("static", filename=f"uploads/{filename}", _external=False)
 
-    # 2) Supabase Storage
-    bucket_name = "upload"             # <--- имя Вашего бакета!
+    bucket_name = "upload"
     object_path = f"public/{filename}"
 
-    # прочитываем байты
     file_storage.stream.seek(0)
     data = file_storage.stream.read()
 
-    # пытаемся загрузить
     try:
         res = supabase.storage.from_(bucket_name).upload(object_path, data)
     except Exception as e:
         raise RuntimeError(f"Supabase upload failed: {e}") from e
 
-    # старые версии SDK могли возвращать (data, error)-кортеж
     err = getattr(res, "error", None)
     if err:
         raise RuntimeError(f"Supabase upload error: {err}")
 
-    # получаем публичный URL (в новых SDK — просто строка)
     try:
         public_url = supabase.storage.from_(bucket_name).get_public_url(object_path)
     except Exception as e:
@@ -125,42 +105,36 @@ def create():
     if request.method == "POST":
         name        = request.form.get("name", "").strip()
         description = request.form.get("description", "").strip()
-        quantity    = request.form.get("quantity", "0").strip()
-        price       = request.form.get("price", "0").strip()
+        quantity    = request.form.get("quantity", "0").replace(",", ".").strip()
         category_id = request.form.get("category_id") or None
         image_file  = request.files.get("image")
+        unit        = request.form.get("unit", "шт")
 
         if not name:
             flash("Введите название товара", "warning")
             return redirect(url_for("create"))
-
         try:
-            quantity = int(quantity)
-            price    = float(price)
+            quantity = float(quantity)
         except ValueError:
-            flash("Количество должно быть целым, цена — числом", "warning")
+            flash("Количество должно быть числом", "warning")
             return redirect(url_for("create"))
-
         try:
             img_url = upload_image(image_file)
         except RuntimeError as e:
             flash(f"Ошибка при загрузке изображения: {e}", "danger")
             return redirect(url_for("create"))
-
         prod = Product(
             name=name,
             description=description,
             quantity=quantity,
-            price=price,
+            unit=unit,
             category_id=category_id,
             image_url=img_url
         )
         db.session.add(prod)
         db.session.commit()
-
         flash(f'Товар "{name}" добавлен!', "success")
         return redirect(url_for("index"))
-
     return render_template("create.html", categories=categories)
 
 @app.route("/view/<int:product_id>")
@@ -176,10 +150,9 @@ def edit(product_id):
     if request.method == "POST":
         product.name        = request.form.get("name", product.name).strip()
         product.description = request.form.get("description", product.description).strip()
-        product.quantity    = int(request.form.get("quantity", product.quantity))
-        product.price       = float(request.form.get("price", product.price))
+        product.quantity    = float(request.form.get("quantity", product.quantity).replace(",", "."))
         product.category_id = request.form.get("category_id") or None
-
+        product.unit        = request.form.get("unit", product.unit)
         new_file = request.files.get("image")
         if new_file and new_file.filename:
             try:
@@ -187,11 +160,9 @@ def edit(product_id):
             except RuntimeError as e:
                 flash(f"Ошибка при обновлении картинки: {e}", "danger")
                 return redirect(url_for("edit", product_id=product.id))
-
         db.session.commit()
         flash(f'Товар "{product.name}" обновлён!', "success")
         return redirect(url_for("index"))
-
     return render_template("edit.html", product=product, categories=categories)
 
 @app.route("/delete/<int:product_id>", methods=["POST"])
@@ -212,13 +183,11 @@ def add_category():
         if Category.query.filter_by(name=name).first():
             flash("Такая категория уже есть.", "warning")
             return redirect(url_for("add_category"))
-
         cat = Category(name=name)
         db.session.add(cat)
         db.session.commit()
         flash(f'Категория "{name}" создана!', "success")
         return redirect(url_for("index"))
-
     return render_template("add_category.html")
 
 @app.route("/reports")
@@ -235,18 +204,15 @@ def export_excel():
             "Название":   p.name,
             "Описание":   p.description or "",
             "Категория":  p.category.name if p.category else "",
-            "Кол-во":     p.quantity,
-            "Цена":       float(p.price),
+            "Кол-во":     f"{p.quantity} {p.unit}",
             "Дата":       p.created_at.strftime("%Y-%m-%d %H:%M:%S"),
             "Изобр. URL": p.image_url or ""
         })
-
     df = pd.DataFrame(data)
     output = BytesIO()
     with pd.ExcelWriter(output, engine="openpyxl") as writer:
         df.to_excel(writer, index=False, sheet_name="Products")
     output.seek(0)
-
     return send_file(
         output,
         download_name="products.xlsx",
@@ -254,9 +220,6 @@ def export_excel():
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
-# ——————————————————————————————————————————————————————————
-#               Точка входа
-# ——————————————————————————————————————————————————————————
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5111))
     app.run(debug=True, host="0.0.0.0", port=port)

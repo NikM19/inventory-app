@@ -1,19 +1,14 @@
 {% extends 'base.html' %}
-
 {% block title %}Просмотр товара{% endblock %}
-
 {% block content %}
 <div class="container mt-4">
   <h2 class="mb-4">🛍️ {{ product.name }}</h2>
-
   <div class="row">
     {% if product.image_url %}
       <div class="col-md-4 mb-4">
-        <img src="{{ product.image_url }}" 
-             class="img-fluid rounded border shadow-sm" alt="{{ product.name }}">
+        <img src="{{ product.image_url }}" class="img-fluid rounded border shadow-sm" alt="{{ product.name }}">
       </div>
     {% endif %}
-
     <div class="col-md-8">
       <table class="table table-bordered">
         <tbody>
@@ -27,11 +22,7 @@
           </tr>
           <tr>
             <th>Кол-во</th>
-            <td>{{ product.quantity }}</td>
-          </tr>
-          <tr>
-            <th>Цена</th>
-            <td>{{ product.price }} €</td>
+            <td>{{ product.quantity }} {{ product.unit }}</td>
           </tr>
           <tr>
             <th>Дата добавления</th>
@@ -39,7 +30,6 @@
           </tr>
         </tbody>
       </table>
-
       <div class="mt-4 d-flex gap-2">
         <a href="{{ url_for('edit', product_id=product.id) }}" class="btn btn-warning">✏️ Редактировать</a>
         <form action="{{ url_for('delete', product_id=product.id) }}" method="POST" onsubmit="return confirm('Удалить товар?')">
