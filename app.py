@@ -93,29 +93,23 @@ def upload_image(file_storage) -> str | None:
     try:
         res = supabase.storage.from_(bucket_name).upload(object_path, data)
     except Exception as e:
-        # сюда попадает, например, 404 Bucket not found или 403 RLS
         raise RuntimeError(f"Supabase upload failed: {e}") from e
 
-    # новые версии SDK возвращают UploadResponse без .error
-    # старые могли возвращать (data, error)-кортеж
+    # старые версии SDK могли возвращать (data, error)-кортеж
     err = getattr(res, "error", None)
     if err:
-        # если всё же есть объект ошибки
         raise RuntimeError(f"Supabase upload error: {err}")
 
-    # получаем публичный URL
+    # получаем публичный URL (в новых SDK — просто строка)
     try:
-        pub = supabase.storage.from_(bucket_name).get_public_url(object_path)
+        public_url = supabase.storage.from_(bucket_name).get_public_url(object_path)
     except Exception as e:
         raise RuntimeError(f"get_public_url failed: {e}") from e
 
-    # ключ может быть publicURL или public_url — на всякий случай проверим оба
-    public_url = pub.get("publicURL") or pub.get("public_url")
     if not public_url:
-        raise RuntimeError(f"publicURL not found in response: {pub}")
+        raise RuntimeError(f"publicURL not found in response: {public_url}")
 
     return public_url
-
 
 # ——————————————————————————————————————————————————————————
 #              Маршруты
@@ -124,7 +118,6 @@ def upload_image(file_storage) -> str | None:
 def index():
     products = Product.query.order_by(Product.created_at.desc()).all()
     return render_template("index.html", products=products)
-
 
 @app.route("/create", methods=["GET", "POST"])
 def create():
@@ -170,12 +163,10 @@ def create():
 
     return render_template("create.html", categories=categories)
 
-
 @app.route("/view/<int:product_id>")
 def view(product_id):
     product = Product.query.get_or_404(product_id)
     return render_template("view.html", product=product)
-
 
 @app.route("/edit/<int:product_id>", methods=["GET", "POST"])
 def edit(product_id):
@@ -203,7 +194,6 @@ def edit(product_id):
 
     return render_template("edit.html", product=product, categories=categories)
 
-
 @app.route("/delete/<int:product_id>", methods=["POST"])
 def delete(product_id):
     prod = Product.query.get_or_404(product_id)
@@ -211,7 +201,6 @@ def delete(product_id):
     db.session.commit()
     flash(f'Товар "{prod.name}" удалён!', "success")
     return redirect(url_for("index"))
-
 
 @app.route("/add_category", methods=["GET", "POST"])
 def add_category():
@@ -232,12 +221,10 @@ def add_category():
 
     return render_template("add_category.html")
 
-
 @app.route("/reports")
 def reports():
     products = Product.query.order_by(Product.created_at.desc()).all()
     return render_template("reports.html", products=products)
-
 
 @app.route("/export_excel")
 def export_excel():
@@ -266,7 +253,6 @@ def export_excel():
         as_attachment=True,
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-
 
 # ——————————————————————————————————————————————————————————
 #               Точка входа
