@@ -61,8 +61,8 @@
         <td>{{ product.id }}</td>
         <td>
           <a href="{{ url_for('view', product_id=product.id) }}" class="d-flex align-items-center text-decoration-none">
-            {% if product.image_filename %}
-              <img src="{{ url_for('static', filename='uploads/' ~ product.image_filename) }}"
+            {% if product.image_url %}
+              <img src="{{ product.image_url }}"
                    alt="{{ product.name }}"
                    style="height: 40px; width: 40px; object-fit: cover; margin-right: 10px; border-radius: 4px;">
             {% endif %}
@@ -93,7 +93,7 @@
     <li class="list-group-item">Общая стоимость: <strong>{{ total_value }} {{ currency }}</strong></li>
   </ul>
 
-<h5 class="mb-3">🆕 Последние добавленные товары:</h5>
+  <h5 class="mb-3">🆕 Последние добавленные товары:</h5>
   <ul class="list-group">
     {% for product in recent_products %}
     <li class="list-group-item">
@@ -105,5 +105,4 @@
     {% endfor %}
   </ul>
 </div>
-
 {% endblock %}

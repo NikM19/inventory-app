@@ -1,37 +1,52 @@
 {% extends 'base.html' %}
 
+{% block title %}Просмотр товара{% endblock %}
+
 {% block content %}
-<div class="container">
-  <h2 class="mb-4">🔍 Информация о товаре</h2>
+<div class="container mt-4">
+  <h2 class="mb-4">🛍️ {{ product.name }}</h2>
 
-  <div class="card mb-4 shadow">
-    <div class="row g-0">
-      {% if product.image_filename %}
-      <div class="col-md-4">
-        <img src="{{ url_for('static', filename='uploads/' ~ product.image_filename) }}"
-             alt="{{ product.name }}"
-             class="img-fluid rounded-start"
-             style="object-fit: cover; height: 100%;">
+  <div class="row">
+    {% if product.image_url %}
+      <div class="col-md-4 mb-4">
+        <img src="{{ product.image_url }}" 
+             class="img-fluid rounded border shadow-sm" alt="{{ product.name }}">
       </div>
-      {% endif %}
-      <div class="col-md-8">
-        <div class="card-body">
-          <h5 class="card-title">{{ product.name }}</h5>
-          <p class="card-text"><strong>Категория:</strong> {{ product.category.name if product.category else '—' }}</p>
-          <p class="card-text"><strong>Описание:</strong> {{ product.description or '—' }}</p>
-          <p class="card-text"><strong>Количество:</strong> {{ product.quantity }}</p>
-          <p class="card-text"><strong>Цена:</strong> {{ product.price }} €</p>
-          <p class="card-text"><small class="text-muted">Добавлен: {{ product.created_at.strftime('%Y-%m-%d %H:%M') }}</small></p>
+    {% endif %}
 
-          <a href="{{ url_for('edit', product_id=product.id) }}" class="btn btn-warning me-2">Редактировать</a>
-          <form action="{{ url_for('delete', product_id=product.id) }}" method="post" style="display:inline-block;">
-            <button type="submit" class="btn btn-danger" onclick="return confirm('Удалить товар?')">Удалить</button>
-          </form>
-        </div>
+    <div class="col-md-8">
+      <table class="table table-bordered">
+        <tbody>
+          <tr>
+            <th>Описание</th>
+            <td>{{ product.description or '—' }}</td>
+          </tr>
+          <tr>
+            <th>Категория</th>
+            <td>{{ product.category.name if product.category else '—' }}</td>
+          </tr>
+          <tr>
+            <th>Кол-во</th>
+            <td>{{ product.quantity }}</td>
+          </tr>
+          <tr>
+            <th>Цена</th>
+            <td>{{ product.price }} €</td>
+          </tr>
+          <tr>
+            <th>Дата добавления</th>
+            <td>{{ product.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="mt-4 d-flex gap-2">
+        <a href="{{ url_for('edit', product_id=product.id) }}" class="btn btn-warning">✏️ Редактировать</a>
+        <form action="{{ url_for('delete', product_id=product.id) }}" method="POST" onsubmit="return confirm('Удалить товар?')">
+          <button type="submit" class="btn btn-danger">🗑️ Удалить</button>
+        </form>
       </div>
     </div>
   </div>
-
-  <a href="{{ url_for('index') }}" class="btn btn-secondary">← Назад к списку</a>
 </div>
 {% endblock %}

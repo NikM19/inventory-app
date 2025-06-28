@@ -43,9 +43,9 @@
             <label class="form-label">Фото (опционально)</label>
             <input type="file" name="image" class="form-control">
 
-            {% if product.image_filename %}
+            {% if product.image_url %}
             <div class="mt-2">
-                <img src="{{ url_for('static', filename='uploads/' + product.image_filename) }}" alt="Фото товара" style="max-width: 150px;">
+                <img src="{{ product.image_url }}" alt="Фото товара" style="max-width: 150px;">
             </div>
             {% endif %}
         </div>
