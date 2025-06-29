@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+
 {% block content %}
 <div class="container mt-4">
   <div class="d-flex justify-content-between align-items-center mb-3">
@@ -9,11 +10,37 @@
     </div>
   </div>
 
+  <form class="row g-2 mb-3" method="get">
+    <div class="col-md-4">
+      <input type="text" name="q" class="form-control" placeholder="Поиск по названию…" value="{{ search_query }}">
+    </div>
+    <div class="col-md-3">
+      <select name="category_id" class="form-select">
+        <option value="">Все категории</option>
+        {% for category in categories %}
+        <option value="{{ category.id }}" {% if category.id == category_id %}selected{% endif %}>{{ category.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <button type="submit" class="btn btn-dark w-100">Применить</button>
+    </div>
+  </form>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+  {% endwith %}
 
   <table class="table table-bordered align-middle table-hover">
     <thead class="table-dark">
       <tr>
-        <th>ID</th>
         <th>Название</th>
         <th>Категория</th>
         <th>Количество</th>
@@ -23,7 +50,6 @@
     <tbody>
       {% for product in products %}
       <tr>
-        <td>{{ product.id }}</td>
         <td>
           <a href="{{ url_for('view', product_id=product.id) }}" class="d-flex align-items-center text-decoration-none">
             {% if product.image_url %}
@@ -47,5 +73,25 @@
       {% endfor %}
     </tbody>
   </table>
+
+  <hr>
+
+  <h5 class="mb-3">📊 Статистика:</h5>
+  <ul class="list-group mb-4">
+    <li class="list-group-item">Всего товаров: <strong>{{ total_products }}</strong></li>
+    <li class="list-group-item">Всего категорий: <strong>{{ total_categories }}</strong></li>
+  </ul>
+
+  <h5 class="mb-3">🆕 Последние добавленные товары:</h5>
+  <ul class="list-group">
+    {% for product in recent_products %}
+    <li class="list-group-item">
+      <a href="{{ url_for('view', product_id=product.id) }}" class="text-decoration-none">
+        {{ product.name }} ({{ product.quantity }} {{ product.unit }})
+      </a>
+      — {{ product.created_at.strftime('%Y-%m-%d %H:%M') }}
+    </li>
+    {% endfor %}
+  </ul>
 </div>
 {% endblock %}
