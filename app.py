@@ -22,7 +22,6 @@ app.secret_key = os.getenv("SECRET_KEY", "dev_secret")
 
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
 app.config["UPLOAD_FOLDER"] = os.path.join(app.root_path, "static", "uploads")
 db = SQLAlchemy(app)
 
@@ -96,8 +95,34 @@ def upload_image(file_storage) -> str | None:
 # ——————————————————————————————————————————————————————————
 @app.route("/")
 def index():
-    products = Product.query.order_by(Product.created_at.desc()).all()
-    return render_template("index.html", products=products)
+    # Поиск и фильтрация (оставим, чтобы шаблон не ломался)
+    search_query = request.args.get("q", "").strip()
+    category_id = request.args.get("category_id", type=int)
+
+    query = Product.query
+
+    if search_query:
+        query = query.filter(Product.name.ilike(f"%{search_query}%"))
+
+    if category_id:
+        query = query.filter(Product.category_id == category_id)
+
+    products = query.order_by(Product.created_at.desc()).all()
+    total_products = Product.query.count()
+    total_categories = Category.query.count()
+    recent_products = Product.query.order_by(Product.created_at.desc()).limit(5).all()
+    categories = Category.query.order_by(Category.name).all()
+
+    return render_template(
+        "index.html",
+        products=products,
+        total_products=total_products,
+        total_categories=total_categories,
+        recent_products=recent_products,
+        categories=categories,
+        search_query=search_query,
+        category_id=category_id
+    )
 
 @app.route("/create", methods=["GET", "POST"])
 def create():
