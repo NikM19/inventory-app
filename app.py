@@ -23,43 +23,26 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 # =======================
 #   Вспомогательные функции для пользователей
 # =======================
+
 def get_user_by_username(username):
+    # Корректно получает одного пользователя по username или возвращает None
     resp = supabase.table("users").select("*").eq("username", username).execute()
     users = resp.data or []
     return users[0] if users else None
 
 def get_user_by_id(user_id):
-    resp = supabase.table("users").select("*").eq("id", user_id).single().execute()
-    return resp.data
+    # Корректно получает одного пользователя по id или возвращает None
+    if not user_id:
+        return None
+    resp = supabase.table("users").select("*").eq("id", user_id).execute()
+    users = resp.data or []
+    return users[0] if users else None
 
 def create_user(username, password, role="viewer"):
     password_hash = generate_password_hash(password)
     resp = supabase.table("users").insert({"username": username, "password_hash": password_hash, "role": role}).execute()
+    # Можно возвращать просто True/False, но пусть будет как есть
     return resp.data
-
-@app.before_request
-def load_logged_in_user():
-    user_id = session.get("user_id")
-    g.user = get_user_by_id(user_id) if user_id else None
-
-def login_required(view_func):
-    from functools import wraps
-    @wraps(view_func)
-    def wrapped_view(**kwargs):
-        if g.user is None:
-            return redirect(url_for("login"))
-        return view_func(**kwargs)
-    return wrapped_view
-
-def editor_required(view_func):
-    from functools import wraps
-    @wraps(view_func)
-    def wrapped_view(**kwargs):
-        if g.user is None or g.user.get("role") != "editor":
-            flash("Требуются права редактора.", "danger")
-            return redirect(url_for("index"))
-        return view_func(**kwargs)
-    return wrapped_view
 
 # =======================
 #   Аутентификация и регистрация
