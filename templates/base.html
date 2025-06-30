@@ -9,10 +9,10 @@
 <body>
 <nav class="navbar navbar-dark bg-dark navbar-expand-lg">
   <div class="container-fluid">
-    <a class="navbar-brand" href="{{ url_for('index') }}">Склад</a>
-    {% if request.endpoint != 'index' %}
-      <a href="{{ url_for('index') }}" class="btn btn-outline-light btn-sm ms-2">← Назад</a>
-    {% endif %}
+    <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
+      <img src="{{ url_for('static', filename='img/artkivi-logo.png') }}" alt="Artkivi" width="36" height="36" class="me-2" style="background: #fff; border-radius: 8px;">
+      <span>Склад</span>
+    </a>
     <div class="d-flex">
       {% if g.user %}
         <span class="navbar-text me-2">👤 {{ g.user.username }}
