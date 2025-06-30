@@ -2,7 +2,15 @@
 {% block title %}Просмотр товара{% endblock %}
 {% block content %}
 <div class="container mt-4">
-  <h2 class="mb-4">🪨 {{ product.name }}</h2>
+
+  <!-- Кнопка Назад -->
+  <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm mb-3">
+    ← Назад
+  </a>
+
+  <h2 class="mb-4">
+    <span style="font-size: 1.4em;">🪨</span> {{ product.name }}
+  </h2>
   <div class="row">
     {% if product.image_url %}
       <div class="col-md-4 mb-4">
