@@ -24,8 +24,9 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 #   Вспомогательные функции для пользователей
 # =======================
 def get_user_by_username(username):
-    resp = supabase.table("users").select("*").eq("username", username).single().execute()
-    return resp.data
+    resp = supabase.table("users").select("*").eq("username", username).execute()
+    users = resp.data or []
+    return users[0] if users else None
 
 def get_user_by_id(user_id):
     resp = supabase.table("users").select("*").eq("id", user_id).single().execute()
@@ -129,7 +130,6 @@ def get_product_by_id(product_id):
 def index():
     products = get_products()
     categories = get_categories()
-    # Добавить название категории в продукт (for table display)
     cat_dict = {c["id"]: c["name"] for c in categories}
     for p in products:
         p["category_name"] = cat_dict.get(p["category_id"], "")
