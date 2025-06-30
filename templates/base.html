@@ -12,7 +12,13 @@
     <a class="navbar-brand" href="{{ url_for('index') }}">Склад</a>
     <div class="d-flex">
       {% if g.user %}
-        <span class="navbar-text me-2">👤 {{ g.user.username }} ({{ g.user.role }})</span>
+        <span class="navbar-text me-2">👤 {{ g.user.username }}
+          {% if g.user.username == 'Constantin.Lennartsson@gmail.com' %}
+            (BOSS)
+          {% elif g.user.username in ['anastasia.hiilas@gmail.com', 'musatovnikita13@gmail.com'] %}
+            (admin)
+          {% endif %}
+        </span>
         <a class="btn btn-outline-light btn-sm" href="{{ url_for('logout') }}">Выйти</a>
       {% else %}
         <a class="btn btn-outline-light btn-sm me-2" href="{{ url_for('login') }}">Вход</a>
