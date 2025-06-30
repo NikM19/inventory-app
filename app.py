@@ -22,6 +22,7 @@ app.secret_key = os.getenv("SECRET_KEY", "dev_secret")
 
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
 app.config["UPLOAD_FOLDER"] = os.path.join(app.root_path, "static", "uploads")
 db = SQLAlchemy(app)
 
@@ -44,6 +45,7 @@ class Product(db.Model):
     name        = db.Column(db.String(120), nullable=False)
     description = db.Column(db.Text, nullable=True)
     quantity    = db.Column(db.Numeric(10, 2), nullable=False, default=0)
+    size        = db.Column(db.String(50), nullable=True)  # Новое поле!
     unit        = db.Column(db.String(10), nullable=False, default="шт")
     created_at  = db.Column(db.DateTime, default=datetime.utcnow)
     category_id = db.Column(db.Integer, db.ForeignKey("categories.id"), nullable=True)
@@ -95,33 +97,16 @@ def upload_image(file_storage) -> str | None:
 # ——————————————————————————————————————————————————————————
 @app.route("/")
 def index():
-    # Поиск и фильтрация (оставим, чтобы шаблон не ломался)
-    search_query = request.args.get("q", "").strip()
-    category_id = request.args.get("category_id", type=int)
-
-    query = Product.query
-
-    if search_query:
-        query = query.filter(Product.name.ilike(f"%{search_query}%"))
-
-    if category_id:
-        query = query.filter(Product.category_id == category_id)
-
-    products = query.order_by(Product.created_at.desc()).all()
-    total_products = Product.query.count()
+    products = Product.query.order_by(Product.created_at.desc()).all()
+    total_products = len(products)
     total_categories = Category.query.count()
-    recent_products = Product.query.order_by(Product.created_at.desc()).limit(5).all()
-    categories = Category.query.order_by(Category.name).all()
-
+    recent_products = products[:5]
     return render_template(
         "index.html",
         products=products,
         total_products=total_products,
         total_categories=total_categories,
-        recent_products=recent_products,
-        categories=categories,
-        search_query=search_query,
-        category_id=category_id
+        recent_products=recent_products
     )
 
 @app.route("/create", methods=["GET", "POST"])
@@ -131,6 +116,7 @@ def create():
         name        = request.form.get("name", "").strip()
         description = request.form.get("description", "").strip()
         quantity    = request.form.get("quantity", "0").replace(",", ".").strip()
+        size        = request.form.get("size", "").strip()
         category_id = request.form.get("category_id") or None
         image_file  = request.files.get("image")
         unit        = request.form.get("unit", "шт")
@@ -152,6 +138,7 @@ def create():
             name=name,
             description=description,
             quantity=quantity,
+            size=size,
             unit=unit,
             category_id=category_id,
             image_url=img_url
@@ -176,6 +163,7 @@ def edit(product_id):
         product.name        = request.form.get("name", product.name).strip()
         product.description = request.form.get("description", product.description).strip()
         product.quantity    = float(request.form.get("quantity", product.quantity).replace(",", "."))
+        product.size        = request.form.get("size", product.size).strip()
         product.category_id = request.form.get("category_id") or None
         product.unit        = request.form.get("unit", product.unit)
         new_file = request.files.get("image")
@@ -230,6 +218,7 @@ def export_excel():
             "Описание":   p.description or "",
             "Категория":  p.category.name if p.category else "",
             "Кол-во":     f"{p.quantity} {p.unit}",
+            "Размер":     p.size or "",
             "Дата":       p.created_at.strftime("%Y-%m-%d %H:%M:%S"),
             "Изобр. URL": p.image_url or ""
         })
