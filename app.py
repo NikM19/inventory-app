@@ -290,17 +290,24 @@ def view(product_id):
     return render_template("view.html", product=product, category=category)
 
 # =======================
-#   Экспорт в Excel
+#   Экспорт в Excel (обновлено)
 # =======================
 @app.route("/export_excel")
 @login_required
 @editor_required
 def export_excel():
     products = get_products()
+    filtered_products = []
     for p in products:
-        if isinstance(p["created_at"], str):
-            p["created_at"] = p["created_at"].replace("T", " ").split(".")[0]
-    df = pd.DataFrame(products)
+        filtered_products.append({
+            "Название": p.get("name"),
+            "Описание": p.get("description"),
+            "Количество": p.get("quantity"),
+            "Ед. изм.": p.get("unit"),
+            "Размер": p.get("size"),
+            "Цена (€)": p.get("price"),
+        })
+    df = pd.DataFrame(filtered_products)
     output = BytesIO()
     with pd.ExcelWriter(output, engine="openpyxl") as writer:
         df.to_excel(writer, index=False, sheet_name="Products")
