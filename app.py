@@ -4,231 +4,282 @@ from io import BytesIO
 
 from flask import (
     Flask, render_template, request,
-    redirect, url_for, flash, send_file
+    redirect, url_for, flash, send_file, session, g
 )
-from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-
 import pandas as pd
 from supabase import create_client
 
-# ——————————————————————————————————————————————————————————
-#              Настройки
-# ——————————————————————————————————————————————————————————
+# Настройки Supabase и Flask
 USE_LOCAL_UPLOADS = os.getenv("USE_LOCAL_UPLOADS", "False").lower() in ("1", "true", "yes")
-
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "dev_secret")
-
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
-app.config["UPLOAD_FOLDER"] = os.path.join(app.root_path, "static", "uploads")
-db = SQLAlchemy(app)
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# ——————————————————————————————————————————————————————————
-#              Модели
-# ——————————————————————————————————————————————————————————
-class Category(db.Model):
-    __tablename__ = "categories"
-    id   = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False, unique=True)
-    products = db.relationship("Product", backref="category", lazy=True)
+# =======================
+#   Вспомогательные функции для пользователей
+# =======================
+def get_user_by_username(username):
+    resp = supabase.table("users").select("*").eq("username", username).single().execute()
+    return resp.data
 
-class Product(db.Model):
-    __tablename__ = "products"
-    id          = db.Column(db.Integer, primary_key=True)
-    name        = db.Column(db.String(120), nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    quantity    = db.Column(db.Numeric(10, 2), nullable=False, default=0)
-    size        = db.Column(db.String(30), nullable=True)  # <-- Размер (добавлен)
-    unit        = db.Column(db.String(10), nullable=False, default="шт")
-    price       = db.Column(db.Numeric(10, 2), nullable=True)  # <-- Цена (НОВОЕ)
-    created_at  = db.Column(db.DateTime, default=datetime.utcnow)
-    category_id = db.Column(db.Integer, db.ForeignKey("categories.id"), nullable=True)
-    image_url   = db.Column(db.Text, nullable=True)
+def get_user_by_id(user_id):
+    resp = supabase.table("users").select("*").eq("id", user_id).single().execute()
+    return resp.data
 
-# ——————————————————————————————————————————————————————————
-#              Загрузка файла
-# ——————————————————————————————————————————————————————————
-def upload_image(file_storage) -> str | None:
-    if not file_storage or not file_storage.filename:
-        return None
-    safe_name = secure_filename(file_storage.filename)
-    timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
-    filename  = f"{timestamp}_{safe_name}"
+def create_user(username, password, role="viewer"):
+    password_hash = generate_password_hash(password)
+    resp = supabase.table("users").insert({"username": username, "password_hash": password_hash, "role": role}).execute()
+    return resp.data
 
-    if USE_LOCAL_UPLOADS:
-        os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
-        dst = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-        file_storage.save(dst)
-        return url_for("static", filename=f"uploads/{filename}", _external=False)
+@app.before_request
+def load_logged_in_user():
+    user_id = session.get("user_id")
+    g.user = get_user_by_id(user_id) if user_id else None
 
-    bucket_name = "upload"
-    object_path = f"public/{filename}"
+def login_required(view_func):
+    from functools import wraps
+    @wraps(view_func)
+    def wrapped_view(**kwargs):
+        if g.user is None:
+            return redirect(url_for("login"))
+        return view_func(**kwargs)
+    return wrapped_view
 
-    file_storage.stream.seek(0)
-    data = file_storage.stream.read()
+def editor_required(view_func):
+    from functools import wraps
+    @wraps(view_func)
+    def wrapped_view(**kwargs):
+        if g.user is None or g.user.get("role") != "editor":
+            flash("Требуются права редактора.", "danger")
+            return redirect(url_for("index"))
+        return view_func(**kwargs)
+    return wrapped_view
 
-    try:
-        res = supabase.storage.from_(bucket_name).upload(object_path, data)
-    except Exception as e:
-        raise RuntimeError(f"Supabase upload failed: {e}") from e
+# =======================
+#   Аутентификация и регистрация
+# =======================
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        username = request.form["username"].strip()
+        password = request.form["password"].strip()
+        if not username or not password:
+            flash("Заполните все поля!", "warning")
+            return redirect(url_for("register"))
+        if get_user_by_username(username):
+            flash("Пользователь уже существует!", "warning")
+            return redirect(url_for("register"))
+        create_user(username, password, role="viewer")
+        flash("Вы успешно зарегистрировались! Теперь войдите.", "success")
+        return redirect(url_for("login"))
+    return render_template("register.html")
 
-    err = getattr(res, "error", None)
-    if err:
-        raise RuntimeError(f"Supabase upload error: {err}")
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form["username"].strip()
+        password = request.form["password"].strip()
+        user = get_user_by_username(username)
+        if not user or not check_password_hash(user["password_hash"], password):
+            flash("Неверный логин или пароль!", "danger")
+            return redirect(url_for("login"))
+        session.clear()
+        session["user_id"] = user["id"]
+        flash("Вход выполнен!", "success")
+        return redirect(url_for("index"))
+    return render_template("login.html")
 
-    try:
-        public_url = supabase.storage.from_(bucket_name).get_public_url(object_path)
-    except Exception as e:
-        raise RuntimeError(f"get_public_url failed: {e}") from e
+@app.route("/logout")
+def logout():
+    session.clear()
+    flash("Вы вышли из аккаунта.", "success")
+    return redirect(url_for("login"))
 
-    if not public_url:
-        raise RuntimeError(f"publicURL not found in response: {public_url}")
+# =======================
+#   Работа с товарами и категориями через Supabase
+# =======================
 
-    return public_url
+def get_categories():
+    resp = supabase.table("categories").select("*").execute()
+    return resp.data if resp.data else []
 
-# ——————————————————————————————————————————————————————————
-#              Маршруты
-# ——————————————————————————————————————————————————————————
+def get_products():
+    resp = supabase.table("products").select("*").order("created_at", desc=True).execute()
+    return resp.data if resp.data else []
+
+def get_category_by_id(category_id):
+    if not category_id: return None
+    resp = supabase.table("categories").select("*").eq("id", category_id).single().execute()
+    return resp.data
+
+def get_product_by_id(product_id):
+    resp = supabase.table("products").select("*").eq("id", product_id).single().execute()
+    return resp.data
+
+# =======================
+#   Главная страница
+# =======================
 @app.route("/")
+@login_required
 def index():
-    products = Product.query.order_by(Product.created_at.desc()).all()
+    products = get_products()
+    categories = get_categories()
+    # Добавить название категории в продукт (for table display)
+    cat_dict = {c["id"]: c["name"] for c in categories}
+    for p in products:
+        p["category_name"] = cat_dict.get(p["category_id"], "")
     total_products = len(products)
-    total_categories = Category.query.count()
+    total_categories = len(categories)
     recent_products = products[:5]
-    return render_template(
-        "index.html",
+    return render_template("index.html",
         products=products,
+        categories=categories,
         total_products=total_products,
         total_categories=total_categories,
         recent_products=recent_products
     )
 
+# =======================
+#   Добавление товара
+# =======================
 @app.route("/create", methods=["GET", "POST"])
+@login_required
+@editor_required
 def create():
-    categories = Category.query.order_by(Category.name).all()
+    categories = get_categories()
     if request.method == "POST":
         name        = request.form.get("name", "").strip()
         description = request.form.get("description", "").strip()
         quantity    = request.form.get("quantity", "0").replace(",", ".").strip()
-        size        = request.form.get("size", "").strip()
-        category_id = request.form.get("category_id") or None
-        image_file  = request.files.get("image")
         unit        = request.form.get("unit", "шт")
-        price       = request.form.get("price", "").replace(",", ".").strip()
-
+        size        = request.form.get("size", "").strip()
+        price       = request.form.get("price", "").strip()
+        category_id = request.form.get("category_id") or None
         if not name:
             flash("Введите название товара", "warning")
             return redirect(url_for("create"))
         try:
             quantity = float(quantity)
-            price = float(price) if price else None
+            price = float(price)
         except ValueError:
-            flash("Количество и цена должны быть числами", "warning")
+            flash("Некорректное число!", "warning")
             return redirect(url_for("create"))
-        try:
-            img_url = upload_image(image_file)
-        except RuntimeError as e:
-            flash(f"Ошибка при загрузке изображения: {e}", "danger")
-            return redirect(url_for("create"))
-        prod = Product(
-            name=name,
-            description=description,
-            quantity=quantity,
-            size=size,
-            unit=unit,
-            price=price,
-            category_id=category_id,
-            image_url=img_url
-        )
-        db.session.add(prod)
-        db.session.commit()
+        prod = {
+            "name": name,
+            "description": description,
+            "quantity": quantity,
+            "unit": unit,
+            "size": size,
+            "price": price,
+            "category_id": int(category_id) if category_id else None,
+            "created_at": datetime.utcnow().isoformat()
+        }
+        supabase.table("products").insert(prod).execute()
         flash(f'Товар "{name}" добавлен!', "success")
         return redirect(url_for("index"))
     return render_template("create.html", categories=categories)
 
-@app.route("/view/<int:product_id>")
-def view(product_id):
-    product = Product.query.get_or_404(product_id)
-    return render_template("view.html", product=product)
-
+# =======================
+#   Редактирование товара
+# =======================
 @app.route("/edit/<int:product_id>", methods=["GET", "POST"])
+@login_required
+@editor_required
 def edit(product_id):
-    product    = Product.query.get_or_404(product_id)
-    categories = Category.query.order_by(Category.name).all()
-
+    product = get_product_by_id(product_id)
+    categories = get_categories()
+    if not product:
+        flash("Товар не найден!", "danger")
+        return redirect(url_for("index"))
     if request.method == "POST":
-        product.name        = request.form.get("name", product.name).strip()
-        product.description = request.form.get("description", product.description).strip()
-        product.quantity    = float(request.form.get("quantity", product.quantity).replace(",", "."))
-        product.size        = request.form.get("size", product.size).strip()
-        product.category_id = request.form.get("category_id") or None
-        product.unit        = request.form.get("unit", product.unit)
-        product.price       = float(request.form.get("price", product.price).replace(",", "."))
-        new_file = request.files.get("image")
-        if new_file and new_file.filename:
-            try:
-                product.image_url = upload_image(new_file)
-            except RuntimeError as e:
-                flash(f"Ошибка при обновлении картинки: {e}", "danger")
-                return redirect(url_for("edit", product_id=product.id))
-        db.session.commit()
-        flash(f'Товар "{product.name}" обновлён!', "success")
+        name        = request.form.get("name", product["name"]).strip()
+        description = request.form.get("description", product.get("description", "")).strip()
+        quantity    = request.form.get("quantity", str(product.get("quantity", "0"))).replace(",", ".")
+        unit        = request.form.get("unit", product.get("unit", "шт"))
+        size        = request.form.get("size", product.get("size", ""))
+        price       = request.form.get("price", str(product.get("price", "")))
+        category_id = request.form.get("category_id") or None
+        try:
+            quantity = float(quantity)
+            price = float(price)
+        except ValueError:
+            flash("Некорректное число!", "warning")
+            return redirect(url_for("edit", product_id=product_id))
+        updated = {
+            "name": name,
+            "description": description,
+            "quantity": quantity,
+            "unit": unit,
+            "size": size,
+            "price": price,
+            "category_id": int(category_id) if category_id else None
+        }
+        supabase.table("products").update(updated).eq("id", product_id).execute()
+        flash(f'Товар "{name}" обновлён!', "success")
         return redirect(url_for("index"))
     return render_template("edit.html", product=product, categories=categories)
 
+# =======================
+#   Удаление товара
+# =======================
 @app.route("/delete/<int:product_id>", methods=["POST"])
+@login_required
+@editor_required
 def delete(product_id):
-    prod = Product.query.get_or_404(product_id)
-    db.session.delete(prod)
-    db.session.commit()
-    flash(f'Товар "{prod.name}" удалён!', "success")
+    supabase.table("products").delete().eq("id", product_id).execute()
+    flash("Товар удалён!", "success")
     return redirect(url_for("index"))
 
+# =======================
+#   Добавление категории
+# =======================
 @app.route("/add_category", methods=["GET", "POST"])
+@login_required
+@editor_required
 def add_category():
     if request.method == "POST":
         name = request.form.get("name", "").strip()
         if not name:
             flash("Введите название категории.", "warning")
             return redirect(url_for("add_category"))
-        if Category.query.filter_by(name=name).first():
+        if any(c["name"] == name for c in get_categories()):
             flash("Такая категория уже есть.", "warning")
             return redirect(url_for("add_category"))
-        cat = Category(name=name)
-        db.session.add(cat)
-        db.session.commit()
+        supabase.table("categories").insert({"name": name}).execute()
         flash(f'Категория "{name}" создана!', "success")
         return redirect(url_for("index"))
     return render_template("add_category.html")
 
-@app.route("/reports")
-def reports():
-    products = Product.query.order_by(Product.created_at.desc()).all()
-    return render_template("reports.html", products=products)
+# =======================
+#   Просмотр товара
+# =======================
+@app.route("/view/<int:product_id>")
+@login_required
+def view(product_id):
+    product = get_product_by_id(product_id)
+    if not product:
+        flash("Товар не найден!", "danger")
+        return redirect(url_for("index"))
+    category = get_category_by_id(product.get("category_id"))
+    return render_template("view.html", product=product, category=category)
 
+# =======================
+#   Экспорт в Excel
+# =======================
 @app.route("/export_excel")
+@login_required
+@editor_required
 def export_excel():
-    data = []
-    for p in Product.query.all():
-        data.append({
-            "ID":         p.id,
-            "Название":   p.name,
-            "Описание":   p.description or "",
-            "Категория":  p.category.name if p.category else "",
-            "Кол-во":     f"{p.quantity} {p.unit}",
-            "Размер":     p.size or "",
-            "Цена (€)":   f"{p.price:.2f}" if p.price is not None else "",
-            "Дата":       p.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-            "Изобр. URL": p.image_url or ""
-        })
-    df = pd.DataFrame(data)
+    products = get_products()
+    for p in products:
+        if isinstance(p["created_at"], str):
+            p["created_at"] = p["created_at"].replace("T", " ").split(".")[0]
+    df = pd.DataFrame(products)
     output = BytesIO()
     with pd.ExcelWriter(output, engine="openpyxl") as writer:
         df.to_excel(writer, index=False, sheet_name="Products")
