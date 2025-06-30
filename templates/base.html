@@ -10,6 +10,9 @@
 <nav class="navbar navbar-dark bg-dark navbar-expand-lg">
   <div class="container-fluid">
     <a class="navbar-brand" href="{{ url_for('index') }}">Склад</a>
+    {% if request.endpoint != 'index' %}
+      <a href="{{ url_for('index') }}" class="btn btn-outline-light btn-sm ms-2">← Назад</a>
+    {% endif %}
     <div class="d-flex">
       {% if g.user %}
         <span class="navbar-text me-2">👤 {{ g.user.username }}
