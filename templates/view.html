@@ -18,7 +18,7 @@
           </tr>
           <tr>
             <th>Категория</th>
-            <td>{{ product.category.name if product.category else '—' }}</td>
+            <td>{{ category.name if category else '—' }}</td>
           </tr>
           <tr>
             <th>Кол-во</th>
@@ -26,7 +26,7 @@
           </tr>
           <tr>
             <th>Дата добавления</th>
-            <td>{{ product.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>{{ product.created_at_fmt }}</td>
           </tr>
         </tbody>
       </table>

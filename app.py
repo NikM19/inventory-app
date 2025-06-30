@@ -9,6 +9,7 @@ from flask import (
 from werkzeug.security import generate_password_hash, check_password_hash
 import pandas as pd
 from supabase import create_client
+from functools import wraps
 
 # --- Настройки Supabase и Flask ---
 USE_LOCAL_UPLOADS = os.getenv("USE_LOCAL_UPLOADS", "False").lower() in ("1", "true", "yes")
@@ -24,13 +25,11 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 # =======================
 
 def get_user_by_username(username):
-    # Корректно получает одного пользователя по username или возвращает None
     resp = supabase.table("users").select("*").eq("username", username).execute()
     users = resp.data or []
     return users[0] if users else None
 
 def get_user_by_id(user_id):
-    # Корректно получает одного пользователя по id или возвращает None
     if not user_id:
         return None
     resp = supabase.table("users").select("*").eq("id", user_id).execute()
@@ -45,8 +44,6 @@ def create_user(username, password, role="viewer"):
 # =======================
 #   Декораторы для доступа
 # =======================
-
-from functools import wraps
 
 def login_required(view_func):
     @wraps(view_func)
@@ -280,6 +277,16 @@ def view(product_id):
         flash("Товар не найден!", "danger")
         return redirect(url_for("index"))
     category = get_category_by_id(product.get("category_id"))
+    # Форматирование created_at для шаблона
+    created_at_str = product.get("created_at")
+    if isinstance(created_at_str, str):
+        try:
+            dt = datetime.fromisoformat(created_at_str.replace("Z", ""))
+            product["created_at_fmt"] = dt.strftime('%Y-%m-%d %H:%M')
+        except Exception:
+            product["created_at_fmt"] = created_at_str[:16].replace('T', ' ')
+    else:
+        product["created_at_fmt"] = ""
     return render_template("view.html", product=product, category=category)
 
 # =======================
