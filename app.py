@@ -45,8 +45,9 @@ class Product(db.Model):
     name        = db.Column(db.String(120), nullable=False)
     description = db.Column(db.Text, nullable=True)
     quantity    = db.Column(db.Numeric(10, 2), nullable=False, default=0)
-    size        = db.Column(db.String(50), nullable=True)  # Новое поле!
+    size        = db.Column(db.String(30), nullable=True)  # <-- Размер (добавлен)
     unit        = db.Column(db.String(10), nullable=False, default="шт")
+    price       = db.Column(db.Numeric(10, 2), nullable=True)  # <-- Цена (НОВОЕ)
     created_at  = db.Column(db.DateTime, default=datetime.utcnow)
     category_id = db.Column(db.Integer, db.ForeignKey("categories.id"), nullable=True)
     image_url   = db.Column(db.Text, nullable=True)
@@ -120,14 +121,16 @@ def create():
         category_id = request.form.get("category_id") or None
         image_file  = request.files.get("image")
         unit        = request.form.get("unit", "шт")
+        price       = request.form.get("price", "").replace(",", ".").strip()
 
         if not name:
             flash("Введите название товара", "warning")
             return redirect(url_for("create"))
         try:
             quantity = float(quantity)
+            price = float(price) if price else None
         except ValueError:
-            flash("Количество должно быть числом", "warning")
+            flash("Количество и цена должны быть числами", "warning")
             return redirect(url_for("create"))
         try:
             img_url = upload_image(image_file)
@@ -140,6 +143,7 @@ def create():
             quantity=quantity,
             size=size,
             unit=unit,
+            price=price,
             category_id=category_id,
             image_url=img_url
         )
@@ -166,6 +170,7 @@ def edit(product_id):
         product.size        = request.form.get("size", product.size).strip()
         product.category_id = request.form.get("category_id") or None
         product.unit        = request.form.get("unit", product.unit)
+        product.price       = float(request.form.get("price", product.price).replace(",", "."))
         new_file = request.files.get("image")
         if new_file and new_file.filename:
             try:
@@ -219,6 +224,7 @@ def export_excel():
             "Категория":  p.category.name if p.category else "",
             "Кол-во":     f"{p.quantity} {p.unit}",
             "Размер":     p.size or "",
+            "Цена (€)":   f"{p.price:.2f}" if p.price is not None else "",
             "Дата":       p.created_at.strftime("%Y-%m-%d %H:%M:%S"),
             "Изобр. URL": p.image_url or ""
         })
