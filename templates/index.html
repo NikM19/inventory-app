@@ -13,7 +13,6 @@
 <table class="table table-bordered align-middle table-hover">
   <thead class="table-dark">
     <tr>
-      <th>Картинка</th>
       <th>Название</th>
       <th>Категория</th>
       <th>Количество</th>
@@ -26,14 +25,10 @@
     {% for product in products %}
     <tr>
       <td>
-        {% if product.image_url %}
-          <img src="{{ product.image_url }}" alt="Фото" style="max-height:50px; max-width:80px; object-fit:cover;">
-        {% else %}
-          —
-        {% endif %}
-      </td>
-      <td>
-        <a href="{{ url_for('view', product_id=product.id) }}" class="text-decoration-none">
+        <a href="{{ url_for('view', product_id=product.id) }}" class="text-decoration-none d-flex align-items-center gap-2">
+          {% if product.image_url %}
+            <img src="{{ product.image_url }}" alt="{{ product.name }}" style="height:36px; width:auto; border-radius:6px; object-fit:cover; margin-right: 7px;">
+          {% endif %}
           {{ product.name }}
         </a>
       </td>
