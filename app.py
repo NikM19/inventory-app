@@ -7,11 +7,10 @@ from flask import (
     redirect, url_for, flash, send_file, session, g
 )
 from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.utils import secure_filename
 import pandas as pd
 from supabase import create_client
 
-# Настройки Supabase и Flask
+# --- Настройки Supabase и Flask ---
 USE_LOCAL_UPLOADS = os.getenv("USE_LOCAL_UPLOADS", "False").lower() in ("1", "true", "yes")
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "dev_secret")
@@ -41,8 +40,39 @@ def get_user_by_id(user_id):
 def create_user(username, password, role="viewer"):
     password_hash = generate_password_hash(password)
     resp = supabase.table("users").insert({"username": username, "password_hash": password_hash, "role": role}).execute()
-    # Можно возвращать просто True/False, но пусть будет как есть
     return resp.data
+
+# =======================
+#   Декораторы для доступа
+# =======================
+
+from functools import wraps
+
+def login_required(view_func):
+    @wraps(view_func)
+    def wrapped_view(*args, **kwargs):
+        if g.user is None:
+            return redirect(url_for("login"))
+        return view_func(*args, **kwargs)
+    return wrapped_view
+
+def editor_required(view_func):
+    @wraps(view_func)
+    def wrapped_view(*args, **kwargs):
+        if g.user is None or g.user.get("role") != "editor":
+            flash("Требуются права редактора.", "danger")
+            return redirect(url_for("index"))
+        return view_func(*args, **kwargs)
+    return wrapped_view
+
+# =======================
+#   Flask hooks
+# =======================
+
+@app.before_request
+def load_logged_in_user():
+    user_id = session.get("user_id")
+    g.user = get_user_by_id(user_id) if user_id else None
 
 # =======================
 #   Аутентификация и регистрация
@@ -97,7 +127,8 @@ def get_products():
     return resp.data if resp.data else []
 
 def get_category_by_id(category_id):
-    if not category_id: return None
+    if not category_id:
+        return None
     resp = supabase.table("categories").select("*").eq("id", category_id).single().execute()
     return resp.data
 
