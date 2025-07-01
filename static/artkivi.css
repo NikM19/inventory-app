@@ -1,95 +1,200 @@
+/* ====== Палитра Artkivi ====== */
+:root {
+    --ak-black: #393939;
+    --ak-gray: #ebebeb;
+    --ak-darkgray: #7a7a7a;
+    --ak-orange: #e89a41;
+    --ak-green: #60b6b2;
+    --ak-white: #fff;
+    --ak-red: #cb4642;
+}
+
+/* ====== Общий фон и шапка ====== */
 body {
-  background: #ededed;
-  color: #232323;
-  font-family: 'Montserrat', Arial, sans-serif;
+    background: var(--ak-gray);
+    color: var(--ak-black);
 }
 
-.navbar, .navbar-brand {
-  background: #232323 !important;
-  color: #fff !important;
+.navbar, .navbar-dark {
+    background: var(--ak-black) !important;
 }
-.navbar .navbar-brand img {
-  background: #fff;
-  border-radius: 4px;
-  margin-right: 8px;
+.navbar-brand img {
+    height: 36px;
+    margin-right: 8px;
 }
-
-.navbar-text {
-  color: #ededed !important;
-}
-
-.btn, .btn-sm {
-  font-weight: 500;
-  border-radius: 5px;
-  border: none;
+.navbar-brand,
+.navbar-text,
+.navbar .btn,
+.navbar .btn-outline-light {
+    color: var(--ak-white) !important;
 }
 
-.btn-success, .btn-outline-secondary, .btn-primary {
-  background: #ec994b !important;
-  color: #fff !important;
+.navbar .btn-outline-light {
+    border-color: var(--ak-white);
 }
 
-.btn-warning {
-  background: #4fb1a8 !important;
-  color: #fff !important;
+/* ====== Карточка главного контейнера ====== */
+.container, .main-card {
+    background: var(--ak-white);
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(57,57,57,0.07);
+    padding: 30px 18px 22px 18px;
+    margin-bottom: 32px;
+}
+
+h2, h3, h5 {
+    color: var(--ak-black);
+    font-weight: 700;
+    letter-spacing: 0.01em;
+}
+
+/* ====== Кнопки ====== */
+.btn,
+button {
+    border-radius: 8px !important;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    transition: background 0.12s, color 0.12s;
+}
+
+.btn-success,
+.btn-orange {
+    background: var(--ak-orange) !important;
+    color: var(--ak-white) !important;
+    border: none !important;
+}
+
+.btn-info,
+.btn-green {
+    background: var(--ak-green) !important;
+    color: var(--ak-white) !important;
+    border: none !important;
 }
 
 .btn-danger {
-  background: #b8453e !important;
-  color: #fff !important;
+    background: var(--ak-red) !important;
+    color: var(--ak-white) !important;
+    border: none !important;
 }
 
-.btn-info {
-  background: #444444 !important;
-  color: #fff !important;
+.btn-warning {
+    background: var(--ak-darkgray) !important;
+    color: var(--ak-white) !important;
+    border: none !important;
 }
 
-.btn-outline-light {
-  border: 1px solid #fff !important;
-  color: #fff !important;
-  background: #444444 !important;
-}
-
-.btn-light {
-  background: #fff !important;
-  color: #444444 !important;
-}
-
+/* ====== Таблицы ====== */
 .table {
-  background: #fff;
-  color: #222;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--ak-white);
+    color: var(--ak-black);
+    font-size: 1rem;
+    box-shadow: 0 2px 6px rgba(57,57,57,0.03);
+}
+.table th {
+    background: var(--ak-black);
+    color: var(--ak-white);
+    border-color: var(--ak-black);
+    font-weight: 700;
+    font-size: 1rem;
+}
+.table td {
+    vertical-align: middle;
+    border-color: var(--ak-darkgray);
 }
 
-.table-dark th, .table-dark td, .table-dark {
-  background: #444444 !important;
-  color: #fff !important;
+.table a {
+    color: var(--ak-green);
+    font-weight: 600;
 }
 
-.table-bordered > :not(caption) > * > * {
-  border-color: #ec994b;
-}
-
-.alert {
-  border-radius: 5px;
+.table a:hover {
+    color: var(--ak-orange);
 }
 
 .list-group-item {
-  background: #fff;
-  border-color: #ededed;
+    border-radius: 7px !important;
+    margin-bottom: 4px;
+    background: #f9f9f9;
 }
 
-a, a:visited {
-  color: #4fb1a8;
-}
-a:hover {
-  color: #ec994b;
-  text-decoration: underline;
+/* ====== Формы ====== */
+.form-control,
+select,
+textarea {
+    border-radius: 8px;
+    border: 1px solid var(--ak-darkgray);
 }
 
-/* Фон для основной карточки/центра */
-.container {
-  background: #fff;
-  border-radius: 24px;
-  box-shadow: 0 2px 16px rgba(68,68,68,0.10);
-  padding: 32px 24px;
+/* ====== Карточки (статистика, добавленные товары) ====== */
+ul.list-group {
+    background: transparent;
+    padding: 0;
 }
+.list-group-item {
+    background: #faf7f2;
+    color: var(--ak-black);
+    border: none;
+    font-size: 1rem;
+}
+
+/* ====== Flash-сообщения ====== */
+.alert {
+    border-radius: 9px;
+    border: none;
+    font-size: 1rem;
+}
+
+/* ====== Мобильная адаптация ====== */
+@media (max-width: 768px) {
+    .container, .main-card {
+        padding: 10px 0 12px 0;
+        border-radius: 0;
+        margin-bottom: 14px;
+    }
+    .navbar-brand img {
+        height: 28px;
+    }
+    h2, h3, h5 {
+        font-size: 1.15em;
+    }
+    .btn, button {
+        font-size: 0.96em !important;
+        padding: 7px 12px !important;
+        margin-bottom: 7px !important;
+        display: block;
+        width: 100%;
+    }
+    .table {
+        font-size: 0.97em;
+    }
+    .table thead {
+        display: none;
+    }
+    .table, .table tbody, .table tr, .table td {
+        display: block;
+        width: 100%;
+    }
+    .table tr {
+        margin-bottom: 16px;
+        box-shadow: 0 1px 4px #d9d9d9;
+        border-radius: 7px;
+        background: var(--ak-white);
+    }
+    .table td {
+        text-align: left;
+        border: none;
+        padding: 5px 9px;
+        position: relative;
+    }
+    .table td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: var(--ak-darkgray);
+        display: block;
+        margin-bottom: 2px;
+        font-size: 0.95em;
+    }
+}
+
