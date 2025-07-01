@@ -4,13 +4,14 @@
   <h2>📦 Учёт товаров</h2>
   {% if g.user.role == 'editor' %}
   <div>
-    <a href="{{ url_for('create') }}" class="btn artkivi-btn">➕ Добавить товар</a>
-    <a href="{{ url_for('add_category') }}" class="btn artkivi-btn">📁 Добавить категорию</a>
+    <a href="{{ url_for('create') }}" class="btn btn-success">➕ Добавить товар</a>
+    <a href="{{ url_for('add_category') }}" class="btn btn-success">📁 Добавить категорию</a>
     <a href="{{ url_for('export_excel') }}" class="btn btn-outline-secondary">Скачать Excel</a>
   </div>
   {% endif %}
 </div>
-<table class="table table-bordered align-middle table-hover">
+
+<table class="table table-bordered align-middle table-hover mb-5">
   <thead class="table-dark">
     <tr>
       <th>Название</th>
@@ -49,22 +50,24 @@
   </tbody>
 </table>
 
-<hr>
-<h5>📊 Статистика:</h5>
-<ul class="list-group mb-4">
-  <li class="list-group-item">Всего товаров: <strong>{{ total_products }}</strong></li>
-  <li class="list-group-item">Всего категорий: <strong>{{ total_categories }}</strong></li>
-</ul>
+<!-- Фирменная карточка для статистики и новых товаров -->
+<div class="main-card mt-4 p-4" style="max-width: 600px; margin-left: auto; margin-right: auto;">
+  <h5>📊 Статистика:</h5>
+  <ul class="list-group mb-4">
+    <li class="list-group-item">Всего товаров: <strong>{{ total_products }}</strong></li>
+    <li class="list-group-item">Всего категорий: <strong>{{ total_categories }}</strong></li>
+  </ul>
 
-<h5>🆕 Последние добавленные товары:</h5>
-<ul class="list-group">
-  {% for product in recent_products %}
-  <li class="list-group-item">
-    <a href="{{ url_for('view', product_id=product.id) }}" class="text-decoration-none">
-      {{ product.name }} ({{ product.quantity }} {{ product.unit }})
-    </a>
-    — {{ product.created_at[:16].replace('T', ' ') }}
-  </li>
-  {% endfor %}
-</ul>
+  <h5>🆕 Последние добавленные товары:</h5>
+  <ul class="list-group">
+    {% for product in recent_products %}
+    <li class="list-group-item">
+      <a href="{{ url_for('view', product_id=product.id) }}" class="text-decoration-none">
+        {{ product.name }} ({{ product.quantity }} {{ product.unit }})
+      </a>
+      — {{ product.created_at[:16].replace('T', ' ') }}
+    </li>
+    {% endfor %}
+  </ul>
+</div>
 {% endblock %}
