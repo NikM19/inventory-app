@@ -37,7 +37,6 @@
       <td>{{ product.size }}</td>
       <td>{% if product.price is not none %}{{ '%.2f'|format(product.price) }}{% endif %}</td>
       <td>
-        <a href="{{ url_for('view', product_id=product.id) }}" class="btn btn-info btn-sm">Просмотр</a>
         {% if g.user.role == 'editor' %}
         <a href="{{ url_for('edit', product_id=product.id) }}" class="btn btn-warning btn-sm">Редактировать</a>
         <form action="{{ url_for('delete', product_id=product.id) }}" method="post" style="display:inline;">
