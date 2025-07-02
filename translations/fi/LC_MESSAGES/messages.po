@@ -1,0 +1,530 @@
+# Finnish translations for PROJECT.
+# Copyright (C) 2025 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-07-02 21:57+0300\n"
+"PO-Revision-Date: 2025-07-02 22:01+0300\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: fi\n"
+"Language-Team: fi <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: app.py:157
+msgid "Требуются права редактора."
+msgstr "Tarvitaan muokkausoikeudet."
+
+#: app.py:263
+msgid "Заполните все поля!"
+msgstr "Täytä kaikki kentät!"
+
+#: app.py:266
+msgid "Пользователь уже существует!"
+msgstr "Käyttäjä on jo olemassa!"
+
+#: app.py:275
+msgid "Активация аккаунта в системе учёта товаров"
+msgstr "Tilin aktivointi tuoterekisteröintijärjestelmässä"
+
+#: app.py:278
+msgid "Здравствуйте!"
+msgstr "Hei!"
+
+#: app.py:279
+msgid "Для завершения регистрации нажмите на кнопку ниже:"
+msgstr "Viimeistele rekisteröinti napsauttamalla alla olevaa painiketta:"
+
+#: app.py:280
+msgid "Активировать аккаунт"
+msgstr "Aktivoi tili"
+
+#: app.py:281
+msgid "Или перейдите по ссылке:"
+msgstr "Tai siirry linkistä:"
+
+#: app.py:283
+msgid "Если вы не регистрировались, просто проигнорируйте это письмо."
+msgstr "Jos et rekisteröitynyt, voit jättää tämän viestin huomiotta."
+
+#: app.py:287
+msgid "На ваш email отправлено письмо для активации аккаунта."
+msgstr "Sähköposti tilin aktivointia varten on lähetetty sinulle."
+
+#: app.py:290
+msgid "Регистрация прошла, но письмо не отправлено. Обратитесь к администратору."
+msgstr "Rekisteröinti onnistui, mutta viestiä ei lähetetty. Ota yhteyttä ylläpitäjään."
+
+#: app.py:299
+msgid "Ссылка недействительна или уже использована."
+msgstr "Linkki on virheellinen tai sitä on jo käytetty."
+
+#: app.py:303
+msgid "Аккаунт уже активирован."
+msgstr "Tili on jo aktivoitu."
+
+#: app.py:306
+msgid "Аккаунт успешно активирован! Теперь вы можете войти."
+msgstr "Tili aktivoitiin onnistuneesti! Voit nyt kirjautua sisään."
+
+#: app.py:316
+msgid "Неверный логин или пароль!"
+msgstr "Virheellinen käyttäjätunnus tai salasana!"
+
+#: app.py:319
+msgid ""
+"Аккаунт не активирован! Проверьте email и перейдите по ссылке для "
+"активации."
+msgstr ""
+"Tiliä ei ole aktivoitu! Tarkista sähköpostisi ja aktivoi tili linkin "
+"avulla."
+
+#: app.py:323
+msgid "Вход выполнен!"
+msgstr "Kirjautuminen onnistui!"
+
+#: app.py:330
+msgid "Вы вышли из аккаунта."
+msgstr "Olet kirjautunut ulos tililtäsi."
+
+#: app.py:358
+msgid "Пользователь"
+msgstr "Käyttäjä"
+
+#: app.py:359
+msgid "Действие"
+msgstr "Toiminto"
+
+#: app.py:360
+msgid "Тип объекта"
+msgstr "Kohteen tyyppi"
+
+#: app.py:361
+msgid "ID объекта"
+msgstr "Kohteen ID"
+
+#: app.py:362
+msgid "Дата и время"
+msgstr "Päiväys ja aika"
+
+#: app.py:363
+msgid "Детали"
+msgstr "Tiedot"
+
+#: app.py:398
+msgid "Введите название товара"
+msgstr "Anna tuotteen nimi"
+
+#: app.py:404 app.py:452
+msgid "Некорректное число! Введите, например, 10 или 10.5"
+msgstr "Virheellinen numero! Anna esimerkiksi 10 tai 10.5"
+
+#: app.py:419
+msgid "Добавлен товар: "
+msgstr "Lisätty tuote: "
+
+#: app.py:420
+#, python-format
+msgid "Товар \"%(name)s\" добавлен!"
+msgstr "Tuote \"%(name)s\" lisätty!"
+
+#: app.py:431 app.py:504
+msgid "Товар не найден!"
+msgstr "Tuotetta ei löydy!"
+
+#: app.py:465
+msgid "Обновлён товар: "
+msgstr "Päivitetty tuote: "
+
+#: app.py:466
+#, python-format
+msgid "Товар \"%(name)s\" обновлён!"
+msgstr "Tuote \"%(name)s\" päivitetty!"
+
+#: app.py:476
+msgid "Удалён товар: "
+msgstr "Poistettu tuote: "
+
+#: app.py:477
+msgid "Товар удалён!"
+msgstr "Tuote poistettu!"
+
+#: app.py:487
+msgid "Введите название категории."
+msgstr "Anna kategorian nimi."
+
+#: app.py:490
+msgid "Такая категория уже есть."
+msgstr "Tällainen kategoria on jo olemassa."
+
+#: app.py:494
+msgid "Добавлена категория: "
+msgstr "Lisätty kategoria: "
+
+#: app.py:495
+#, python-format
+msgid "Категория \"%(name)s\" создана!"
+msgstr "Kategoria \"%(name)s\" luotu!"
+
+#: app.py:526
+msgid "Название"
+msgstr "Nimi"
+
+#: app.py:527
+msgid "Описание"
+msgstr "Kuvaus"
+
+#: app.py:528
+msgid "Количество"
+msgstr "Määrä"
+
+#: app.py:529
+msgid "Ед. изм."
+msgstr "Yksikkö"
+
+#: app.py:530
+msgid "Размер"
+msgstr "Koko"
+
+#: app.py:531
+msgid "Цена (€)"
+msgstr "Hinta (€)"
+
+#: app.py:532
+msgid "Картинка"
+msgstr "Kuva"
+
+#: templates/base.html:5 templates/base.html:15
+msgid "Склад Artkivi"
+msgstr "Artkivi-varasto"
+
+#: templates/base.html:44
+msgid "Журнал действий"
+msgstr "Toimintaloki"
+
+#: templates/base.html:46
+msgid "Выйти"
+msgstr "Kirjaudu ulos"
+
+#: templates/base.html:48
+msgid "Вход"
+msgstr "Kirjaudu sisään"
+
+#: templates/base.html:49
+msgid "Регистрация"
+msgstr "Rekisteröidy"
+
+# ------------------ CLICK STANDARD MESSAGES ----------------------
+
+#: venv/lib/python3.13/site-packages/click/_termui_impl.py:600
+#, python-brace-format
+msgid "{editor}: Editing failed"
+msgstr "{editor}: Muokkaus epäonnistui"
+
+#: venv/lib/python3.13/site-packages/click/_termui_impl.py:604
+#, python-brace-format
+msgid "{editor}: Editing failed: {e}"
+msgstr "{editor}: Muokkaus epäonnistui: {e}"
+
+#: venv/lib/python3.13/site-packages/click/core.py:1084
+#: venv/lib/python3.13/site-packages/click/core.py:1121
+#, python-brace-format
+msgid "{text} {deprecated_message}"
+msgstr "{text} {deprecated_message}"
+
+#: venv/lib/python3.13/site-packages/click/core.py:1140
+msgid "Options"
+msgstr "Asetukset"
+
+#: venv/lib/python3.13/site-packages/click/core.py:1202
+#, python-brace-format
+msgid "Got unexpected extra argument ({args})"
+msgid_plural "Got unexpected extra arguments ({args})"
+msgstr[0] "Odottamaton ylimääräinen argumentti ({args})"
+msgstr[1] "Odottamattomia ylimääräisiä argumentteja ({args})"
+
+#: venv/lib/python3.13/site-packages/click/core.py:1221
+#, python-brace-format
+msgid "DeprecationWarning: The command {name!r} is deprecated.{extra_message}"
+msgstr "Vanhentumisvaroitus: Komento {name!r} on vanhentunut.{extra_message}"
+
+#: venv/lib/python3.13/site-packages/click/core.py:1405
+msgid "Aborted!"
+msgstr "Keskeytetty!"
+
+#: venv/lib/python3.13/site-packages/click/core.py:1779
+msgid "Commands"
+msgstr "Komennot"
+
+#: venv/lib/python3.13/site-packages/click/core.py:1810
+msgid "Missing command."
+msgstr "Komento puuttuu."
+
+#: venv/lib/python3.13/site-packages/click/core.py:1888
+#, python-brace-format
+msgid "No such command {name!r}."
+msgstr "Komentoa {name!r} ei löydy."
+
+#: venv/lib/python3.13/site-packages/click/core.py:2303
+msgid "Value must be an iterable."
+msgstr "Arvon täytyy olla iteroitava."
+
+#: venv/lib/python3.13/site-packages/click/core.py:2324
+#, python-brace-format
+msgid "Takes {nargs} values but 1 was given."
+msgid_plural "Takes {nargs} values but {len} were given."
+msgstr[0] "Vaatii {nargs} arvoa, mutta annettu 1."
+msgstr[1] "Vaatii {nargs} arvoa, mutta annettu {len}."
+
+#: venv/lib/python3.13/site-packages/click/core.py:2404
+#, python-brace-format
+msgid ""
+"DeprecationWarning: The {param_type} {name!r} is "
+"deprecated.{extra_message}"
+msgstr "Vanhentumisvaroitus: {param_type} {name!r} on vanhentunut.{extra_message}"
+
+#: venv/lib/python3.13/site-packages/click/core.py:2807
+#, python-brace-format
+msgid "env var: {var}"
+msgstr "ympäristömuuttuja: {var}"
+
+#: venv/lib/python3.13/site-packages/click/core.py:2810
+#, python-brace-format
+msgid "default: {default}"
+msgstr "oletus: {default}"
+
+#: venv/lib/python3.13/site-packages/click/core.py:2814
+msgid "required"
+msgstr "vaaditaan"
+
+#: venv/lib/python3.13/site-packages/click/core.py:2870
+msgid "(dynamic)"
+msgstr "(dynaaminen)"
+
+#: venv/lib/python3.13/site-packages/click/decorators.py:465
+#, python-format
+msgid "%(prog)s, version %(version)s"
+msgstr "%(prog)s, versio %(version)s"
+
+#: venv/lib/python3.13/site-packages/click/decorators.py:522
+msgid "Show the version and exit."
+msgstr "Näytä versio ja poistu."
+
+#: venv/lib/python3.13/site-packages/click/decorators.py:548
+msgid "Show this message and exit."
+msgstr "Näytä tämä viesti ja poistu."
+
+#: venv/lib/python3.13/site-packages/click/exceptions.py:50
+#: venv/lib/python3.13/site-packages/click/exceptions.py:89
+#, python-brace-format
+msgid "Error: {message}"
+msgstr "Virhe: {message}"
+
+#: venv/lib/python3.13/site-packages/click/exceptions.py:81
+#, python-brace-format
+msgid "Try '{command} {option}' for help."
+msgstr "Kokeile '{command} {option}' saadaksesi apua."
+
+#: venv/lib/python3.13/site-packages/click/exceptions.py:130
+#, python-brace-format
+msgid "Invalid value: {message}"
+msgstr "Virheellinen arvo: {message}"
+
+#: venv/lib/python3.13/site-packages/click/exceptions.py:132
+#, python-brace-format
+msgid "Invalid value for {param_hint}: {message}"
+msgstr "Virheellinen arvo kohteelle {param_hint}: {message}"
+
+#: venv/lib/python3.13/site-packages/click/exceptions.py:190
+msgid "Missing argument"
+msgstr "Argumentti puuttuu"
+
+#: venv/lib/python3.13/site-packages/click/exceptions.py:192
+msgid "Missing option"
+msgstr "Valinta puuttuu"
+
+#: venv/lib/python3.13/site-packages/click/exceptions.py:194
+msgid "Missing parameter"
+msgstr "Parametri puuttuu"
+
+#: venv/lib/python3.13/site-packages/click/exceptions.py:196
+#, python-brace-format
+msgid "Missing {param_type}"
+msgstr "{param_type} puuttuu"
+
+#: venv/lib/python3.13/site-packages/click/exceptions.py:203
+#, python-brace-format
+msgid "Missing parameter: {param_name}"
+msgstr "Parametri puuttuu: {param_name}"
+
+#: venv/lib/python3.13/site-packages/click/exceptions.py:223
+#, python-brace-format
+msgid "No such option: {name}"
+msgstr "Valintaa ei löydy: {name}"
+
+#: venv/lib/python3.13/site-packages/click/exceptions.py:235
+#, python-brace-format
+msgid "Did you mean {possibility}?"
+msgid_plural "(Possible options: {possibilities})"
+msgstr[0] "Tarkoititko {possibility}?"
+msgstr[1] "(Mahdolliset vaihtoehdot: {possibilities})"
+
+#: venv/lib/python3.13/site-packages/click/exceptions.py:282
+msgid "unknown error"
+msgstr "tuntematon virhe"
+
+#: venv/lib/python3.13/site-packages/click/exceptions.py:289
+#, python-brace-format
+msgid "Could not open file {filename!r}: {message}"
+msgstr "Tiedostoa {filename!r} ei voitu avata: {message}"
+
+#: venv/lib/python3.13/site-packages/click/formatting.py:156
+msgid "Usage:"
+msgstr "Käyttö:"
+
+#: venv/lib/python3.13/site-packages/click/parser.py:200
+#, python-brace-format
+msgid "Argument {name!r} takes {nargs} values."
+msgstr "Argumentti {name!r} ottaa {nargs} arvoa."
+
+#: venv/lib/python3.13/site-packages/click/parser.py:383
+#, python-brace-format
+msgid "Option {name!r} does not take a value."
+msgstr "Valinta {name!r} ei ota arvoa."
+
+#: venv/lib/python3.13/site-packages/click/parser.py:444
+#, python-brace-format
+msgid "Option {name!r} requires an argument."
+msgid_plural "Option {name!r} requires {nargs} arguments."
+msgstr[0] "Valinta {name!r} vaatii argumentin."
+msgstr[1] "Valinta {name!r} vaatii {nargs} argumenttia."
+
+#: venv/lib/python3.13/site-packages/click/shell_completion.py:326
+msgid "Shell completion is not supported for Bash versions older than 4.4."
+msgstr "Shellin täydennystä ei tueta Bash-versioissa vanhemmissa kuin 4.4."
+
+#: venv/lib/python3.13/site-packages/click/shell_completion.py:333
+msgid "Couldn't detect Bash version, shell completion is not supported."
+msgstr "Bash-versiota ei voitu tunnistaa, shellin täydennystä ei tueta."
+
+#: venv/lib/python3.13/site-packages/click/termui.py:162
+msgid "Repeat for confirmation"
+msgstr "Toista vahvistaaksesi"
+
+#: venv/lib/python3.13/site-packages/click/termui.py:178
+msgid "Error: The value you entered was invalid."
+msgstr "Virhe: Syöttämäsi arvo oli virheellinen."
+
+#: venv/lib/python3.13/site-packages/click/termui.py:180
+#, python-brace-format
+msgid "Error: {e.message}"
+msgstr "Virhe: {e.message}"
+
+#: venv/lib/python3.13/site-packages/click/termui.py:191
+msgid "Error: The two entered values do not match."
+msgstr "Virhe: Syötetyt arvot eivät täsmää."
+
+#: venv/lib/python3.13/site-packages/click/termui.py:247
+msgid "Error: invalid input"
+msgstr "Virhe: virheellinen syöte"
+
+#: venv/lib/python3.13/site-packages/click/termui.py:866
+msgid "Press any key to continue..."
+msgstr "Paina mitä tahansa näppäintä jatkaaksesi..."
+
+#: venv/lib/python3.13/site-packages/click/types.py:332
+#, python-brace-format
+msgid ""
+"Choose from:\n"
+"\t{choices}"
+msgstr "Valitse:\n\t{choices}"
+
+#: venv/lib/python3.13/site-packages/click/types.py:369
+#, python-brace-format
+msgid "{value!r} is not {choice}."
+msgid_plural "{value!r} is not one of {choices}."
+msgstr[0] "{value!r} ei ole {choice}."
+msgstr[1] "{value!r} ei ole mikään näistä: {choices}."
+
+#: venv/lib/python3.13/site-packages/click/types.py:460
+#, python-brace-format
+msgid "{value!r} does not match the format {format}."
+msgid_plural "{value!r} does not match the formats {formats}."
+msgstr[0] "{value!r} ei vastaa muotoa {format}."
+msgstr[1] "{value!r} ei vastaa muotoja {formats}."
+
+#: venv/lib/python3.13/site-packages/click/types.py:482
+#, python-brace-format
+msgid "{value!r} is not a valid {number_type}."
+msgstr "{value!r} ei ole kelvollinen {number_type}."
+
+#: venv/lib/python3.13/site-packages/click/types.py:538
+#, python-brace-format
+msgid "{value} is not in the range {range}."
+msgstr "{value} ei ole alueella {range}."
+
+#: venv/lib/python3.13/site-packages/click/types.py:679
+#, python-brace-format
+msgid "{value!r} is not a valid boolean."
+msgstr "{value!r} ei ole kelvollinen totuusarvo."
+
+#: venv/lib/python3.13/site-packages/click/types.py:703
+#, python-brace-format
+msgid "{value!r} is not a valid UUID."
+msgstr "{value!r} ei ole kelvollinen UUID."
+
+#: venv/lib/python3.13/site-packages/click/types.py:893
+msgid "file"
+msgstr "tiedosto"
+
+#: venv/lib/python3.13/site-packages/click/types.py:895
+msgid "directory"
+msgstr "hakemisto"
+
+#: venv/lib/python3.13/site-packages/click/types.py:897
+msgid "path"
+msgstr "polku"
+
+#: venv/lib/python3.13/site-packages/click/types.py:944
+#, python-brace-format
+msgid "{name} {filename!r} does not exist."
+msgstr "{name} {filename!r} ei ole olemassa."
+
+#: venv/lib/python3.13/site-packages/click/types.py:953
+#, python-brace-format
+msgid "{name} {filename!r} is a file."
+msgstr "{name} {filename!r} on tiedosto."
+
+#: venv/lib/python3.13/site-packages/click/types.py:961
+#, python-brace-format
+msgid "{name} {filename!r} is a directory."
+msgstr "{name} {filename!r} on hakemisto."
+
+#: venv/lib/python3.13/site-packages/click/types.py:970
+#, python-brace-format
+msgid "{name} {filename!r} is not readable."
+msgstr "{name} {filename!r} ei ole luettavissa."
+
+#: venv/lib/python3.13/site-packages/click/types.py:979
+#, python-brace-format
+msgid "{name} {filename!r} is not writable."
+msgstr "{name} {filename!r} ei ole kirjoitettavissa."
+
+#: venv/lib/python3.13/site-packages/click/types.py:988
+#, python-brace-format
+msgid "{name} {filename!r} is not executable."
+msgstr "{name} {filename!r} ei ole suoritettavissa."
+
+#: venv/lib/python3.13/site-packages/click/types.py:1055
+#, python-brace-format
+msgid "{len_type} values are required, but {len_value} was given."
+msgid_plural "{len_type} values are required, but {len_value} were given."
+msgstr[0] "{len_type} arvoa vaaditaan, mutta annettu {len_value}."
+msgstr[1] "{len_type} arvoa vaaditaan, mutta annettu {len_value}."
