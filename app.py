@@ -1,4 +1,8 @@
 import os
+import uuid
+from dotenv import load_dotenv
+load_dotenv()
+
 from datetime import datetime
 from io import BytesIO
 
@@ -6,6 +10,7 @@ from flask import (
     Flask, render_template, request,
     redirect, url_for, flash, send_file, session, g
 )
+from flask_mail import Mail, Message
 from werkzeug.security import generate_password_hash, check_password_hash
 import pandas as pd
 from supabase import create_client
@@ -15,6 +20,16 @@ from functools import wraps
 USE_LOCAL_UPLOADS = os.getenv("USE_LOCAL_UPLOADS", "False").lower() in ("1", "true", "yes")
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "dev_secret")
+
+# --- Настройки Flask-Mail ---
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'artkivivarasto.noreply@gmail.com'
+app.config['MAIL_PASSWORD'] = 'zcpz tbdu zsau dqcw'
+app.config['MAIL_DEFAULT_SENDER'] = 'artkivivarasto.noreply@gmail.com'
+
+mail = Mail(app)
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
@@ -38,8 +53,15 @@ def get_user_by_id(user_id):
 
 def create_user(username, password, role="viewer"):
     password_hash = generate_password_hash(password)
-    resp = supabase.table("users").insert({"username": username, "password_hash": password_hash, "role": role}).execute()
-    return resp.data
+    activation_token = str(uuid.uuid4())
+    resp = supabase.table("users").insert({
+        "username": username,
+        "password_hash": password_hash,
+        "role": role,
+        "is_active": False,
+        "activation_token": activation_token
+    }).execute()
+    return resp.data, activation_token  # теперь возвращаем и token
 
 # =======================
 #   Декораторы для доступа
@@ -72,12 +94,12 @@ def load_logged_in_user():
     g.user = get_user_by_id(user_id) if user_id else None
 
 # =======================
-#   Аутентификация и регистрация
+#   Аутентификация и регистрация с email-активацией
 # =======================
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        username = request.form["username"].strip()
+        username = request.form["username"].strip()  # username — это email
         password = request.form["password"].strip()
         if not username or not password:
             flash("Заполните все поля!", "warning")
@@ -85,10 +107,47 @@ def register():
         if get_user_by_username(username):
             flash("Пользователь уже существует!", "warning")
             return redirect(url_for("register"))
-        create_user(username, password, role="viewer")
-        flash("Вы успешно зарегистрировались! Теперь войдите.", "success")
+        _, activation_token = create_user(username, password, role="viewer")
+        # --- Формируем ссылку активации универсально ---
+        try:
+            base_url = os.getenv("BASE_URL")
+            if not base_url:
+                base_url = request.url_root.strip("/")
+            activation_link = f"{base_url}/activate/{activation_token}"
+            msg = Message(
+                subject="Активация аккаунта в системе учёта товаров",
+                recipients=[username],
+                html=f"""
+                    <h3>Здравствуйте!</h3>
+                    <p>Для завершения регистрации нажмите на кнопку ниже:</p>
+                    <p><a href="{activation_link}" style="display:inline-block;padding:8px 14px;background:#4CAF50;color:white;text-decoration:none;border-radius:3px">Активировать аккаунт</a></p>
+                    <p>Или перейдите по ссылке:<br>{activation_link}</p>
+                    <hr>
+                    <small>Если вы не регистрировались, просто проигнорируйте это письмо.</small>
+                """
+            )
+            mail.send(msg)
+            flash("На ваш email отправлено письмо для активации аккаунта.", "success")
+        except Exception as e:
+            print("Ошибка при отправке письма:", e)
+            flash("Регистрация прошла, но письмо не отправлено. Обратитесь к администратору.", "warning")
         return redirect(url_for("login"))
     return render_template("register.html")
+
+@app.route("/activate/<token>")
+def activate_account(token):
+    resp = supabase.table("users").select("*").eq("activation_token", token).execute()
+    users = resp.data or []
+    if not users:
+        flash("Ссылка недействительна или уже использована.", "danger")
+        return redirect(url_for("login"))
+    user = users[0]
+    if user.get("is_active"):
+        flash("Аккаунт уже активирован.", "info")
+        return redirect(url_for("login"))
+    supabase.table("users").update({"is_active": True, "activation_token": None}).eq("id", user["id"]).execute()
+    flash("Аккаунт успешно активирован! Теперь вы можете войти.", "success")
+    return redirect(url_for("login"))
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -98,6 +157,9 @@ def login():
         user = get_user_by_username(username)
         if not user or not check_password_hash(user["password_hash"], password):
             flash("Неверный логин или пароль!", "danger")
+            return redirect(url_for("login"))
+        if not user.get("is_active"):
+            flash("Аккаунт не активирован! Проверьте email и перейдите по ссылке для активации.", "warning")
             return redirect(url_for("login"))
         session.clear()
         session["user_id"] = user["id"]
@@ -290,7 +352,7 @@ def view(product_id):
     return render_template("view.html", product=product, category=category)
 
 # =======================
-#   Экспорт в Excel (обновлено)
+#   Экспорт в Excel
 # =======================
 @app.route("/export_excel")
 @login_required
