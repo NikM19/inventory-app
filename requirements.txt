@@ -7,3 +7,4 @@ pandas==2.2.2
 supabase
 psycopg2-binary
 python-dotenv
+flask-mail
