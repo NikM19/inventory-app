@@ -18,6 +18,9 @@ from functools import wraps
 import requests
 import mimetypes
 
+# --- Flask-Babel ---
+from flask_babel import Babel, gettext as _, get_locale
+
 # --- Email супер-админа ---
 SUPERADMIN_EMAIL = "musatovnikita13@gmail.com"
 
@@ -40,6 +43,34 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+# --- Flask-Babel config ---
+LANGUAGES = {
+    'fi': 'Suomi',
+    'en': 'English',
+    'ru': 'Русский'
+}
+app.config['BABEL_DEFAULT_LOCALE'] = 'fi'
+app.config['BABEL_TRANSLATION_DIRECTORIES'] = 'translations'
+
+babel = Babel(app)
+
+@babel.localeselector
+def get_locale():
+    lang = session.get('lang')
+    if lang and lang in LANGUAGES:
+        return lang
+    return request.accept_languages.best_match(LANGUAGES.keys())
+
+@app.context_processor
+def inject_languages():
+    return dict(LANGUAGES=LANGUAGES, get_locale=get_locale)
+
+@app.route('/set_language/<lang>')
+def set_language(lang):
+    if lang in LANGUAGES:
+        session['lang'] = lang
+    return redirect(request.referrer or url_for('index'))
+
 # =======================
 #   Логирование действий
 # =======================
@@ -59,7 +90,7 @@ def log_action(user_id, action, object_type, object_id, details=""):
 # =======================
 def upload_to_supabase_storage(file, filename):
     SUPABASE_PROJECT_ID = SUPABASE_URL.split("//")[-1].split(".")[0]
-    bucket = "upload"   # <= Везде используем существующий бакет!
+    bucket = "upload"
     storage_url = f"https://{SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object"
     file.seek(0)
     mime_type = mimetypes.guess_type(filename)[0] or "application/octet-stream"
@@ -122,7 +153,7 @@ def editor_required(view_func):
     @wraps(view_func)
     def wrapped_view(*args, **kwargs):
         if g.user is None or g.user.get("role") != "editor":
-            flash("Требуются права редактора.", "danger")
+            flash(_("Требуются права редактора."), "danger")
             return redirect(url_for("index"))
         return view_func(*args, **kwargs)
     return wrapped_view
@@ -184,31 +215,25 @@ def index():
     # --- Фильтрация по всем полям ---
     filtered = []
     for p in products:
-        # Название
         if search and search not in p.get('name', '').lower():
             continue
-        # Категория
         if category_id:
             if not p.get('category_id') or str(p.get('category_id')) != str(category_id):
                 continue
-        # Размер
         if size and size not in str(p.get('size', '')).lower():
             continue
-        # Цена (меньше или равно)
         try:
             if price:
                 if p.get('price') is None or float(p.get('price')) > float(price):
                     continue
         except Exception:
             pass
-        # Количество (больше или равно)
         try:
             if quantity:
                 if p.get('quantity') is None or float(p.get('quantity')) < float(quantity):
                     continue
         except Exception:
             pass
-        # Заполнить имя категории
         p["category_name"] = cat_dict.get(p["category_id"], "")
         filtered.append(p)
 
@@ -234,10 +259,10 @@ def register():
         username = request.form["username"].strip()
         password = request.form["password"].strip()
         if not username or not password:
-            flash("Заполните все поля!", "warning")
+            flash(_("Заполните все поля!"), "warning")
             return redirect(url_for("register"))
         if get_user_by_username(username):
-            flash("Пользователь уже существует!", "warning")
+            flash(_("Пользователь уже существует!"), "warning")
             return redirect(url_for("register"))
         _, activation_token = create_user(username, password, role="viewer")
         try:
@@ -246,22 +271,22 @@ def register():
                 base_url = request.url_root.strip("/")
             activation_link = f"{base_url}/activate/{activation_token}"
             msg = Message(
-                subject="Активация аккаунта в системе учёта товаров",
+                subject=_("Активация аккаунта в системе учёта товаров"),
                 recipients=[username],
                 html=f"""
-                    <h3>Здравствуйте!</h3>
-                    <p>Для завершения регистрации нажмите на кнопку ниже:</p>
-                    <p><a href="{activation_link}" style="display:inline-block;padding:8px 14px;background:#4CAF50;color:white;text-decoration:none;border-radius:3px">Активировать аккаунт</a></p>
-                    <p>Или перейдите по ссылке:<br>{activation_link}</p>
+                    <h3>{_('Здравствуйте!')}</h3>
+                    <p>{_('Для завершения регистрации нажмите на кнопку ниже:')}</p>
+                    <p><a href="{activation_link}" style="display:inline-block;padding:8px 14px;background:#4CAF50;color:white;text-decoration:none;border-radius:3px">{_('Активировать аккаунт')}</a></p>
+                    <p>{_('Или перейдите по ссылке:')}<br>{activation_link}</p>
                     <hr>
-                    <small>Если вы не регистрировались, просто проигнорируйте это письмо.</small>
+                    <small>{_('Если вы не регистрировались, просто проигнорируйте это письмо.')}</small>
                 """
             )
             mail.send(msg)
-            flash("На ваш email отправлено письмо для активации аккаунта.", "success")
+            flash(_("На ваш email отправлено письмо для активации аккаунта."), "success")
         except Exception as e:
             print("Ошибка при отправке письма:", e)
-            flash("Регистрация прошла, но письмо не отправлено. Обратитесь к администратору.", "warning")
+            flash(_("Регистрация прошла, но письмо не отправлено. Обратитесь к администратору."), "warning")
         return redirect(url_for("login"))
     return render_template("register.html")
 
@@ -270,14 +295,14 @@ def activate_account(token):
     resp = supabase.table("users").select("*").eq("activation_token", token).execute()
     users = resp.data or []
     if not users:
-        flash("Ссылка недействительна или уже использована.", "danger")
+        flash(_("Ссылка недействительна или уже использована."), "danger")
         return redirect(url_for("login"))
     user = users[0]
     if user.get("is_active"):
-        flash("Аккаунт уже активирован.", "info")
+        flash(_("Аккаунт уже активирован."), "info")
         return redirect(url_for("login"))
     supabase.table("users").update({"is_active": True, "activation_token": None}).eq("id", user["id"]).execute()
-    flash("Аккаунт успешно активирован! Теперь вы можете войти.", "success")
+    flash(_("Аккаунт успешно активирован! Теперь вы можете войти."), "success")
     return redirect(url_for("login"))
 
 @app.route("/login", methods=["GET", "POST"])
@@ -287,21 +312,21 @@ def login():
         password = request.form["password"].strip()
         user = get_user_by_username(username)
         if not user or not check_password_hash(user["password_hash"], password):
-            flash("Неверный логин или пароль!", "danger")
+            flash(_("Неверный логин или пароль!"), "danger")
             return redirect(url_for("login"))
         if not user.get("is_active"):
-            flash("Аккаунт не активирован! Проверьте email и перейдите по ссылке для активации.", "warning")
+            flash(_("Аккаунт не активирован! Проверьте email и перейдите по ссылке для активации."), "warning")
             return redirect(url_for("login"))
         session.clear()
         session["user_id"] = user["id"]
-        flash("Вход выполнен!", "success")
+        flash(_("Вход выполнен!"), "success")
         return redirect(url_for("index"))
     return render_template("login.html")
 
 @app.route("/logout")
 def logout():
     session.clear()
-    flash("Вы вышли из аккаунта.", "success")
+    flash(_("Вы вышли из аккаунта."), "success")
     return redirect(url_for("login"))
 
 @app.route("/logs")
@@ -329,12 +354,12 @@ def export_logs():
     filtered_logs = []
     for l in logs:
         filtered_logs.append({
-            "Пользователь": l.get("user_id"),
-            "Действие": l.get("action"),
-            "Тип объекта": l.get("object_type"),
-            "ID объекта": l.get("object_id"),
-            "Дата и время": l.get("timestamp"),
-            "Детали": l.get("details"),
+            _("Пользователь"): l.get("user_id"),
+            _("Действие"): l.get("action"),
+            _("Тип объекта"): l.get("object_type"),
+            _("ID объекта"): l.get("object_id"),
+            _("Дата и время"): l.get("timestamp"),
+            _("Детали"): l.get("details"),
         })
     df = pd.DataFrame(filtered_logs)
     output = BytesIO()
@@ -369,13 +394,13 @@ def create():
                 image_url = upload_to_supabase_storage(image, image.filename)
 
         if not name:
-            flash("Введите название товара", "warning")
+            flash(_("Введите название товара"), "warning")
             return redirect(url_for("create"))
         try:
             quantity = float(quantity)
             price = float(price)
         except ValueError:
-            flash("Некорректное число! Введите, например, 10 или 10.5", "warning")
+            flash(_("Некорректное число! Введите, например, 10 или 10.5"), "warning")
             return redirect(url_for("create"))
         prod = {
             "name": name,
@@ -390,8 +415,8 @@ def create():
         }
         result = supabase.table("products").insert(prod).execute()
         product_id = result.data[0]["id"] if result.data and "id" in result.data[0] else None
-        log_action(g.user["id"], "create", "product", product_id, f'Добавлен товар: {name}')
-        flash(f'Товар "{name}" добавлен!', "success")
+        log_action(g.user["id"], "create", "product", product_id, _('Добавлен товар: ') + name)
+        flash(_('Товар "%(name)s" добавлен!', name=name), "success")
         return redirect(url_for("index"))
     return render_template("create.html", categories=categories)
 
@@ -402,7 +427,7 @@ def edit(product_id):
     product = get_product_by_id(product_id)
     categories = get_categories()
     if not product:
-        flash("Товар не найден!", "danger")
+        flash(_("Товар не найден!"), "danger")
         return redirect(url_for("index"))
     if request.method == "POST":
         name        = request.form.get("name", product["name"]).strip()
@@ -423,7 +448,7 @@ def edit(product_id):
             quantity = float(quantity)
             price = float(price)
         except ValueError:
-            flash("Некорректное число! Введите, например, 10 или 10.5", "warning")
+            flash(_("Некорректное число! Введите, например, 10 или 10.5"), "warning")
             return redirect(url_for("edit", product_id=product_id))
         updated = {
             "name": name,
@@ -436,8 +461,8 @@ def edit(product_id):
             "image_url": image_url,
         }
         supabase.table("products").update(updated).eq("id", product_id).execute()
-        log_action(g.user["id"], "edit", "product", product_id, f'Обновлён товар: {name}')
-        flash(f'Товар "{name}" обновлён!', "success")
+        log_action(g.user["id"], "edit", "product", product_id, _('Обновлён товар: ') + name)
+        flash(_('Товар "%(name)s" обновлён!', name=name), "success")
         return redirect(url_for("index"))
     return render_template("edit.html", product=product, categories=categories)
 
@@ -447,8 +472,8 @@ def edit(product_id):
 def delete(product_id):
     product = get_product_by_id(product_id)
     supabase.table("products").delete().eq("id", product_id).execute()
-    log_action(g.user["id"], "delete", "product", product_id, f'Удалён товар: {product["name"] if product else product_id}')
-    flash("Товар удалён!", "success")
+    log_action(g.user["id"], "delete", "product", product_id, _('Удалён товар: ') + (product["name"] if product else str(product_id)))
+    flash(_("Товар удалён!"), "success")
     return redirect(url_for("index"))
 
 @app.route("/add_category", methods=["GET", "POST"])
@@ -458,15 +483,15 @@ def add_category():
     if request.method == "POST":
         name = request.form.get("name", "").strip()
         if not name:
-            flash("Введите название категории.", "warning")
+            flash(_("Введите название категории."), "warning")
             return redirect(url_for("add_category"))
         if any(c["name"] == name for c in get_categories()):
-            flash("Такая категория уже есть.", "warning")
+            flash(_("Такая категория уже есть."), "warning")
             return redirect(url_for("add_category"))
         result = supabase.table("categories").insert({"name": name}).execute()
         cat_id = result.data[0]["id"] if result.data and "id" in result.data[0] else None
-        log_action(g.user["id"], "create", "category", cat_id, f'Добавлена категория: {name}')
-        flash(f'Категория "{name}" создана!', "success")
+        log_action(g.user["id"], "create", "category", cat_id, _('Добавлена категория: ') + name)
+        flash(_('Категория "%(name)s" создана!', name=name), "success")
         return redirect(url_for("index"))
     return render_template("add_category.html")
 
@@ -475,7 +500,7 @@ def add_category():
 def view(product_id):
     product = get_product_by_id(product_id)
     if not product:
-        flash("Товар не найден!", "danger")
+        flash(_("Товар не найден!"), "danger")
         return redirect(url_for("index"))
     category = get_category_by_id(product.get("category_id"))
     created_at_str = product.get("created_at")
@@ -497,13 +522,13 @@ def export_excel():
     filtered_products = []
     for p in products:
         filtered_products.append({
-            "Название": p.get("name"),
-            "Описание": p.get("description"),
-            "Количество": p.get("quantity"),
-            "Ед. изм.": p.get("unit"),
-            "Размер": p.get("size"),
-            "Цена (€)": p.get("price"),
-            "Картинка": p.get("image_url"),
+            _("Название"): p.get("name"),
+            _("Описание"): p.get("description"),
+            _("Количество"): p.get("quantity"),
+            _("Ед. изм."): p.get("unit"),
+            _("Размер"): p.get("size"),
+            _("Цена (€)"): p.get("price"),
+            _("Картинка"): p.get("image_url"),
         })
     df = pd.DataFrame(filtered_products)
     output = BytesIO()
