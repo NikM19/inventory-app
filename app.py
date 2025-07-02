@@ -59,7 +59,7 @@ def log_action(user_id, action, object_type, object_id, details=""):
 # =======================
 def upload_to_supabase_storage(file, filename):
     SUPABASE_PROJECT_ID = SUPABASE_URL.split("//")[-1].split(".")[0]
-    bucket = "products"
+    bucket = "upload"   # <= Везде используем существующий бакет!
     storage_url = f"https://{SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object"
     file.seek(0)
     mime_type = mimetypes.guess_type(filename)[0] or "application/octet-stream"
