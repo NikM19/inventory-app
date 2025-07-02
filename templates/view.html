@@ -38,12 +38,14 @@
           </tr>
         </tbody>
       </table>
+      {% if g.user.role == 'editor' %}
       <div class="mt-4 d-flex gap-2">
         <a href="{{ url_for('edit', product_id=product.id) }}" class="btn btn-warning">✏️ Редактировать</a>
         <form action="{{ url_for('delete', product_id=product.id) }}" method="POST" onsubmit="return confirm('Удалить товар?')">
           <button type="submit" class="btn btn-danger">🗑️ Удалить</button>
         </form>
       </div>
+      {% endif %}
     </div>
   </div>
 </div>
