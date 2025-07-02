@@ -15,6 +15,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import pandas as pd
 from supabase import create_client
 from functools import wraps
+import requests
+import mimetypes
 
 # --- Email супер-админа ---
 SUPERADMIN_EMAIL = "musatovnikita13@gmail.com"
@@ -53,6 +55,32 @@ def log_action(user_id, action, object_type, object_id, details=""):
     supabase.table("logs").insert(log_data).execute()
 
 # =======================
+#   Функция загрузки файла в Supabase Storage
+# =======================
+def upload_to_supabase_storage(file, filename):
+    SUPABASE_PROJECT_ID = SUPABASE_URL.split("//")[-1].split(".")[0]
+    bucket = "products"
+    storage_url = f"https://{SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object"
+    file.seek(0)
+    mime_type = mimetypes.guess_type(filename)[0] or "application/octet-stream"
+    headers = {
+        "Authorization": f"Bearer {SUPABASE_KEY}",
+        "Content-Type": mime_type
+    }
+    storage_path = f"{uuid.uuid4()}_{filename}"
+    resp = requests.post(
+        f"{storage_url}/{bucket}/{storage_path}",
+        data=file.read(),
+        headers=headers
+    )
+    if resp.status_code in (200, 201):
+        public_url = f"https://{SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/public/{bucket}/{storage_path}"
+        return public_url
+    else:
+        print("Ошибка загрузки в Supabase Storage:", resp.text)
+        return None
+
+# =======================
 #   Вспомогательные функции для пользователей
 # =======================
 def get_user_by_username(username):
@@ -77,7 +105,7 @@ def create_user(username, password, role="viewer"):
         "is_active": False,
         "activation_token": activation_token
     }).execute()
-    return resp.data, activation_token  # теперь возвращаем и token
+    return resp.data, activation_token
 
 # =======================
 #   Декораторы для доступа
@@ -103,7 +131,7 @@ def superadmin_required(view_func):
     @wraps(view_func)
     def wrapped_view(*args, **kwargs):
         if not g.user or g.user.get("username") != SUPERADMIN_EMAIL:
-            abort(403)  # 403 Forbidden
+            abort(403)
         return view_func(*args, **kwargs)
     return wrapped_view
 
@@ -121,7 +149,7 @@ def load_logged_in_user():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        username = request.form["username"].strip()  # username — это email
+        username = request.form["username"].strip()
         password = request.form["password"].strip()
         if not username or not password:
             flash("Заполните все поля!", "warning")
@@ -130,7 +158,6 @@ def register():
             flash("Пользователь уже существует!", "warning")
             return redirect(url_for("register"))
         _, activation_token = create_user(username, password, role="viewer")
-        # --- Формируем ссылку активации универсально ---
         try:
             base_url = os.getenv("BASE_URL")
             if not base_url:
@@ -204,7 +231,6 @@ def logout():
 def logs():
     resp = supabase.table("logs").select("*").order("timestamp", desc=True).limit(200).execute()
     logs = resp.data or []
-    # Можно подгружать и usernames
     user_ids = {l["user_id"] for l in logs if l.get("user_id")}
     users_dict = {}
     if user_ids:
@@ -287,7 +313,7 @@ def index():
     )
 
 # =======================
-#   Добавление товара
+#   Добавление товара (Supabase Storage)
 # =======================
 @app.route("/create", methods=["GET", "POST"])
 @login_required
@@ -302,6 +328,13 @@ def create():
         size        = request.form.get("size", "").strip()
         price       = request.form.get("price", "").strip()
         category_id = request.form.get("category_id") or None
+        image_url   = None
+
+        if "image" in request.files:
+            image = request.files["image"]
+            if image and image.filename:
+                image_url = upload_to_supabase_storage(image, image.filename)
+
         if not name:
             flash("Введите название товара", "warning")
             return redirect(url_for("create"))
@@ -309,7 +342,7 @@ def create():
             quantity = float(quantity)
             price = float(price)
         except ValueError:
-            flash("Некорректное число!", "warning")
+            flash("Некорректное число! Введите, например, 10 или 10.5", "warning")
             return redirect(url_for("create"))
         prod = {
             "name": name,
@@ -319,10 +352,10 @@ def create():
             "size": size,
             "price": price,
             "category_id": int(category_id) if category_id else None,
-            "created_at": datetime.utcnow().isoformat()
+            "created_at": datetime.utcnow().isoformat(),
+            "image_url": image_url,
         }
         result = supabase.table("products").insert(prod).execute()
-        # --- Логируем действие ---
         product_id = result.data[0]["id"] if result.data and "id" in result.data[0] else None
         log_action(g.user["id"], "create", "product", product_id, f'Добавлен товар: {name}')
         flash(f'Товар "{name}" добавлен!', "success")
@@ -330,7 +363,7 @@ def create():
     return render_template("create.html", categories=categories)
 
 # =======================
-#   Редактирование товара
+#   Редактирование товара (Supabase Storage)
 # =======================
 @app.route("/edit/<int:product_id>", methods=["GET", "POST"])
 @login_required
@@ -349,11 +382,18 @@ def edit(product_id):
         size        = request.form.get("size", product.get("size", ""))
         price       = request.form.get("price", str(product.get("price", "")))
         category_id = request.form.get("category_id") or None
+
+        image_url = product.get("image_url")
+        if "image" in request.files:
+            image = request.files["image"]
+            if image and image.filename:
+                image_url = upload_to_supabase_storage(image, image.filename)
+
         try:
             quantity = float(quantity)
             price = float(price)
         except ValueError:
-            flash("Некорректное число!", "warning")
+            flash("Некорректное число! Введите, например, 10 или 10.5", "warning")
             return redirect(url_for("edit", product_id=product_id))
         updated = {
             "name": name,
@@ -362,10 +402,10 @@ def edit(product_id):
             "unit": unit,
             "size": size,
             "price": price,
-            "category_id": int(category_id) if category_id else None
+            "category_id": int(category_id) if category_id else None,
+            "image_url": image_url,
         }
         supabase.table("products").update(updated).eq("id", product_id).execute()
-        # --- Логируем действие ---
         log_action(g.user["id"], "edit", "product", product_id, f'Обновлён товар: {name}')
         flash(f'Товар "{name}" обновлён!', "success")
         return redirect(url_for("index"))
@@ -380,7 +420,6 @@ def edit(product_id):
 def delete(product_id):
     product = get_product_by_id(product_id)
     supabase.table("products").delete().eq("id", product_id).execute()
-    # --- Логируем действие ---
     log_action(g.user["id"], "delete", "product", product_id, f'Удалён товар: {product["name"] if product else product_id}')
     flash("Товар удалён!", "success")
     return redirect(url_for("index"))
@@ -401,7 +440,6 @@ def add_category():
             flash("Такая категория уже есть.", "warning")
             return redirect(url_for("add_category"))
         result = supabase.table("categories").insert({"name": name}).execute()
-        # --- Логируем действие ---
         cat_id = result.data[0]["id"] if result.data and "id" in result.data[0] else None
         log_action(g.user["id"], "create", "category", cat_id, f'Добавлена категория: {name}')
         flash(f'Категория "{name}" создана!', "success")
@@ -419,7 +457,6 @@ def view(product_id):
         flash("Товар не найден!", "danger")
         return redirect(url_for("index"))
     category = get_category_by_id(product.get("category_id"))
-    # Форматирование created_at для шаблона
     created_at_str = product.get("created_at")
     if isinstance(created_at_str, str):
         try:
@@ -448,6 +485,7 @@ def export_excel():
             "Ед. изм.": p.get("unit"),
             "Размер": p.get("size"),
             "Цена (€)": p.get("price"),
+            "Картинка": p.get("image_url"),
         })
     df = pd.DataFrame(filtered_products)
     output = BytesIO()

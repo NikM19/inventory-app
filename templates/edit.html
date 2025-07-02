@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <h3>Редактировать товар</h3>
-<form method="post">
+<form method="post" enctype="multipart/form-data">
   <div class="mb-3">
     <label class="form-label">Название</label>
     <input type="text" name="name" class="form-control" value="{{ product.name }}" required>
@@ -34,6 +34,18 @@
   <div class="mb-3">
     <label class="form-label">Описание</label>
     <textarea name="description" class="form-control">{{ product.description }}</textarea>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Текущее изображение:</label><br>
+    {% if product.image_url %}
+      <img src="{{ product.image_url }}" alt="Product image" style="max-height:120px; max-width:200px;"><br>
+    {% else %}
+      <span class="text-muted">Нет картинки</span><br>
+    {% endif %}
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Загрузить новую картинку</label>
+    <input type="file" name="image" class="form-control" accept="image/*">
   </div>
   <button type="submit" class="btn btn-success">Сохранить</button>
   <a href="{{ url_for('index') }}" class="btn btn-secondary">Отмена</a>
