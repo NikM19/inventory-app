@@ -23,6 +23,9 @@
             (admin)
           {% endif %}
         </span>
+        {% if g.user.username == 'musatovnikita13@gmail.com' %}
+          <a class="btn btn-warning me-2" href="{{ url_for('logs') }}">Журнал действий</a>
+        {% endif %}
         <a class="btn btn-logout" href="{{ url_for('logout') }}">Выйти</a>
       {% else %}
         <a class="btn btn-outline-light btn-sm me-2" href="{{ url_for('login') }}">Вход</a>

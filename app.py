@@ -8,13 +8,16 @@ from io import BytesIO
 
 from flask import (
     Flask, render_template, request,
-    redirect, url_for, flash, send_file, session, g
+    redirect, url_for, flash, send_file, session, g, abort
 )
 from flask_mail import Mail, Message
 from werkzeug.security import generate_password_hash, check_password_hash
 import pandas as pd
 from supabase import create_client
 from functools import wraps
+
+# --- Email супер-админа ---
+SUPERADMIN_EMAIL = "musatovnikita13@gmail.com"
 
 # --- Настройки Supabase и Flask ---
 USE_LOCAL_UPLOADS = os.getenv("USE_LOCAL_UPLOADS", "False").lower() in ("1", "true", "yes")
@@ -36,9 +39,22 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # =======================
+#   Логирование действий
+# =======================
+def log_action(user_id, action, object_type, object_id, details=""):
+    log_data = {
+        "user_id": str(user_id) if user_id else None,
+        "action": action,
+        "object_type": object_type,
+        "object_id": str(object_id) if object_id else None,
+        "timestamp": datetime.utcnow().isoformat(),
+        "details": details
+    }
+    supabase.table("logs").insert(log_data).execute()
+
+# =======================
 #   Вспомогательные функции для пользователей
 # =======================
-
 def get_user_by_username(username):
     resp = supabase.table("users").select("*").eq("username", username).execute()
     users = resp.data or []
@@ -66,7 +82,6 @@ def create_user(username, password, role="viewer"):
 # =======================
 #   Декораторы для доступа
 # =======================
-
 def login_required(view_func):
     @wraps(view_func)
     def wrapped_view(*args, **kwargs):
@@ -84,10 +99,17 @@ def editor_required(view_func):
         return view_func(*args, **kwargs)
     return wrapped_view
 
+def superadmin_required(view_func):
+    @wraps(view_func)
+    def wrapped_view(*args, **kwargs):
+        if not g.user or g.user.get("username") != SUPERADMIN_EMAIL:
+            abort(403)  # 403 Forbidden
+        return view_func(*args, **kwargs)
+    return wrapped_view
+
 # =======================
 #   Flask hooks
 # =======================
-
 @app.before_request
 def load_logged_in_user():
     user_id = session.get("user_id")
@@ -174,9 +196,56 @@ def logout():
     return redirect(url_for("login"))
 
 # =======================
+#   Логи — только для супер-админа
+# =======================
+@app.route("/logs")
+@login_required
+@superadmin_required
+def logs():
+    resp = supabase.table("logs").select("*").order("timestamp", desc=True).limit(200).execute()
+    logs = resp.data or []
+    # Можно подгружать и usernames
+    user_ids = {l["user_id"] for l in logs if l.get("user_id")}
+    users_dict = {}
+    if user_ids:
+        user_resp = supabase.table("users").select("id,username").in_("id", list(user_ids)).execute()
+        for u in user_resp.data or []:
+            users_dict[str(u["id"])] = u["username"]
+    for l in logs:
+        l["username"] = users_dict.get(str(l.get("user_id")), "")
+    return render_template("logs.html", logs=logs)
+
+@app.route("/export_logs")
+@login_required
+@superadmin_required
+def export_logs():
+    resp = supabase.table("logs").select("*").order("timestamp", desc=True).limit(1000).execute()
+    logs = resp.data or []
+    filtered_logs = []
+    for l in logs:
+        filtered_logs.append({
+            "Пользователь": l.get("user_id"),
+            "Действие": l.get("action"),
+            "Тип объекта": l.get("object_type"),
+            "ID объекта": l.get("object_id"),
+            "Дата и время": l.get("timestamp"),
+            "Детали": l.get("details"),
+        })
+    df = pd.DataFrame(filtered_logs)
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine="openpyxl") as writer:
+        df.to_excel(writer, index=False, sheet_name="Logs")
+    output.seek(0)
+    return send_file(
+        output,
+        download_name="logs.xlsx",
+        as_attachment=True,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+# =======================
 #   Работа с товарами и категориями через Supabase
 # =======================
-
 def get_categories():
     resp = supabase.table("categories").select("*").execute()
     return resp.data if resp.data else []
@@ -252,7 +321,10 @@ def create():
             "category_id": int(category_id) if category_id else None,
             "created_at": datetime.utcnow().isoformat()
         }
-        supabase.table("products").insert(prod).execute()
+        result = supabase.table("products").insert(prod).execute()
+        # --- Логируем действие ---
+        product_id = result.data[0]["id"] if result.data and "id" in result.data[0] else None
+        log_action(g.user["id"], "create", "product", product_id, f'Добавлен товар: {name}')
         flash(f'Товар "{name}" добавлен!', "success")
         return redirect(url_for("index"))
     return render_template("create.html", categories=categories)
@@ -293,6 +365,8 @@ def edit(product_id):
             "category_id": int(category_id) if category_id else None
         }
         supabase.table("products").update(updated).eq("id", product_id).execute()
+        # --- Логируем действие ---
+        log_action(g.user["id"], "edit", "product", product_id, f'Обновлён товар: {name}')
         flash(f'Товар "{name}" обновлён!', "success")
         return redirect(url_for("index"))
     return render_template("edit.html", product=product, categories=categories)
@@ -304,7 +378,10 @@ def edit(product_id):
 @login_required
 @editor_required
 def delete(product_id):
+    product = get_product_by_id(product_id)
     supabase.table("products").delete().eq("id", product_id).execute()
+    # --- Логируем действие ---
+    log_action(g.user["id"], "delete", "product", product_id, f'Удалён товар: {product["name"] if product else product_id}')
     flash("Товар удалён!", "success")
     return redirect(url_for("index"))
 
@@ -323,7 +400,10 @@ def add_category():
         if any(c["name"] == name for c in get_categories()):
             flash("Такая категория уже есть.", "warning")
             return redirect(url_for("add_category"))
-        supabase.table("categories").insert({"name": name}).execute()
+        result = supabase.table("categories").insert({"name": name}).execute()
+        # --- Логируем действие ---
+        cat_id = result.data[0]["id"] if result.data and "id" in result.data[0] else None
+        log_action(g.user["id"], "create", "category", cat_id, f'Добавлена категория: {name}')
         flash(f'Категория "{name}" создана!', "success")
         return redirect(url_for("index"))
     return render_template("add_category.html")

@@ -1,0 +1,29 @@
+<!-- templates/logs.html -->
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Журнал действий</h2>
+    <table class="table table-bordered table-sm mt-3">
+        <thead>
+            <tr>
+                <th>Дата и время</th>
+                <th>Пользователь</th>
+                <th>Действие</th>
+                <th>Объект</th>
+                <th>Детали</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td>{{ log.timestamp|replace("T", " ")[:19] }}</td>
+                <td>{{ log.username }}</td>
+                <td>{{ log.action }}</td>
+                <td>{{ log.object_type }} #{{ log.object_id }}</td>
+                <td>{{ log.details }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
