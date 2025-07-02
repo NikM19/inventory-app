@@ -17,7 +17,14 @@
   </div>
   <div class="mb-3">
     <label class="form-label">Количество</label>
-    <input type="number" name="quantity" step="0.01" class="form-control" value="{{ product.quantity }}" required>
+    <input 
+      type="number" 
+      name="quantity" 
+      step="0.01" 
+      class="form-control" 
+      value="{{ product.quantity|replace(',', '.') }}" 
+      required
+    >
   </div>
   <div class="mb-3">
     <label class="form-label">Ед. измерения</label>
@@ -29,7 +36,13 @@
   </div>
   <div class="mb-3">
     <label class="form-label">Цена, €</label>
-    <input type="number" name="price" step="0.01" value="{{ product.price }}" class="form-control">
+    <input 
+      type="number" 
+      name="price" 
+      step="0.01" 
+      class="form-control" 
+      value="{{ product.price|replace(',', '.') }}"
+    >
   </div>
   <div class="mb-3">
     <label class="form-label">Описание</label>
