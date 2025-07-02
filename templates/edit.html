@@ -1,5 +1,8 @@
 {% extends 'base.html' %}
 {% block content %}
+<div class="mb-3">
+  <a href="{{ url_for('index') }}" class="btn btn-outline-dark">&larr; Назад</a>
+</div>
 <h3>Редактировать товар</h3>
 <form method="post" enctype="multipart/form-data">
   <div class="mb-3">
@@ -17,14 +20,7 @@
   </div>
   <div class="mb-3">
     <label class="form-label">Количество</label>
-    <input 
-      type="number" 
-      name="quantity" 
-      step="0.01" 
-      class="form-control" 
-      value="{{ product.quantity|replace(',', '.') }}" 
-      required
-    >
+    <input type="number" name="quantity" step="0.01" class="form-control" value="{{ product.quantity }}" required>
   </div>
   <div class="mb-3">
     <label class="form-label">Ед. измерения</label>
@@ -36,13 +32,7 @@
   </div>
   <div class="mb-3">
     <label class="form-label">Цена, €</label>
-    <input 
-      type="number" 
-      name="price" 
-      step="0.01" 
-      class="form-control" 
-      value="{{ product.price|replace(',', '.') }}"
-    >
+    <input type="number" name="price" step="0.01" value="{{ product.price }}" class="form-control">
   </div>
   <div class="mb-3">
     <label class="form-label">Описание</label>

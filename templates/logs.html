@@ -1,29 +1,29 @@
-<!-- templates/logs.html -->
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% block content %}
-<div class="container mt-4">
-    <h2>Журнал действий</h2>
-    <table class="table table-bordered table-sm mt-3">
-        <thead>
-            <tr>
-                <th>Дата и время</th>
-                <th>Пользователь</th>
-                <th>Действие</th>
-                <th>Объект</th>
-                <th>Детали</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for log in logs %}
-            <tr>
-                <td>{{ log.timestamp.replace("T", " ")[:19] if log.timestamp else "" }}</td>
-                <td>{{ log.username }}</td>
-                <td>{{ log.action }}</td>
-                <td>{{ log.object_type }} #{{ log.object_id }}</td>
-                <td>{{ log.details }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="mb-3">
+  <a href="{{ url_for('index') }}" class="btn btn-outline-dark">&larr; Назад</a>
 </div>
+<h2>Журнал действий</h2>
+<table class="table table-bordered align-middle table-hover mb-5">
+  <thead class="table-dark">
+    <tr>
+      <th>Дата и время</th>
+      <th>Пользователь</th>
+      <th>Действие</th>
+      <th>Объект</th>
+      <th>Детали</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for log in logs %}
+    <tr>
+      <td>{{ log.timestamp[:19].replace('T', ' ') }}</td>
+      <td>{{ log.username }}</td>
+      <td>{{ log.action }}</td>
+      <td>{{ log.object_type }}{% if log.object_id %} #{{ log.object_id }}{% endif %}</td>
+      <td>{{ log.details }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 {% endblock %}
