@@ -54,7 +54,7 @@ app.config['BABEL_TRANSLATION_DIRECTORIES'] = 'translations'
 
 babel = Babel(app)
 
-@babel.localeselector
+@babel.locale_selector
 def get_locale():
     lang = session.get('lang')
     if lang and lang in LANGUAGES:
