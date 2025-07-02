@@ -8,3 +8,4 @@ supabase
 psycopg2-binary
 python-dotenv
 requests
+Flask-Mail==0.9.1
