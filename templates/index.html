@@ -11,6 +11,36 @@
   {% endif %}
 </div>
 
+<!-- Фильтр поиска -->
+<form method="get" class="row g-2 mb-4">
+  <div class="col-md-3">
+    <input type="text" name="search" value="{{ request.args.get('search', '') }}" class="form-control" placeholder="Название...">
+  </div>
+  <div class="col-md-2">
+    <select name="category_id" class="form-select">
+      <option value="">Все категории</option>
+      {% for cat in categories %}
+        <option value="{{ cat.id }}" {% if request.args.get('category_id', '')|int == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2">
+    <input type="text" name="size" value="{{ request.args.get('size', '') }}" class="form-control" placeholder="Размер">
+  </div>
+  <div class="col-md-2">
+    <input type="number" step="0.01" name="price" value="{{ request.args.get('price', '') }}" class="form-control" placeholder="Цена ≤">
+  </div>
+  <div class="col-md-2">
+    <input type="number" step="0.01" name="quantity" value="{{ request.args.get('quantity', '') }}" class="form-control" placeholder="Кол-во ≥">
+  </div>
+  <div class="col-md-1">
+    <button type="submit" class="btn btn-outline-primary w-100">Поиск</button>
+  </div>
+  <div class="col-md-12 mt-2">
+    <a href="{{ url_for('index') }}" class="btn btn-link">Сбросить фильтр</a>
+  </div>
+</form>
+
 <table class="table table-bordered align-middle table-hover mb-5">
   <thead class="table-dark">
     <tr>
@@ -47,6 +77,9 @@
       </td>
     </tr>
     {% endfor %}
+    {% if not products %}
+      <tr><td colspan="6" class="text-center">Ничего не найдено</td></tr>
+    {% endif %}
   </tbody>
 </table>
 

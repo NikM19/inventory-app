@@ -144,8 +144,90 @@ def load_logged_in_user():
     g.user = get_user_by_id(user_id) if user_id else None
 
 # =======================
-#   Аутентификация и регистрация с email-активацией
+#   Работа с товарами и категориями через Supabase
 # =======================
+def get_categories():
+    resp = supabase.table("categories").select("*").execute()
+    return resp.data if resp.data else []
+
+def get_products():
+    resp = supabase.table("products").select("*").order("created_at", desc=True).execute()
+    return resp.data if resp.data else []
+
+def get_category_by_id(category_id):
+    if not category_id:
+        return None
+    resp = supabase.table("categories").select("*").eq("id", category_id).single().execute()
+    return resp.data
+
+def get_product_by_id(product_id):
+    resp = supabase.table("products").select("*").eq("id", product_id).single().execute()
+    return resp.data
+
+# =======================
+#   Главная страница с фильтрацией
+# =======================
+@app.route("/")
+@login_required
+def index():
+    products = get_products()
+    categories = get_categories()
+    cat_dict = {c["id"]: c["name"] for c in categories}
+
+    # --- Фильтры из request.args ---
+    search = request.args.get('search', '').strip().lower()
+    category_id = request.args.get('category_id', '')
+    size = request.args.get('size', '').strip().lower()
+    price = request.args.get('price', '').replace(',', '.').strip()
+    quantity = request.args.get('quantity', '').replace(',', '.').strip()
+
+    # --- Фильтрация по всем полям ---
+    filtered = []
+    for p in products:
+        # Название
+        if search and search not in p.get('name', '').lower():
+            continue
+        # Категория
+        if category_id:
+            if not p.get('category_id') or str(p.get('category_id')) != str(category_id):
+                continue
+        # Размер
+        if size and size not in str(p.get('size', '')).lower():
+            continue
+        # Цена (меньше или равно)
+        try:
+            if price:
+                if p.get('price') is None or float(p.get('price')) > float(price):
+                    continue
+        except Exception:
+            pass
+        # Количество (больше или равно)
+        try:
+            if quantity:
+                if p.get('quantity') is None or float(p.get('quantity')) < float(quantity):
+                    continue
+        except Exception:
+            pass
+        # Заполнить имя категории
+        p["category_name"] = cat_dict.get(p["category_id"], "")
+        filtered.append(p)
+
+    total_products = len(products)
+    total_categories = len(categories)
+    recent_products = products[:5]
+
+    return render_template("index.html",
+        products=filtered,
+        categories=categories,
+        total_products=total_products,
+        total_categories=total_categories,
+        recent_products=recent_products
+    )
+
+# =======================
+#   Остальные view-функции (без изменений)
+# =======================
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
@@ -222,9 +304,6 @@ def logout():
     flash("Вы вышли из аккаунта.", "success")
     return redirect(url_for("login"))
 
-# =======================
-#   Логи — только для супер-админа
-# =======================
 @app.route("/logs")
 @login_required
 @superadmin_required
@@ -269,52 +348,6 @@ def export_logs():
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
-# =======================
-#   Работа с товарами и категориями через Supabase
-# =======================
-def get_categories():
-    resp = supabase.table("categories").select("*").execute()
-    return resp.data if resp.data else []
-
-def get_products():
-    resp = supabase.table("products").select("*").order("created_at", desc=True).execute()
-    return resp.data if resp.data else []
-
-def get_category_by_id(category_id):
-    if not category_id:
-        return None
-    resp = supabase.table("categories").select("*").eq("id", category_id).single().execute()
-    return resp.data
-
-def get_product_by_id(product_id):
-    resp = supabase.table("products").select("*").eq("id", product_id).single().execute()
-    return resp.data
-
-# =======================
-#   Главная страница
-# =======================
-@app.route("/")
-@login_required
-def index():
-    products = get_products()
-    categories = get_categories()
-    cat_dict = {c["id"]: c["name"] for c in categories}
-    for p in products:
-        p["category_name"] = cat_dict.get(p["category_id"], "")
-    total_products = len(products)
-    total_categories = len(categories)
-    recent_products = products[:5]
-    return render_template("index.html",
-        products=products,
-        categories=categories,
-        total_products=total_products,
-        total_categories=total_categories,
-        recent_products=recent_products
-    )
-
-# =======================
-#   Добавление товара (Supabase Storage)
-# =======================
 @app.route("/create", methods=["GET", "POST"])
 @login_required
 @editor_required
@@ -362,9 +395,6 @@ def create():
         return redirect(url_for("index"))
     return render_template("create.html", categories=categories)
 
-# =======================
-#   Редактирование товара (Supabase Storage)
-# =======================
 @app.route("/edit/<int:product_id>", methods=["GET", "POST"])
 @login_required
 @editor_required
@@ -411,9 +441,6 @@ def edit(product_id):
         return redirect(url_for("index"))
     return render_template("edit.html", product=product, categories=categories)
 
-# =======================
-#   Удаление товара
-# =======================
 @app.route("/delete/<int:product_id>", methods=["POST"])
 @login_required
 @editor_required
@@ -424,9 +451,6 @@ def delete(product_id):
     flash("Товар удалён!", "success")
     return redirect(url_for("index"))
 
-# =======================
-#   Добавление категории
-# =======================
 @app.route("/add_category", methods=["GET", "POST"])
 @login_required
 @editor_required
@@ -446,9 +470,6 @@ def add_category():
         return redirect(url_for("index"))
     return render_template("add_category.html")
 
-# =======================
-#   Просмотр товара
-# =======================
 @app.route("/view/<int:product_id>")
 @login_required
 def view(product_id):
@@ -468,9 +489,6 @@ def view(product_id):
         product["created_at_fmt"] = ""
     return render_template("view.html", product=product, category=category)
 
-# =======================
-#   Экспорт в Excel
-# =======================
 @app.route("/export_excel")
 @login_required
 @editor_required
