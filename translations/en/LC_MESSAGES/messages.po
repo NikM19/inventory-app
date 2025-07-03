@@ -20,393 +20,391 @@ msgstr ""
 
 #: app.py:156
 msgid "Требуются права редактора."
-msgstr ""
+msgstr "Editor rights are required."
 
 #: app.py:262
 msgid "Заполните все поля!"
-msgstr ""
+msgstr "Fill in all fields!"
 
 #: app.py:265
 msgid "Пользователь уже существует!"
-msgstr ""
+msgstr "User already exists!"
 
 #: app.py:274
 msgid "Активация аккаунта в системе учёта товаров"
-msgstr ""
+msgstr "Account activation in the inventory system"
 
 #: app.py:277
 msgid "Здравствуйте!"
-msgstr ""
+msgstr "Hello!"
 
 #: app.py:278
 msgid "Для завершения регистрации нажмите на кнопку ниже:"
-msgstr ""
+msgstr "To complete registration, click the button below:"
 
 #: app.py:279
 msgid "Активировать аккаунт"
-msgstr ""
+msgstr "Activate account"
 
 #: app.py:280
 msgid "Или перейдите по ссылке:"
-msgstr ""
+msgstr "Or follow the link:"
 
 #: app.py:282
 msgid "Если вы не регистрировались, просто проигнорируйте это письмо."
-msgstr ""
+msgstr "If you did not register, just ignore this email."
 
 #: app.py:286
 msgid "На ваш email отправлено письмо для активации аккаунта."
-msgstr ""
+msgstr "An email to activate your account has been sent."
 
 #: app.py:289
 msgid "Регистрация прошла, но письмо не отправлено. Обратитесь к администратору."
-msgstr ""
+msgstr "Registration is complete, but the email was not sent. Please contact the administrator."
 
 #: app.py:298
 msgid "Ссылка недействительна или уже использована."
-msgstr ""
+msgstr "The link is invalid or already used."
 
 #: app.py:302
 msgid "Аккаунт уже активирован."
-msgstr ""
+msgstr "The account has already been activated."
 
 #: app.py:305
 msgid "Аккаунт успешно активирован! Теперь вы можете войти."
-msgstr ""
+msgstr "The account has been successfully activated! Now you can log in."
 
 #: app.py:315
 msgid "Неверный логин или пароль!"
-msgstr ""
+msgstr "Incorrect username or password!"
 
 #: app.py:318
-msgid ""
-"Аккаунт не активирован! Проверьте email и перейдите по ссылке для "
-"активации."
-msgstr ""
+msgid "Аккаунт не активирован! Проверьте email и перейдите по ссылке для активации."
+msgstr "The account is not activated! Check your email and click the activation link."
 
 #: app.py:322
 msgid "Вход выполнен!"
-msgstr ""
+msgstr "Login successful!"
 
 #: app.py:329
 msgid "Вы вышли из аккаунта."
-msgstr ""
+msgstr "You have logged out."
 
 #: app.py:357 templates/logs.html:11
 msgid "Пользователь"
-msgstr ""
+msgstr "User"
 
 #: app.py:358 templates/logs.html:12
 msgid "Действие"
-msgstr ""
+msgstr "Action"
 
 #: app.py:359
 msgid "Тип объекта"
-msgstr ""
+msgstr "Object type"
 
 #: app.py:360
 msgid "ID объекта"
-msgstr ""
+msgstr "Object ID"
 
 #: app.py:361 templates/logs.html:10
 msgid "Дата и время"
-msgstr ""
+msgstr "Date and time"
 
 #: app.py:362 templates/logs.html:14
 msgid "Детали"
-msgstr ""
+msgstr "Details"
 
 #: app.py:397
 msgid "Введите название товара"
-msgstr ""
+msgstr "Enter product name"
 
 #: app.py:403 app.py:451
 msgid "Некорректное число! Введите, например, 10 или 10.5"
-msgstr ""
+msgstr "Invalid number! For example, enter 10 or 10.5"
 
 #: app.py:418
 msgid "Добавлен товар: "
-msgstr ""
+msgstr "Product added: "
 
 #: app.py:419
 #, python-format
 msgid "Товар \"%(name)s\" добавлен!"
-msgstr ""
+msgstr "Product \"%(name)s\" has been added!"
 
 #: app.py:430 app.py:503
 msgid "Товар не найден!"
-msgstr ""
+msgstr "Product not found!"
 
 #: app.py:464
 msgid "Обновлён товар: "
-msgstr ""
+msgstr "Product updated: "
 
 #: app.py:465
 #, python-format
 msgid "Товар \"%(name)s\" обновлён!"
-msgstr ""
+msgstr "Product \"%(name)s\" has been updated!"
 
 #: app.py:475
 msgid "Удалён товар: "
-msgstr ""
+msgstr "Product deleted: "
 
 #: app.py:476
 msgid "Товар удалён!"
-msgstr ""
+msgstr "Product deleted!"
 
 #: app.py:486
 msgid "Введите название категории."
-msgstr ""
+msgstr "Enter category name."
 
 #: app.py:489
 msgid "Такая категория уже есть."
-msgstr ""
+msgstr "Such category already exists."
 
 #: app.py:493
 msgid "Добавлена категория: "
-msgstr ""
+msgstr "Category added: "
 
 #: app.py:494
 #, python-format
 msgid "Категория \"%(name)s\" создана!"
-msgstr ""
+msgstr "Category \"%(name)s\" has been created!"
 
 #: app.py:525 templates/create.html:6 templates/edit.html:9
 #: templates/index.html:47 templates/reports.html:20
 msgid "Название"
-msgstr ""
+msgstr "Name"
 
 #: app.py:526 templates/create.html:35 templates/edit.html:38
 #: templates/view.html:24
 msgid "Описание"
-msgstr ""
+msgstr "Description"
 
 #: app.py:527 templates/create.html:19 templates/edit.html:22
 #: templates/index.html:49
 msgid "Количество"
-msgstr ""
+msgstr "Quantity"
 
 #: app.py:528
 msgid "Ед. изм."
-msgstr ""
+msgstr "Unit"
 
 #: app.py:529 templates/create.html:27 templates/edit.html:30
 #: templates/index.html:28 templates/index.html:50 templates/reports.html:23
 msgid "Размер"
-msgstr ""
+msgstr "Size"
 
 #: app.py:530
 msgid "Цена (€)"
-msgstr ""
+msgstr "Price (€)"
 
 #: app.py:531
 msgid "Картинка"
-msgstr ""
+msgstr "Image"
 
 #: templates/add_category.html:2 templates/add_category.html:5
 #: templates/index.html:8
 msgid "Добавить категорию"
-msgstr ""
+msgstr "Add category"
 
 #: templates/add_category.html:8
 msgid "Название категории"
-msgstr ""
+msgstr "Category name"
 
 #: templates/add_category.html:12 templates/create.html:42
 #: templates/edit.html:53
 msgid "Сохранить"
-msgstr ""
+msgstr "Save"
 
 #: templates/add_category.html:13 templates/create.html:43
 #: templates/edit.html:54
 msgid "Отмена"
-msgstr ""
+msgstr "Cancel"
 
 #: templates/base.html:5 templates/base.html:15
 msgid "Склад Artkivi"
-msgstr ""
+msgstr "Artkivi warehouse"
 
 #: templates/base.html:38
 msgid "BOSS"
-msgstr ""
+msgstr "BOSS"
 
 #: templates/base.html:40
 msgid "admin"
-msgstr ""
+msgstr "admin"
 
 #: templates/base.html:44 templates/logs.html:6
 msgid "Журнал действий"
-msgstr ""
+msgstr "Action log"
 
 #: templates/base.html:46
 msgid "Выйти"
-msgstr ""
+msgstr "Logout"
 
 #: templates/base.html:48 templates/login.html:5
 msgid "Вход"
-msgstr ""
+msgstr "Login"
 
 #: templates/base.html:49 templates/login.html:18 templates/register.html:5
 msgid "Регистрация"
-msgstr ""
+msgstr "Register"
 
 #: templates/create.html:3 templates/index.html:7
 msgid "Добавить товар"
-msgstr ""
+msgstr "Add product"
 
 #: templates/create.html:10 templates/edit.html:13 templates/index.html:48
 #: templates/reports.html:21 templates/view.html:28
 msgid "Категория"
-msgstr ""
+msgstr "Category"
 
 #: templates/create.html:12 templates/edit.html:15
 msgid "Без категории"
-msgstr ""
+msgstr "No category"
 
 #: templates/create.html:23 templates/edit.html:26
 msgid "Ед. измерения"
-msgstr ""
+msgstr "Unit"
 
 #: templates/create.html:31 templates/edit.html:34 templates/index.html:51
 #: templates/reports.html:24
 msgid "Цена, €"
-msgstr ""
+msgstr "Price, €"
 
 #: templates/create.html:39
 msgid "Картинка товара"
-msgstr ""
+msgstr "Product image"
 
 #: templates/edit.html:4 templates/logs.html:4 templates/view.html:8
 msgid "Назад"
-msgstr ""
+msgstr "Back"
 
 #: templates/edit.html:6
 msgid "Редактировать товар"
-msgstr ""
+msgstr "Edit product"
 
 #: templates/edit.html:42
 msgid "Текущее изображение:"
-msgstr ""
+msgstr "Current image:"
 
 #: templates/edit.html:46
 msgid "Нет картинки"
-msgstr ""
+msgstr "No image"
 
 #: templates/edit.html:50
 msgid "Загрузить новую картинку"
-msgstr ""
+msgstr "Upload new image"
 
 #: templates/index.html:4
 msgid "Учёт товаров"
-msgstr ""
+msgstr "Product registry"
 
 #: templates/index.html:9 templates/reports.html:9
 msgid "Скачать Excel"
-msgstr ""
+msgstr "Download Excel"
 
 #: templates/index.html:17
 msgid "Название..."
-msgstr ""
+msgstr "Name..."
 
 #: templates/index.html:21
 msgid "Все категории"
-msgstr ""
+msgstr "All categories"
 
 #: templates/index.html:31
 msgid "Цена ≤"
-msgstr ""
+msgstr "Price ≤"
 
 #: templates/index.html:34
 msgid "Кол-во ≥"
-msgstr ""
+msgstr "Quantity ≥"
 
 #: templates/index.html:37
 msgid "Поиск"
-msgstr ""
+msgstr "Search"
 
 #: templates/index.html:40
 msgid "Сбросить фильтр"
-msgstr ""
+msgstr "Clear filter"
 
 #: templates/index.html:53
 msgid "Действия"
-msgstr ""
+msgstr "Actions"
 
 #: templates/index.html:74 templates/view.html:43
 msgid "Редактировать"
-msgstr ""
+msgstr "Edit"
 
 #: templates/index.html:76 templates/view.html:44
 msgid "Удалить товар?"
-msgstr ""
+msgstr "Delete product?"
 
 #: templates/index.html:76 templates/view.html:45
 msgid "Удалить"
-msgstr ""
+msgstr "Delete"
 
 #: templates/index.html:86
 msgid "Статистика:"
-msgstr ""
+msgstr "Statistics:"
 
 #: templates/index.html:88
 msgid "Всего товаров:"
-msgstr ""
+msgstr "Total products:"
 
 #: templates/index.html:89
 msgid "Всего категорий:"
-msgstr ""
+msgstr "Total categories:"
 
 #: templates/index.html:92
 msgid "Последние добавленные товары:"
-msgstr ""
+msgstr "Recently added products:"
 
 #: templates/login.html:8 templates/register.html:8
 msgid "Логин"
-msgstr ""
+msgstr "Username"
 
 #: templates/login.html:12 templates/register.html:12
 msgid "Пароль"
-msgstr ""
+msgstr "Password"
 
 #: templates/login.html:15
 msgid "Войти"
-msgstr ""
+msgstr "Sign in"
 
 #: templates/logs.html:13
 msgid "Объект"
-msgstr ""
+msgstr "Object"
 
 #: templates/register.html:15
 msgid "Зарегистрироваться"
-msgstr ""
+msgstr "Sign up"
 
 #: templates/register.html:18
 msgid "Уже есть аккаунт? Войти"
-msgstr ""
+msgstr "Already have an account? Sign in"
 
 #: templates/reports.html:2 templates/reports.html:6
 msgid "Отчёты"
-msgstr ""
+msgstr "Reports"
 
 #: templates/reports.html:15
 msgid "Общий список товаров"
-msgstr ""
+msgstr "Full product list"
 
 #: templates/reports.html:22 templates/view.html:32
 msgid "Кол-во"
-msgstr ""
+msgstr "Quantity"
 
 #: templates/reports.html:25 templates/view.html:36
 msgid "Дата добавления"
-msgstr ""
+msgstr "Date added"
 
 #: templates/reports.html:44
 msgid "Товаров пока нет."
-msgstr ""
+msgstr "No products yet."
 
 #: templates/view.html:2
 msgid "Просмотр товара"
-msgstr ""
+msgstr "View product"
 
 #: venv/lib/python3.13/site-packages/click/_termui_impl.py:600
 #, python-brace-format
