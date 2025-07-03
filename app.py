@@ -19,7 +19,7 @@ import requests
 import mimetypes
 
 # --- Flask-Babel ---
-from flask_babel import Babel, gettext as _, get_locale
+from flask_babel import Babel, gettext as _
 
 # --- Email супер-админа ---
 SUPERADMIN_EMAIL = "musatovnikita13@gmail.com"
@@ -52,14 +52,14 @@ LANGUAGES = {
 app.config['BABEL_DEFAULT_LOCALE'] = 'fi'
 app.config['BABEL_TRANSLATION_DIRECTORIES'] = 'translations'
 
-babel = Babel(app)
-
-@babel.localeselector
 def get_locale():
     lang = session.get('lang')
     if lang and lang in LANGUAGES:
         return lang
     return request.accept_languages.best_match(LANGUAGES.keys())
+
+babel = Babel()
+babel.init_app(app, locale_selector=get_locale)
 
 @app.context_processor
 def inject_languages():
