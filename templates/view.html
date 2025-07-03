@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
-{% block title %}Просмотр товара{% endblock %}
+{% block title %}{{ _('Просмотр товара') }}{% endblock %}
 {% block content %}
 <div class="container mt-4">
 
   <!-- Кнопка Назад (ТОЛЬКО над товаром) -->
   <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm mb-3">
-    ← Назад
+    ← {{ _('Назад') }}
   </a>
 
   <h2 class="mb-4">
@@ -21,28 +21,28 @@
       <table class="table table-bordered">
         <tbody>
           <tr>
-            <th>Описание</th>
+            <th>{{ _('Описание') }}</th>
             <td>{{ product.description or '—' }}</td>
           </tr>
           <tr>
-            <th>Категория</th>
+            <th>{{ _('Категория') }}</th>
             <td>{{ category.name if category else '—' }}</td>
           </tr>
           <tr>
-            <th>Кол-во</th>
+            <th>{{ _('Кол-во') }}</th>
             <td>{{ product.quantity }} {{ product.unit }}</td>
           </tr>
           <tr>
-            <th>Дата добавления</th>
+            <th>{{ _('Дата добавления') }}</th>
             <td>{{ product.created_at_fmt }}</td>
           </tr>
         </tbody>
       </table>
       {% if g.user.role == 'editor' %}
       <div class="mt-4 d-flex gap-2">
-        <a href="{{ url_for('edit', product_id=product.id) }}" class="btn btn-warning">✏️ Редактировать</a>
-        <form action="{{ url_for('delete', product_id=product.id) }}" method="POST" onsubmit="return confirm('Удалить товар?')">
-          <button type="submit" class="btn btn-danger">🗑️ Удалить</button>
+        <a href="{{ url_for('edit', product_id=product.id) }}" class="btn btn-warning">✏️ {{ _('Редактировать') }}</a>
+        <form action="{{ url_for('delete', product_id=product.id) }}" method="POST" onsubmit="return confirm('{{ _('Удалить товар?') }}')">
+          <button type="submit" class="btn btn-danger">🗑️ {{ _('Удалить') }}</button>
         </form>
       </div>
       {% endif %}

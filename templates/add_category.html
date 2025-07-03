@@ -1,17 +1,16 @@
 {% extends "base.html" %}
-{% block title %}Добавить категорию{% endblock %}
+{% block title %}{{ _('Добавить категорию') }}{% endblock %}
 {% block content %}
 <div class="container mt-4">
-  
-    <h2 class="mb-4">📁 Добавить категорию</h2>
+    <h2 class="mb-4">📁 {{ _('Добавить категорию') }}</h2>
     <form method="post" class="row g-3">
         <div class="col-md-8">
-            <label class="form-label">Название категории *</label>
+            <label class="form-label">{{ _('Название категории') }} *</label>
             <input type="text" name="name" class="form-control" required>
         </div>
         <div class="col-12 mt-3">
-            <button type="submit" class="btn btn-primary">Сохранить</button>
-            <a href="{{ url_for('index') }}" class="btn btn-secondary">Отмена</a>
+            <button type="submit" class="btn btn-primary">{{ _('Сохранить') }}</button>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">{{ _('Отмена') }}</a>
         </div>
     </form>
 </div>

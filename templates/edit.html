@@ -1,56 +1,56 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="mb-3">
-  <a href="{{ url_for('index') }}" class="btn btn-outline-dark">&larr; Назад</a>
+  <a href="{{ url_for('index') }}" class="btn btn-outline-dark">&larr; {{ _('Назад') }}</a>
 </div>
-<h3>Редактировать товар</h3>
+<h3>{{ _('Редактировать товар') }}</h3>
 <form method="post" enctype="multipart/form-data">
   <div class="mb-3">
-    <label class="form-label">Название</label>
+    <label class="form-label">{{ _('Название') }}</label>
     <input type="text" name="name" class="form-control" value="{{ product.name }}" required>
   </div>
   <div class="mb-3">
-    <label class="form-label">Категория</label>
+    <label class="form-label">{{ _('Категория') }}</label>
     <select name="category_id" class="form-select">
-      <option value="">Без категории</option>
+      <option value="">{{ _('Без категории') }}</option>
       {% for cat in categories %}
         <option value="{{ cat.id }}" {% if product.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
       {% endfor %}
     </select>
   </div>
   <div class="mb-3">
-    <label class="form-label">Количество</label>
+    <label class="form-label">{{ _('Количество') }}</label>
     <input type="number" name="quantity" step="0.01" class="form-control" value="{{ product.quantity }}" required>
   </div>
   <div class="mb-3">
-    <label class="form-label">Ед. измерения</label>
+    <label class="form-label">{{ _('Ед. измерения') }}</label>
     <input type="text" name="unit" value="{{ product.unit }}" class="form-control" required>
   </div>
   <div class="mb-3">
-    <label class="form-label">Размер</label>
+    <label class="form-label">{{ _('Размер') }}</label>
     <input type="text" name="size" value="{{ product.size }}" class="form-control">
   </div>
   <div class="mb-3">
-    <label class="form-label">Цена, €</label>
+    <label class="form-label">{{ _('Цена, €') }}</label>
     <input type="number" name="price" step="0.01" value="{{ product.price }}" class="form-control">
   </div>
   <div class="mb-3">
-    <label class="form-label">Описание</label>
+    <label class="form-label">{{ _('Описание') }}</label>
     <textarea name="description" class="form-control">{{ product.description }}</textarea>
   </div>
   <div class="mb-3">
-    <label class="form-label">Текущее изображение:</label><br>
+    <label class="form-label">{{ _('Текущее изображение:') }}</label><br>
     {% if product.image_url %}
       <img src="{{ product.image_url }}" alt="Product image" style="max-height:120px; max-width:200px;"><br>
     {% else %}
-      <span class="text-muted">Нет картинки</span><br>
+      <span class="text-muted">{{ _('Нет картинки') }}</span><br>
     {% endif %}
   </div>
   <div class="mb-3">
-    <label class="form-label">Загрузить новую картинку</label>
+    <label class="form-label">{{ _('Загрузить новую картинку') }}</label>
     <input type="file" name="image" class="form-control" accept="image/*">
   </div>
-  <button type="submit" class="btn btn-success">Сохранить</button>
-  <a href="{{ url_for('index') }}" class="btn btn-secondary">Отмена</a>
+  <button type="submit" class="btn btn-success">{{ _('Сохранить') }}</button>
+  <a href="{{ url_for('index') }}" class="btn btn-secondary">{{ _('Отмена') }}</a>
 </form>
 {% endblock %}

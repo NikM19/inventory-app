@@ -2,20 +2,20 @@
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-md-4">
-    <h3>Регистрация</h3>
+    <h3>{{ _('Регистрация') }}</h3>
     <form method="post">
       <div class="mb-3">
-        <label class="form-label">Логин</label>
+        <label class="form-label">{{ _('Логин') }}</label>
         <input type="text" name="username" class="form-control" required>
       </div>
       <div class="mb-3">
-        <label class="form-label">Пароль</label>
+        <label class="form-label">{{ _('Пароль') }}</label>
         <input type="password" name="password" class="form-control" required>
       </div>
-      <button type="submit" class="btn btn-dark w-100">Зарегистрироваться</button>
+      <button type="submit" class="btn btn-dark w-100">{{ _('Зарегистрироваться') }}</button>
     </form>
     <div class="mt-3">
-      <a href="{{ url_for('login') }}">Уже есть аккаунт? Войти</a>
+      <a href="{{ url_for('login') }}">{{ _('Уже есть аккаунт? Войти') }}</a>
     </div>
   </div>
 </div>

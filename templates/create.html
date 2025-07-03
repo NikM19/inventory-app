@@ -1,45 +1,45 @@
 {% extends 'base.html' %}
 {% block content %}
-<h3>Добавить товар</h3>
+<h3>{{ _('Добавить товар') }}</h3>
 <form method="post" enctype="multipart/form-data">
   <div class="mb-3">
-    <label class="form-label">Название</label>
+    <label class="form-label">{{ _('Название') }}</label>
     <input type="text" name="name" class="form-control" required>
   </div>
   <div class="mb-3">
-    <label class="form-label">Категория</label>
+    <label class="form-label">{{ _('Категория') }}</label>
     <select name="category_id" class="form-select">
-      <option value="">Без категории</option>
+      <option value="">{{ _('Без категории') }}</option>
       {% for cat in categories %}
         <option value="{{ cat.id }}">{{ cat.name }}</option>
       {% endfor %}
     </select>
   </div>
   <div class="mb-3">
-    <label class="form-label">Количество</label>
+    <label class="form-label">{{ _('Количество') }}</label>
     <input type="number" name="quantity" step="any" min="0" class="form-control" required>
   </div>
   <div class="mb-3">
-    <label class="form-label">Ед. измерения</label>
+    <label class="form-label">{{ _('Ед. измерения') }}</label>
     <input type="text" name="unit" value="м²" class="form-control" required>
   </div>
   <div class="mb-3">
-    <label class="form-label">Размер</label>
+    <label class="form-label">{{ _('Размер') }}</label>
     <input type="text" name="size" class="form-control">
   </div>
   <div class="mb-3">
-    <label class="form-label">Цена, €</label>
+    <label class="form-label">{{ _('Цена, €') }}</label>
     <input type="number" name="price" step="any" min="0" class="form-control">
   </div>
   <div class="mb-3">
-    <label class="form-label">Описание</label>
+    <label class="form-label">{{ _('Описание') }}</label>
     <textarea name="description" class="form-control"></textarea>
   </div>
   <div class="mb-3">
-    <label class="form-label">Картинка товара</label>
+    <label class="form-label">{{ _('Картинка товара') }}</label>
     <input type="file" name="image" class="form-control" accept="image/*">
   </div>
-  <button type="submit" class="btn btn-success">Сохранить</button>
-  <a href="{{ url_for('index') }}" class="btn btn-secondary">Отмена</a>
+  <button type="submit" class="btn btn-success">{{ _('Сохранить') }}</button>
+  <a href="{{ url_for('index') }}" class="btn btn-secondary">{{ _('Отмена') }}</a>
 </form>
 {% endblock %}

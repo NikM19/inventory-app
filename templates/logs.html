@@ -1,17 +1,17 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="mb-3">
-  <a href="{{ url_for('index') }}" class="btn btn-outline-dark">&larr; Назад</a>
+  <a href="{{ url_for('index') }}" class="btn btn-outline-dark">&larr; {{ _('Назад') }}</a>
 </div>
-<h2>Журнал действий</h2>
+<h2>{{ _('Журнал действий') }}</h2>
 <table class="table table-bordered align-middle table-hover mb-5">
   <thead class="table-dark">
     <tr>
-      <th>Дата и время</th>
-      <th>Пользователь</th>
-      <th>Действие</th>
-      <th>Объект</th>
-      <th>Детали</th>
+      <th>{{ _('Дата и время') }}</th>
+      <th>{{ _('Пользователь') }}</th>
+      <th>{{ _('Действие') }}</th>
+      <th>{{ _('Объект') }}</th>
+      <th>{{ _('Детали') }}</th>
     </tr>
   </thead>
   <tbody>

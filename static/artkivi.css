@@ -7,6 +7,7 @@
     --ak-green: #60b6b2;
     --ak-white: #fff;
     --ak-red: #cb4642;
+    --ak-menu-bg: rgba(57, 57, 57, 0.82); /* для гамбургера */
 }
 
 /* ====== Общий фон и шапка ====== */
@@ -15,6 +16,97 @@ body {
     color: var(--ak-black);
 }
 
+/* ====== Blur и гамбургер overlay ====== */
+.blur-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(57, 57, 57, 0.43);
+    backdrop-filter: blur(8px);
+    z-index: 1050;
+    transition: opacity 0.3s cubic-bezier(.39,.58,.57,1);
+    opacity: 0;
+    pointer-events: none;
+}
+.blur-overlay.show {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* ====== Мобильное выпадающее меню ====== */
+.mobile-slide-menu {
+    position: fixed;
+    top: 26px;
+    left: 50%;
+    transform: translateX(-50%) scale(0.98) translateY(-30px);
+    width: 92vw;
+    max-width: 390px;
+    background: var(--ak-menu-bg);
+    color: var(--ak-white);
+    border-radius: 18px;
+    box-shadow: 0 8px 40px 0 rgba(57,57,57,0.13), 0 2px 8px rgba(0,0,0,0.11);
+    padding: 0 1rem;
+    z-index: 1100;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: max-height 0.45s cubic-bezier(.39,.58,.57,1), padding 0.25s, opacity 0.27s, transform 0.4s;
+    backdrop-filter: blur(14px);
+}
+.mobile-slide-menu.open {
+    max-height: 480px;
+    padding: 1.2rem 1.1rem 1.4rem 1.1rem;
+    opacity: 1;
+    pointer-events: all;
+    transform: translateX(-50%) scale(1) translateY(0);
+}
+
+.mobile-slide-menu .btn,
+.mobile-slide-menu button,
+.mobile-slide-menu .dropdown-menu,
+.mobile-slide-menu .dropdown-item {
+    color: var(--ak-black);
+    background: var(--ak-white);
+}
+
+.mobile-slide-menu .btn-outline-dark {
+    background: var(--ak-white);
+    color: var(--ak-black);
+    border: 1.5px solid var(--ak-darkgray);
+    font-weight: 500;
+}
+.mobile-slide-menu .btn-outline-dark:hover,
+.mobile-slide-menu .btn-outline-dark:focus {
+    background: var(--ak-orange);
+    color: var(--ak-white);
+    border-color: var(--ak-orange);
+}
+.mobile-slide-menu .btn-warning {
+    background: var(--ak-orange) !important;
+    color: var(--ak-white) !important;
+    border: none !important;
+    margin-bottom: 0.7em;
+}
+.mobile-slide-menu .badge.bg-dark,
+.mobile-slide-menu .badge.bg-secondary {
+    font-size: 0.99em;
+}
+
+.mobile-slide-menu .dropdown-menu {
+    border-radius: 10px;
+    min-width: 90%;
+}
+.mobile-slide-menu .dropdown-item.active {
+    background: var(--ak-orange);
+    color: #fff !important;
+}
+.mobile-slide-menu .dropdown-item:active,
+.mobile-slide-menu .dropdown-item:focus {
+    background: var(--ak-green);
+    color: #fff !important;
+}
+
+/* ====== Navbar + hamburger ====== */
 .navbar, .navbar-dark {
     background: var(--ak-black) !important;
 }
@@ -28,12 +120,46 @@ body {
 .navbar .btn-outline-light {
     color: var(--ak-white) !important;
 }
-
 .navbar .btn-outline-light {
     border-color: var(--ak-white);
 }
+.navbar .btn-link, .navbar .btn-link:focus, .navbar .btn-link:active {
+    color: var(--ak-white) !important;
+    border: none;
+    box-shadow: none;
+    text-decoration: none;
+}
+.navbar .btn-link:hover, .navbar .btn-link:focus-visible {
+    color: #e0e0e0 !important;
+    border: 1px solid #fff !important;
+    border-radius: 8px;
+    background: none;
+    text-decoration: none;
+}
+.navbar .nav-link, .navbar .btn { text-decoration: none !important; }
 
-/* ====== Карточка главного контейнера ====== */
+/* Hamburger */
+.navbar-toggler {
+    border: none;
+    background: none;
+    box-shadow: none;
+    outline: none;
+    padding: 6px 6px 6px 6px;
+    margin-left: 4px;
+}
+.hamburger {
+    width: 31px; height: 23px;
+    display: flex; flex-direction: column; justify-content: space-between;
+}
+.hamburger span {
+    display: block;
+    height: 4px;
+    border-radius: 2.5px;
+    background: var(--ak-orange);
+    transition: .35s cubic-bezier(.51,.08,.28,.96);
+}
+
+/* ====== Контейнеры, карточки ====== */
 .container, .main-card {
     background: var(--ak-white);
     border-radius: 18px;
@@ -49,34 +175,27 @@ h2, h3, h5 {
 }
 
 /* ====== Кнопки ====== */
-.btn,
-button {
+.btn, button {
     border-radius: 8px !important;
     font-weight: 500;
     letter-spacing: 0.01em;
     transition: background 0.12s, color 0.12s;
 }
-
-.btn-success,
-.btn-orange {
+.btn-success, .btn-orange {
     background: var(--ak-orange) !important;
     color: var(--ak-white) !important;
     border: none !important;
 }
-
-.btn-info,
-.btn-green {
+.btn-info, .btn-green {
     background: var(--ak-green) !important;
     color: var(--ak-white) !important;
     border: none !important;
 }
-
 .btn-danger {
     background: var(--ak-red) !important;
     color: var(--ak-white) !important;
     border: none !important;
 }
-
 .btn-warning {
     background: var(--ak-darkgray) !important;
     color: var(--ak-white) !important;
@@ -103,16 +222,13 @@ button {
     vertical-align: middle;
     border-color: var(--ak-darkgray);
 }
-
 .table a {
     color: var(--ak-green);
     font-weight: 600;
 }
-
 .table a:hover {
     color: var(--ak-orange);
 }
-
 .list-group-item {
     border-radius: 7px !important;
     margin-bottom: 4px;
@@ -147,18 +263,16 @@ ul.list-group {
 }
 
 /* ====== Мобильная адаптация ====== */
-@media (max-width: 768px) {
+@media (max-width: 991.98px) {
+    .desktop-menu { display: none !important; }
+    .mobile-menu { display: flex !important; }
     .container, .main-card {
         padding: 10px 0 12px 0;
         border-radius: 0;
         margin-bottom: 14px;
     }
-    .navbar-brand img {
-        height: 28px;
-    }
-    h2, h3, h5 {
-        font-size: 1.15em;
-    }
+    .navbar-brand img { height: 28px; }
+    h2, h3, h5 { font-size: 1.15em; }
     .btn, button {
         font-size: 0.96em !important;
         padding: 7px 12px !important;
@@ -166,12 +280,8 @@ ul.list-group {
         display: block;
         width: 100%;
     }
-    .table {
-        font-size: 0.97em;
-    }
-    .table thead {
-        display: none;
-    }
+    .table { font-size: 0.97em; }
+    .table thead { display: none; }
     .table, .table tbody, .table tr, .table td {
         display: block;
         width: 100%;
@@ -197,4 +307,3 @@ ul.list-group {
         font-size: 0.95em;
     }
 }
-
