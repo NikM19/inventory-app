@@ -44,30 +44,42 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # --- Flask-Babel config ---
-LANGUAGES = {
+ALL_LANGUAGES = {
     'fi': 'Suomi',
     'en': 'English',
     'ru': 'Русский'
 }
+DEFAULT_LANGUAGES = {
+    'fi': 'Suomi',
+    'en': 'English'
+}
 app.config['BABEL_DEFAULT_LOCALE'] = 'fi'
 app.config['BABEL_TRANSLATION_DIRECTORIES'] = 'translations'
 
+# Flask-Babel init с dynamic locale_selector
 def get_locale():
+    user = getattr(g, 'user', None)
+    # Только для супер-админа разрешаем русский язык
+    languages = ALL_LANGUAGES if user and user.get("username") == SUPERADMIN_EMAIL else DEFAULT_LANGUAGES
     lang = session.get('lang')
-    if lang and lang in LANGUAGES:
+    if lang and lang in languages:
         return lang
-    return request.accept_languages.best_match(LANGUAGES.keys())
+    return request.accept_languages.best_match(languages.keys())
 
 babel = Babel()
 babel.init_app(app, locale_selector=get_locale)
 
 @app.context_processor
 def inject_languages():
-    return dict(LANGUAGES=LANGUAGES, get_locale=get_locale)
+    user = getattr(g, 'user', None)
+    languages = ALL_LANGUAGES if user and user.get("username") == SUPERADMIN_EMAIL else DEFAULT_LANGUAGES
+    return dict(LANGUAGES=languages, get_locale=get_locale)
 
 @app.route('/set_language/<lang>')
 def set_language(lang):
-    if lang in LANGUAGES:
+    user = getattr(g, 'user', None)
+    languages = ALL_LANGUAGES if user and user.get("username") == SUPERADMIN_EMAIL else DEFAULT_LANGUAGES
+    if lang in languages:
         session['lang'] = lang
     return redirect(request.referrer or url_for('index'))
 
