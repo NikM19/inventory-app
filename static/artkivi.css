@@ -421,3 +421,16 @@ ul.list-group {
     border-color: var(--ak-orange);
     text-decoration: none !important;
 }
+/* ====== Исправление для формы поиска на мобильных ====== */
+@media (max-width: 991.98px) {
+    form.row.g-2.mb-3 > .col-md-1 {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-top: 6px;
+        margin-bottom: 0;
+    }
+    form.row.g-2.mb-3 > .col-md-1 .btn {
+        width: 100% !important;
+        font-size: 1.05em;
+    }
+}
