@@ -323,4 +323,23 @@ ul.list-group {
         margin-bottom: 2px;
         font-size: 0.95em;
     }
+}.register-link {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 9px 0;
+    border-radius: 8px;
+    color: var(--ak-orange) !important;
+    background: var(--ak-white);
+    border: 1.5px solid var(--ak-orange);
+    font-weight: 600;
+    margin-top: 15px;
+    text-decoration: none !important;
+    transition: background 0.13s, color 0.13s, border 0.13s;
+}
+.register-link:hover, .register-link:focus {
+    background: var(--ak-orange);
+    color: #fff !important;
+    border-color: var(--ak-orange);
+    text-decoration: none !important;
 }

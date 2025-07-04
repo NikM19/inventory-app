@@ -2,7 +2,7 @@
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-md-4">
-    <h3>{{ _('Вход') }}</h3>
+    <h3 class="mb-4">{{ _('Вход') }}</h3>
     <form method="post">
       <div class="mb-3">
         <label class="form-label">{{ _('Логин') }}</label>
@@ -12,11 +12,9 @@
         <label class="form-label">{{ _('Пароль') }}</label>
         <input type="password" name="password" class="form-control" required>
       </div>
-      <button type="submit" class="btn btn-dark w-100">{{ _('Войти') }}</button>
+      <button type="submit" class="btn btn-dark w-100 mb-2">{{ _('Войти') }}</button>
     </form>
-    <div class="mt-3">
-      <a href="{{ url_for('register') }}">{{ _('Регистрация') }}</a>
-    </div>
+    <a href="{{ url_for('register') }}" class="register-link">{{ _('Регистрация') }}</a>
   </div>
 </div>
 {% endblock %}
