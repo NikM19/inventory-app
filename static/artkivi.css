@@ -364,6 +364,13 @@ ul.list-group {
     .d-flex.gap-2 {
         flex-direction: column !important;
         gap: 8px !important;
+        align-items: stretch !important; /* <--- ДОБАВЛЕНО для выравнивания кнопок */
+    }
+    /* Фикс для блока кнопок в index.html, чтобы ВСЕ были одной ширины */
+    .d-flex.gap-2.flex-wrap > * {
+        width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
     }
     .table { font-size: 0.97em; }
     .table thead { display: none; }
