@@ -198,7 +198,19 @@ h2, h3, h5 {
     letter-spacing: 0.01em;
     transition: background 0.12s, color 0.12s;
 }
-.btn-success, .btn-orange {
+
+/* Оранжевая кнопка (универсальный класс) */
+.btn-orange {
+    background: var(--ak-orange) !important;
+    color: var(--ak-white) !important;
+    border: none !important;
+    padding-top: 9px !important;
+    padding-bottom: 9px !important;
+    font-size: 1rem !important;
+}
+
+/* Старые классы, если где-то используются */
+.btn-success {
     background: var(--ak-orange) !important;
     color: var(--ak-white) !important;
     border: none !important;
@@ -323,7 +335,10 @@ ul.list-group {
         margin-bottom: 2px;
         font-size: 0.95em;
     }
-}.register-link {
+}
+
+/* ====== Ссылка-регистрация отдельной кнопкой ====== */
+.register-link {
     display: block;
     width: 100%;
     text-align: center;
