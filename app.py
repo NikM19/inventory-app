@@ -19,7 +19,7 @@ import requests
 import mimetypes
 
 # --- Flask-Babel ---
-from flask_babel import Babel, gettext as _
+from flask_babel import Babel, _   # <-- здесь всё хорошо!
 
 # --- Email супер-админа ---
 SUPERADMIN_EMAIL = "musatovnikita13@gmail.com"
