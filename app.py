@@ -276,7 +276,7 @@ def register():
         if get_user_by_username(username):
             flash(_("Пользователь уже существует!"), "warning")
             return redirect(url_for("register"))
-        _, activation_token = create_user(username, password, role="viewer")
+        user_data, activation_token = create_user(username, password, role="viewer")
         try:
             base_url = os.getenv("BASE_URL")
             if not base_url:
