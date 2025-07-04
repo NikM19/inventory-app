@@ -191,18 +191,36 @@ h2, h3, h5 {
     letter-spacing: 0.01em;
 }
 
-/* ====== Кнопки ====== */
+/* ====== Кнопки: базовые стили ====== */
 .btn, .btn-orange, .btn-dark, button {
-    width: 100% !important;
-    min-width: 0 !important;
-    box-sizing: border-box !important;
     border-radius: 8px !important;
     font-weight: 500 !important;
     letter-spacing: 0.01em;
-    padding-top: 9px !important;
-    padding-bottom: 9px !important;
     font-size: 1rem !important;
     transition: background 0.12s, color 0.12s;
+    min-width: 130px;
+    padding-top: 9px !important;
+    padding-bottom: 9px !important;
+}
+.btn-sm {
+    min-width: 90px;
+    font-size: 0.97rem !important;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+}
+.btn + .btn,
+.btn + form,
+form + .btn,
+form + form {
+    margin-left: 8px;
+}
+.d-flex.gap-2 > .btn,
+.d-flex.gap-2 > form {
+    margin-right: 8px;
+}
+.d-flex.gap-2 > .btn:last-child,
+.d-flex.gap-2 > form:last-child {
+    margin-right: 0;
 }
 
 /* Оранжевая кнопка (универсальный класс) */
@@ -210,15 +228,19 @@ h2, h3, h5 {
     background: var(--ak-orange) !important;
     color: var(--ak-white) !important;
     border: none !important;
-    display: block !important;
+    display: block;
 }
-
-/* Старые классы, если где-то используются */
 .btn-success {
     background: var(--ak-orange) !important;
     color: var(--ak-white) !important;
     border: none !important;
 }
+.btn-success:hover, .btn-orange:hover {
+    background: #f5a949 !important;
+    color: #fff !important;
+}
+
+/* Старые классы, если где-то используются */
 .btn-info, .btn-green {
     background: var(--ak-green) !important;
     color: var(--ak-white) !important;
@@ -233,6 +255,26 @@ h2, h3, h5 {
     background: var(--ak-darkgray) !important;
     color: var(--ak-white) !important;
     border: none !important;
+}
+.btn-outline-secondary {
+    background: #f5f5f5 !important;
+    color: #393939 !important;
+    border: 1.3px solid #bbb !important;
+}
+.btn-outline-secondary:hover {
+    background: var(--ak-orange) !important;
+    color: #fff !important;
+    border-color: var(--ak-orange) !important;
+}
+
+/* ====== Кнопки в таблице "Действия" ====== */
+.table td .d-flex.gap-2 > .btn,
+.table td .d-flex.gap-2 > form {
+    margin-right: 7px;
+}
+.table td .d-flex.gap-2 > .btn:last-child,
+.table td .d-flex.gap-2 > form:last-child {
+    margin-right: 0;
 }
 
 /* ====== Таблицы ====== */
@@ -310,8 +352,12 @@ ul.list-group {
         font-size: 0.96em !important;
         padding: 7px 12px !important;
         margin-bottom: 7px !important;
-        display: block;
         width: 100% !important;
+        min-width: unset !important;
+    }
+    .d-flex.gap-2 {
+        flex-direction: column !important;
+        gap: 8px !important;
     }
     .table { font-size: 0.97em; }
     .table thead { display: none; }
