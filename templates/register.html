@@ -2,21 +2,21 @@
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-md-4">
-    <h3>{{ _('Регистрация') }}</h3>
-    <form method="post">
+    <h3 class="mb-4">{{ _('Регистрация') }}</h3>
+    <form method="post" autocomplete="off">
       <div class="mb-3">
         <label class="form-label">{{ _('Логин') }}</label>
-        <input type="text" name="username" class="form-control" required>
+        <input type="text" name="username" class="form-control" required autofocus>
       </div>
       <div class="mb-3">
         <label class="form-label">{{ _('Пароль') }}</label>
         <input type="password" name="password" class="form-control" required>
       </div>
-      <button type="submit" class="btn btn-dark w-100">{{ _('Зарегистрироваться') }}</button>
+      <button type="submit" class="btn btn-dark w-100 mb-2">{{ _('Зарегистрироваться') }}</button>
     </form>
-    <div class="mt-3">
-      <a href="{{ url_for('login') }}">{{ _('Уже есть аккаунт? Войти') }}</a>
-    </div>
+    <a href="{{ url_for('login') }}" class="btn btn-outline-dark w-100">
+      {{ _('Уже есть аккаунт? Войти') }}
+    </a>
   </div>
 </div>
 {% endblock %}
