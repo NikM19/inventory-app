@@ -7,7 +7,7 @@
     --ak-green: #60b6b2;
     --ak-white: #fff;
     --ak-red: #cb4642;
-    --ak-menu-bg: rgba(57, 57, 57, 0.82); /* для гамбургера */
+    --ak-menu-bg: rgba(57, 57, 57, 0.82);
 }
 
 /* ====== Общий фон и шапка ====== */
@@ -91,7 +91,6 @@ body {
 .mobile-slide-menu .badge.bg-secondary {
     font-size: 0.99em;
 }
-
 .mobile-slide-menu .dropdown-menu {
     border-radius: 10px;
     min-width: 90%;
@@ -138,7 +137,6 @@ body {
 }
 .navbar .nav-link, .navbar .btn { text-decoration: none !important; }
 
-/* Hamburger */
 .navbar-toggler {
     border: none;
     background: none;
@@ -158,7 +156,6 @@ body {
     background: var(--ak-orange);
     transition: .35s cubic-bezier(.51,.08,.28,.96);
 }
-/* === HAMBURGER ANIMATION: WAVE/SLIDE (lines go out, hide, then back) === */
 .hamburger.active span:nth-child(1) {
     transform: translateX(-10px) scaleX(0.7);
     opacity: 0;
@@ -170,7 +167,6 @@ body {
     transform: translateX(10px) scaleX(0.7);
     opacity: 0;
 }
-/* Возврат в норму при закрытии */
 .hamburger:not(.active) span {
     transform: none;
     opacity: 1;
@@ -191,7 +187,7 @@ h2, h3, h5 {
     letter-spacing: 0.01em;
 }
 
-/* ====== Кнопки: базовые стили ====== */
+/* ====== КНОПКИ — ОСНОВНОЙ СТИЛЬ ====== */
 .btn, .btn-orange, .btn-dark, button {
     border-radius: 8px !important;
     font-weight: 500 !important;
@@ -199,15 +195,16 @@ h2, h3, h5 {
     font-size: 1rem !important;
     transition: background 0.12s, color 0.12s;
     min-width: 130px;
-    padding-top: 9px !important;
-    padding-bottom: 9px !important;
+    padding: 7px 18px !important;
+    margin-bottom: 0 !important;
+    box-sizing: border-box;
 }
 .btn-sm {
-    min-width: 90px;
-    font-size: 0.97rem !important;
-    padding-top: 6px !important;
-    padding-bottom: 6px !important;
+    min-width: 90px !important;
+    font-size: 0.96rem !important;
+    padding: 5px 13px !important;
 }
+/* Если кнопки рядом — делаем отступ */
 .btn + .btn,
 .btn + form,
 form + .btn,
@@ -216,14 +213,25 @@ form + form {
 }
 .d-flex.gap-2 > .btn,
 .d-flex.gap-2 > form {
-    margin-right: 8px;
+    margin-right: 8px !important;
 }
 .d-flex.gap-2 > .btn:last-child,
 .d-flex.gap-2 > form:last-child {
-    margin-right: 0;
+    margin-right: 0 !important;
+}
+/* ГАПЫ между кнопками в формах login/register */
+.col-md-4 > .btn,
+.col-md-4 > form > .btn,
+.col-md-4 > a.btn {
+    margin-bottom: 14px !important;
+}
+.col-md-4 > .btn:last-child,
+.col-md-4 > form:last-child > .btn,
+.col-md-4 > a.btn:last-child {
+    margin-bottom: 0 !important;
 }
 
-/* Оранжевая кнопка (универсальный класс) */
+/* Оранжевая кнопка */
 .btn-orange {
     background: var(--ak-orange) !important;
     color: var(--ak-white) !important;
@@ -239,8 +247,6 @@ form + form {
     background: #f5a949 !important;
     color: #fff !important;
 }
-
-/* Старые классы, если где-то используются */
 .btn-info, .btn-green {
     background: var(--ak-green) !important;
     color: var(--ak-white) !important;
@@ -265,16 +271,6 @@ form + form {
     background: var(--ak-orange) !important;
     color: #fff !important;
     border-color: var(--ak-orange) !important;
-}
-
-/* ====== Кнопки в таблице "Действия" ====== */
-.table td .d-flex.gap-2 > .btn,
-.table td .d-flex.gap-2 > form {
-    margin-right: 7px;
-}
-.table td .d-flex.gap-2 > .btn:last-child,
-.table td .d-flex.gap-2 > form:last-child {
-    margin-right: 0;
 }
 
 /* ====== Таблицы ====== */
@@ -354,6 +350,16 @@ ul.list-group {
         margin-bottom: 7px !important;
         width: 100% !important;
         min-width: unset !important;
+    }
+    .col-md-4 > .btn,
+    .col-md-4 > form > .btn,
+    .col-md-4 > a.btn {
+        margin-bottom: 10px !important;
+    }
+    .col-md-4 > .btn:last-child,
+    .col-md-4 > form:last-child > .btn,
+    .col-md-4 > a.btn:last-child {
+        margin-bottom: 0 !important;
     }
     .d-flex.gap-2 {
         flex-direction: column !important;
