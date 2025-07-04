@@ -158,6 +158,23 @@ body {
     background: var(--ak-orange);
     transition: .35s cubic-bezier(.51,.08,.28,.96);
 }
+/* === HAMBURGER ANIMATION: WAVE/SLIDE (lines go out, hide, then back) === */
+.hamburger.active span:nth-child(1) {
+    transform: translateX(-10px) scaleX(0.7);
+    opacity: 0;
+}
+.hamburger.active span:nth-child(2) {
+    transform: scaleX(1.22);
+}
+.hamburger.active span:nth-child(3) {
+    transform: translateX(10px) scaleX(0.7);
+    opacity: 0;
+}
+/* Возврат в норму при закрытии */
+.hamburger:not(.active) span {
+    transform: none;
+    opacity: 1;
+}
 
 /* ====== Контейнеры, карточки ====== */
 .container, .main-card {
