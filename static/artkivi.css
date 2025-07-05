@@ -7,7 +7,6 @@
     --ak-green: #60b6b2;
     --ak-white: #fff;
     --ak-red: #cb4642;
-    --ak-menu-bg: rgba(57, 57, 57, 0.82);
 }
 
 /* ====== Общий фон и шапка ====== */
@@ -16,96 +15,6 @@ body {
     color: var(--ak-black);
 }
 
-/* ====== Blur и гамбургер overlay ====== */
-.blur-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(57, 57, 57, 0.43);
-    backdrop-filter: blur(8px);
-    z-index: 1050;
-    transition: opacity 0.3s cubic-bezier(.39,.58,.57,1);
-    opacity: 0;
-    pointer-events: none;
-}
-.blur-overlay.show {
-    opacity: 1;
-    pointer-events: all;
-}
-
-/* ====== Мобильное выпадающее меню ====== */
-.mobile-slide-menu {
-    position: fixed;
-    top: 26px;
-    left: 50%;
-    transform: translateX(-50%) scale(0.98) translateY(-30px);
-    width: 92vw;
-    max-width: 390px;
-    background: var(--ak-menu-bg);
-    color: var(--ak-white);
-    border-radius: 18px;
-    box-shadow: 0 8px 40px 0 rgba(57,57,57,0.13), 0 2px 8px rgba(0,0,0,0.11);
-    padding: 0 1rem;
-    z-index: 1100;
-    max-height: 0;
-    overflow: hidden;
-    opacity: 0;
-    pointer-events: none;
-    transition: max-height 0.45s cubic-bezier(.39,.58,.57,1), padding 0.25s, opacity 0.27s, transform 0.4s;
-    backdrop-filter: blur(14px);
-}
-.mobile-slide-menu.open {
-    max-height: 480px;
-    padding: 1.2rem 1.1rem 1.4rem 1.1rem;
-    opacity: 1;
-    pointer-events: all;
-    transform: translateX(-50%) scale(1) translateY(0);
-}
-
-.mobile-slide-menu .btn,
-.mobile-slide-menu button,
-.mobile-slide-menu .dropdown-menu,
-.mobile-slide-menu .dropdown-item {
-    color: var(--ak-black);
-    background: var(--ak-white);
-}
-
-.mobile-slide-menu .btn-outline-dark {
-    background: var(--ak-white);
-    color: var(--ak-black);
-    border: 1.5px solid var(--ak-darkgray);
-    font-weight: 500;
-}
-.mobile-slide-menu .btn-outline-dark:hover,
-.mobile-slide-menu .btn-outline-dark:focus {
-    background: var(--ak-orange);
-    color: var(--ak-white);
-    border-color: var(--ak-orange);
-}
-.mobile-slide-menu .btn-warning {
-    background: var(--ak-orange) !important;
-    color: var(--ak-white) !important;
-    border: none !important;
-    margin-bottom: 0.7em;
-}
-.mobile-slide-menu .badge.bg-dark,
-.mobile-slide-menu .badge.bg-secondary {
-    font-size: 0.99em;
-}
-.mobile-slide-menu .dropdown-menu {
-    border-radius: 10px;
-    min-width: 90%;
-}
-.mobile-slide-menu .dropdown-item.active {
-    background: var(--ak-orange);
-    color: #fff !important;
-}
-.mobile-slide-menu .dropdown-item:active,
-.mobile-slide-menu .dropdown-item:focus {
-    background: var(--ak-green);
-    color: #fff !important;
-}
-
-/* ====== Navbar + hamburger ====== */
 .navbar, .navbar-dark {
     background: var(--ak-black) !important;
 }
@@ -119,60 +28,23 @@ body {
 .navbar .btn-outline-light {
     color: var(--ak-white) !important;
 }
+
 .navbar .btn-outline-light {
     border-color: var(--ak-white);
-}
-.navbar .btn-link, .navbar .btn-link:focus, .navbar .btn-link:active {
-    color: var(--ak-white) !important;
-    border: none;
-    box-shadow: none;
-    text-decoration: none;
-}
-.navbar .btn-link:hover, .navbar .btn-link:focus-visible {
-    color: #e0e0e0 !important;
-    border: 1px solid #fff !important;
-    border-radius: 8px;
-    background: none;
-    text-decoration: none;
-}
-.navbar .nav-link, .navbar .btn { text-decoration: none !important; }
-
-.navbar-toggler {
-    border: none;
-    background: none;
-    box-shadow: none;
-    outline: none;
-    padding: 6px 6px 6px 6px;
-    margin-left: 4px;
-}
-.hamburger {
-    width: 31px; height: 23px;
-    display: flex; flex-direction: column; justify-content: space-between;
-}
-.hamburger span {
-    display: block;
-    height: 4px;
-    border-radius: 2.5px;
-    background: var(--ak-orange);
-    transition: .35s cubic-bezier(.51,.08,.28,.96);
-}
-.hamburger.active span:nth-child(1) {
-    transform: translateX(-10px) scaleX(0.7);
-    opacity: 0;
-}
-.hamburger.active span:nth-child(2) {
-    transform: scaleX(1.22);
-}
-.hamburger.active span:nth-child(3) {
-    transform: translateX(10px) scaleX(0.7);
-    opacity: 0;
-}
-.hamburger:not(.active) span {
-    transform: none;
-    opacity: 1;
+    border-radius: 20px !important;
+    padding: 3px 18px;
+    font-weight: 500;
+    transition: border-color .2s, color .2s;
 }
 
-/* ====== Контейнеры, карточки ====== */
+.navbar .btn-outline-light:hover,
+.navbar .btn-outline-light:focus {
+    color: var(--ak-black) !important;
+    background: var(--ak-white) !important;
+    border-color: var(--ak-white);
+}
+
+/* ====== Главный контейнер ====== */
 .container, .main-card {
     background: var(--ak-white);
     border-radius: 18px;
@@ -187,90 +59,44 @@ h2, h3, h5 {
     letter-spacing: 0.01em;
 }
 
-/* ====== КНОПКИ — ОСНОВНОЙ СТИЛЬ ====== */
-.btn, .btn-orange, .btn-dark, button {
-    border-radius: 8px !important;
-    font-weight: 500 !important;
+/* ====== Кнопки ====== */
+.btn,
+button {
+    border-radius: 25px !important;
+    font-weight: 500;
     letter-spacing: 0.01em;
-    font-size: 1rem !important;
-    transition: background 0.12s, color 0.12s;
-    min-width: 130px;
-    padding: 7px 18px !important;
-    margin-bottom: 0 !important;
-    box-sizing: border-box;
-}
-.btn-sm {
-    min-width: 90px !important;
-    font-size: 0.96rem !important;
-    padding: 5px 13px !important;
-}
-/* Если кнопки рядом — делаем отступ */
-.btn + .btn,
-.btn + form,
-form + .btn,
-form + form {
-    margin-left: 8px;
-}
-.d-flex.gap-2 > .btn,
-.d-flex.gap-2 > form {
-    margin-right: 8px !important;
-}
-.d-flex.gap-2 > .btn:last-child,
-.d-flex.gap-2 > form:last-child {
-    margin-right: 0 !important;
-}
-/* ГАПЫ между кнопками в формах login/register */
-.col-md-4 > .btn,
-.col-md-4 > form > .btn,
-.col-md-4 > a.btn {
-    margin-bottom: 14px !important;
-}
-.col-md-4 > .btn:last-child,
-.col-md-4 > form:last-child > .btn,
-.col-md-4 > a.btn:last-child {
-    margin-bottom: 0 !important;
+    transition: background 0.15s, color 0.15s;
 }
 
-/* Оранжевая кнопка */
-.btn-orange {
+.artkivi-btn, .btn-success, .btn-primary {
     background: var(--ak-orange) !important;
     color: var(--ak-white) !important;
     border: none !important;
-    display: block;
+    border-radius: 25px !important;
+    font-weight: 600;
+    padding: 8px 22px;
+    margin-right: 6px;
+    box-shadow: 0 2px 8px rgba(246, 160, 70, 0.06);
 }
-.btn-success {
-    background: var(--ak-orange) !important;
+
+.artkivi-btn:hover, .btn-success:hover, .btn-primary:hover,
+.artkivi-btn:focus, .btn-success:focus, .btn-primary:focus {
+    background: #ffb35c !important;
     color: var(--ak-white) !important;
-    border: none !important;
 }
-.btn-success:hover, .btn-orange:hover {
-    background: #f5a949 !important;
-    color: #fff !important;
-}
-.btn-info, .btn-green {
-    background: var(--ak-green) !important;
-    color: var(--ak-white) !important;
-    border: none !important;
-}
+
 .btn-danger {
     background: var(--ak-red) !important;
     color: var(--ak-white) !important;
     border: none !important;
+    border-radius: 25px !important;
 }
+
 .btn-warning {
     background: var(--ak-darkgray) !important;
     color: var(--ak-white) !important;
     border: none !important;
-}
-.btn-outline-secondary {
-    background: #f5f5f5 !important;
-    color: #393939 !important;
-    border: 1.3px solid #bbb !important;
-}
-.btn-outline-secondary:hover {
-    background: var(--ak-orange) !important;
-    color: #fff !important;
-    border-color: var(--ak-orange) !important;
+    border-radius: 25px !important;
 }
 
 /* ====== Таблицы ====== */
@@ -293,13 +119,16 @@ form + form {
     vertical-align: middle;
     border-color: var(--ak-darkgray);
 }
+
 .table a {
     color: var(--ak-green);
     font-weight: 600;
 }
+
 .table a:hover {
     color: var(--ak-orange);
 }
+
 .list-group-item {
     border-radius: 7px !important;
     margin-bottom: 4px;
@@ -334,46 +163,32 @@ ul.list-group {
 }
 
 /* ====== Мобильная адаптация ====== */
-@media (max-width: 991.98px) {
-    .desktop-menu { display: none !important; }
-    .mobile-menu { display: flex !important; }
+@media (max-width: 768px) {
     .container, .main-card {
         padding: 10px 0 12px 0;
         border-radius: 0;
         margin-bottom: 14px;
     }
-    .navbar-brand img { height: 28px; }
-    h2, h3, h5 { font-size: 1.15em; }
-    .btn, .btn-orange, .btn-dark, button {
+    .navbar-brand img {
+        height: 28px;
+    }
+    h2, h3, h5 {
+        font-size: 1.15em;
+    }
+    .btn, button, .artkivi-btn {
         font-size: 0.96em !important;
-        padding: 7px 12px !important;
+        padding: 12px 0 !important;
         margin-bottom: 7px !important;
-        width: 100% !important;
-        min-width: unset !important;
+        display: block;
+        width: 100%;
+        border-radius: 22px !important;
     }
-    .col-md-4 > .btn,
-    .col-md-4 > form > .btn,
-    .col-md-4 > a.btn {
-        margin-bottom: 10px !important;
+    .table {
+        font-size: 0.97em;
     }
-    .col-md-4 > .btn:last-child,
-    .col-md-4 > form:last-child > .btn,
-    .col-md-4 > a.btn:last-child {
-        margin-bottom: 0 !important;
+    .table thead {
+        display: none;
     }
-    .d-flex.gap-2 {
-        flex-direction: column !important;
-        gap: 8px !important;
-        align-items: stretch !important; /* <--- ДОБАВЛЕНО для выравнивания кнопок */
-    }
-    /* Фикс для блока кнопок в index.html, чтобы ВСЕ были одной ширины */
-    .d-flex.gap-2.flex-wrap > * {
-        width: 100% !important;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-    }
-    .table { font-size: 0.97em; }
-    .table thead { display: none; }
     .table, .table tbody, .table tr, .table td {
         display: block;
         width: 100%;
@@ -400,37 +215,172 @@ ul.list-group {
     }
 }
 
-/* ====== Ссылка-регистрация отдельной кнопкой ====== */
-.register-link {
-    display: block;
-    width: 100%;
-    text-align: center;
-    padding: 9px 0;
-    border-radius: 8px;
-    color: var(--ak-orange) !important;
-    background: var(--ak-white);
-    border: 1.5px solid var(--ak-orange);
-    font-weight: 600;
-    margin-top: 15px;
-    text-decoration: none !important;
-    transition: background 0.13s, color 0.13s, border 0.13s;
+/* ===== Только для десктопа: скрывать mobile меню и blur overlay ===== */
+@media (min-width: 992px) {
+    .mobile-slide-menu,
+    .blur-overlay,
+    .mobile-menu {
+        display: none !important;
+    }
+    .desktop-menu {
+        display: flex !important;
+    }
+    /* ====== ЯЗЫКОВОЙ ДРОПДАУН (desktop) ====== */
+    .language-dropdown-menu {
+        right: 0 !important;
+        left: auto !important;
+        max-width: 180px;
+        min-width: 140px;
+        word-break: break-word;
+    }
 }
-.register-link:hover, .register-link:focus {
-    background: var(--ak-orange);
-    color: #fff !important;
-    border-color: var(--ak-orange);
-    text-decoration: none !important;
+
+/* ====== Управление видимостью меню для мобильных/десктопа ====== */
+.desktop-menu {
+    display: flex !important;
 }
-/* ====== Исправление для формы поиска на мобильных ====== */
+.mobile-menu {
+    display: none !important;
+}
 @media (max-width: 991.98px) {
-    form.row.g-2.mb-3 > .col-md-1 {
-        flex: 0 0 100%;
-        max-width: 100%;
-        margin-top: 6px;
-        margin-bottom: 0;
+    .desktop-menu {
+        display: none !important;
     }
-    form.row.g-2.mb-3 > .col-md-1 .btn {
-        width: 100% !important;
-        font-size: 1.05em;
+    .mobile-menu {
+        display: flex !important;
+        align-items: center;
+        margin-left: auto;
+    }
+    .mobile-slide-menu {
+        display: block;
     }
 }
+
+/* ====== Мобильное бургер-меню (карточка) ====== */
+.hamburger {
+    width: 32px;
+    height: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+}
+.hamburger span {
+    display: block;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--ak-orange);
+    transition: .32s cubic-bezier(.38,.4,.26,1.01);
+    box-shadow: 0 0.5px 2px #0002;
+    position: relative;
+}
+.hamburger.active span:nth-child(1) { transform: translateX(-10px) scaleX(0.7); opacity: 0; }
+.hamburger.active span:nth-child(2) { transform: scaleX(1.22); }
+.hamburger.active span:nth-child(3) { transform: translateX(10px) scaleX(0.7); opacity: 0; }
+.hamburger:not(.active) span { transform: none; opacity: 1; }
+
+.navbar-toggler { box-shadow: none !important; border: none !important; background: transparent !important; }
+.navbar-toggler:focus { box-shadow: none !important; outline: none !important; }
+
+.blur-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(40, 44, 52, 0.26);
+    z-index: 1201;
+    display: none;
+    transition: opacity 0.23s;
+    backdrop-filter: blur(14px) saturate(1.2); /* Сильный blur! */
+    -webkit-backdrop-filter: blur(14px) saturate(1.2); /* Для iOS/Safari */
+}
+.blur-overlay.show { display: block; opacity: 1; }
+
+.mobile-slide-menu {
+    position: fixed;
+    left: 50%;
+    top: 20%;
+    transform: translate(-50%, -50%) scale(0.96); /* Центрируем */
+    width: 96vw;
+    max-width: 390px;
+    min-width: 220px;
+    background: var(--ak-black);
+    border-radius: 24px;
+    box-shadow: 0 14px 38px 0 rgba(0,0,0,0.23);
+    z-index: 1202;
+    opacity: 0;
+    pointer-events: none;
+    padding: 20px 18px 18px 18px;
+    color: var(--ak-white);
+    transition: opacity .28s, transform .24s;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.mobile-slide-menu.open {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1); /* Центр + scale-аним. */
+    pointer-events: auto;
+}
+/* Landscape: чуть меньше высота и больше ширина */
+@media (max-width: 991.98px) and (orientation: landscape) {
+  .mobile-slide-menu {
+    top: 40%;
+    width: 80vw;
+    max-width: 420px;
+    padding: 12px 8px 12px 8px;
+    max-height: 88vh;
+  }
+}
+.mobile-slide-menu .btn,
+.mobile-slide-menu button,
+.mobile-slide-menu a.btn {
+    border-radius: 15px !important;
+    margin-bottom: 9px;
+    font-size: 1.08em !important;
+    font-weight: 500;
+    padding: 11px 0 !important;
+    box-shadow: none;
+    border: none !important;
+    background: #ececec !important;
+    color: #222 !important;
+    transition: background .16s, color .13s;
+}
+.mobile-slide-menu .btn-outline-dark {
+    background: var(--ak-white) !important;
+    border: 1.3px solid #c5c5c5 !important;
+    color: #222 !important;
+}
+.mobile-slide-menu .btn-outline-dark:hover,
+.mobile-slide-menu .btn-outline-dark:focus {
+    background: var(--ak-orange) !important;
+    color: var(--ak-white) !important;
+    border-color: var(--ak-orange) !important;
+}
+.mobile-slide-menu .dropdown-menu {
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(57,57,57,0.13);
+    margin-top: 4px;
+}
+.mobile-slide-menu .badge {
+    border-radius: 7px;
+    font-size: 0.99em;
+    margin-left: 6px;
+    font-weight: 600;
+    background: #f4f4f4;
+    color: #565656;
+}
+.mobile-slide-menu .badge.bg-dark {
+    background: #333 !important;
+    color: #fff !important;
+}
+.mobile-slide-menu .badge.bg-secondary {
+    background: #a1a1a1 !important;
+    color: #fff !important;
+}
+/* Убрать прокрутку у карточки (iOS эффект) */
+.mobile-slide-menu::-webkit-scrollbar { display: none; }
+.mobile-slide-menu { scrollbar-width: none; }

@@ -1,20 +1,20 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-md-4">
-    <h3 class="mb-4">{{ _('Вход') }}</h3>
-    <form method="post">
-      <div class="mb-3">
-        <label class="form-label">{{ _('Логин') }}</label>
-        <input type="text" name="username" class="form-control" required autofocus>
-      </div>
-      <div class="mb-3">
-        <label class="form-label">{{ _('Пароль') }}</label>
-        <input type="password" name="password" class="form-control" required>
-      </div>
-      <button type="submit" class="btn btn-dark w-100 mb-2">{{ _('Войти') }}</button>
-    </form>
-    <a href="{{ url_for('register') }}" class="btn btn-orange w-100">{{ _('Регистрация') }}</a>
+<div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 75vh;">
+  <h2 class="mb-4">{{ _('Войти') }}</h2>
+  <form method="post" class="mb-2" style="max-width: 500px; width: 100%;">
+    <div class="mb-3">
+      <label for="username" class="form-label">{{ _('Логин') }}</label>
+      <input type="text" class="form-control" id="username" name="username" required autofocus>
+    </div>
+    <div class="mb-3">
+      <label for="password" class="form-label">{{ _('Пароль') }}</label>
+      <input type="password" class="form-control" id="password" name="password" required>
+    </div>
+    <button type="submit" class="btn btn-dark btn-lg w-100 mb-2">{{ _('Войти') }}</button>
+  </form>
+  <div style="max-width: 500px; width: 100%;">
+    <a href="{{ url_for('register') }}" class="btn btn-outline-dark btn-lg w-100">{{ _('Регистрация') }}</a>
   </div>
 </div>
 {% endblock %}

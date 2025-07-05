@@ -208,14 +208,33 @@ def get_product_by_id(product_id):
     return resp.data
 
 # =======================
-#   Главная страница с фильтрацией
+#   Главная страница с фильтрацией (ОБНОВЛЁННЫЙ КОД!)
 # =======================
+from flask_babel import get_locale
+
 @app.route("/")
 @login_required
 def index():
     products = get_products()
     categories = get_categories()
-    cat_dict = {c["id"]: c["name"] for c in categories}
+
+    # Получаем текущий язык (fi, en, ru)
+    current_lang = str(get_locale())  # fi / en / ru
+
+    # --- Словарь: id -> название на нужном языке ---
+    cat_dict = {}
+    for c in categories:
+        # Логика для мультиязычного отображения названия категории
+        # Структура в БД: name, name_fi, name_en, name_ru
+        # name_fi по умолчанию
+        if current_lang == "fi":
+            cat_dict[c["id"]] = c.get("name_fi") or c.get("name") or ""
+        elif current_lang == "en":
+            cat_dict[c["id"]] = c.get("name_en") or c.get("name") or ""
+        elif current_lang == "ru":
+            cat_dict[c["id"]] = c.get("name_ru") or c.get("name") or ""
+        else:
+            cat_dict[c["id"]] = c.get("name") or ""
 
     # --- Фильтры из request.args ---
     search = request.args.get('search', '').strip().lower()
@@ -246,6 +265,7 @@ def index():
                     continue
         except Exception:
             pass
+        # Здесь — имя категории на нужном языке
         p["category_name"] = cat_dict.get(p["category_id"], "")
         filtered.append(p)
 
@@ -258,7 +278,8 @@ def index():
         categories=categories,
         total_products=total_products,
         total_categories=total_categories,
-        recent_products=recent_products
+        recent_products=recent_products,
+        current_lang=current_lang  # <-- добавили!
     )
 
 # =======================
