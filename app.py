@@ -574,6 +574,20 @@ def export_excel():
         as_attachment=True,
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+from flask import jsonify
+
+@app.route("/edit_category_name", methods=["POST"])
+@login_required
+@editor_required
+def edit_category_name():
+    data = request.get_json()
+    cat_id = data.get("id")
+    new_name = data.get("name", "").strip()
+    if not cat_id or not new_name:
+        return jsonify(success=False, message="Нет данных")
+    supabase.table("categories").update({"name": new_name}).eq("id", cat_id).execute()
+    log_action(g.user["id"], "edit", "category", cat_id, f'Переименована категория: {new_name}')
+    return jsonify(success=True)
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5111))

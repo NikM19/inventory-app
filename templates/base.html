@@ -20,14 +20,14 @@
         <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="color:#fff;">
           🌐 {{ LANGUAGES[get_locale()] }}
         </button>
-       <!-- ИЗМЕНЕНИЕ: добавлен класс language-dropdown-menu -->
-    <ul class="dropdown-menu dropdown-menu-end language-dropdown-menu">
-      {% for code, lang in LANGUAGES.items() %}
-        <li>
-          <a class="dropdown-item {% if get_locale() == code %}active{% endif %}" href="{{ url_for('set_language', lang=code) }}">{{ lang }}</a>
-        </li>
-      {% endfor %}
-    </ul>
+        <!-- ИЗМЕНЕНИЕ: добавлен класс language-dropdown-menu -->
+        <ul class="dropdown-menu dropdown-menu-end language-dropdown-menu">
+          {% for code, lang in LANGUAGES.items() %}
+            <li>
+              <a class="dropdown-item {% if get_locale() == code %}active{% endif %}" href="{{ url_for('set_language', lang=code) }}">{{ lang }}</a>
+            </li>
+          {% endfor %}
+        </ul>
       </div>
       {% if g.user %}
         <span class="navbar-text" style="color: #fff;">
@@ -43,12 +43,12 @@
           <a class="btn btn-warning ms-2" href="{{ url_for('logs') }}">{{ _('Журнал действий') }}</a>
         {% endif %}
         <a class="btn btn-link ms-2" style="color: #fff;" href="{{ url_for('logout') }}">{{ _('Выйти') }}</a>
-        {% else %}
-  {% if request.endpoint not in ['login', 'register'] %}
-    <a class="btn btn-outline-light ms-2" href="{{ url_for('login') }}">{{ _('Вход') }}</a>
-    <a class="btn btn-outline-light ms-2" href="{{ url_for('register') }}">{{ _('Регистрация') }}</a>
-  {% endif %}
-{% endif %}
+      {% else %}
+        {% if request.endpoint not in ['login', 'register'] %}
+          <a class="btn btn-outline-light ms-2" href="{{ url_for('login') }}">{{ _('Вход') }}</a>
+          <a class="btn btn-outline-light ms-2" href="{{ url_for('register') }}">{{ _('Регистрация') }}</a>
+        {% endif %}
+      {% endif %}
     </div>
     <!-- Мобильное меню (бургер) -->
     <div class="mobile-menu align-items-center d-lg-none">
@@ -105,11 +105,11 @@
 <div class="container-fluid mt-4">
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-      <div class="flash-wrapper">
+      <div class="flash-slide-panel">
         {% for category, message in messages %}
-          <div class="alert alert-{{ category }} alert-dismissible fade show autohide-alert" role="alert">
+          <div class="flash-slide flash-slide-{{ category }}">
             {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <button type="button" class="btn-close btn-close-white" onclick="this.parentElement.style.display='none';"></button>
           </div>
         {% endfor %}
       </div>
@@ -151,17 +151,30 @@
     document.addEventListener('keydown', function(e){
       if(opened && (e.key === "Escape" || e.keyCode === 27)) closeMenu();
     });
-
-    // ======= АВТОЗАКРЫТИЕ АЛЕРТОВ =======
-    setTimeout(function(){
-      document.querySelectorAll('.autohide-alert').forEach(function(alert){
-        alert.classList.remove('show');
-        setTimeout(function(){
-          if(alert && alert.parentNode) alert.parentNode.removeChild(alert);
-        }, 400);
-      });
-    }, 3000);
   });
+
+   // === ДОБАВЛЯЕМ ПОЗИЦИОНИРОВАНИЕ FLASH SLIDE ===
+    function setFlashPanelTop() {
+      var navbar = document.querySelector('.navbar');
+      var panel = document.querySelector('.flash-slide-panel');
+      if (navbar && panel) {
+        var navHeight = navbar.offsetHeight;
+        // 14px — "воздух" между шапкой и уведомлением
+        panel.style.top = (navHeight + 14) + 'px';
+      }
+    }
+    setFlashPanelTop();
+    window.addEventListener('resize', setFlashPanelTop);
+
+    // ======= FLASH SLIDE AUTOCLOSE =======
+    setTimeout(function(){
+      document.querySelectorAll('.flash-slide').forEach(function(el){
+        el.classList.add('hide');
+        setTimeout(function(){
+          if(el && el.parentNode) el.parentNode.removeChild(el);
+        }, 480);
+      });
+    }, 5000);
 </script>
 </body>
 </html>

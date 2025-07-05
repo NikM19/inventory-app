@@ -384,3 +384,99 @@ ul.list-group {
 /* Убрать прокрутку у карточки (iOS эффект) */
 .mobile-slide-menu::-webkit-scrollbar { display: none; }
 .mobile-slide-menu { scrollbar-width: none; }
+/* ===== Slide-down flash alert ===== */
+.flash-slide-panel {
+  position: fixed;
+  top: 60px;
+  left: 0; right: 0;
+  z-index: 3001;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+
+.flash-slide {
+  position: relative;
+  min-width: 320px;
+  max-width: 540px;
+  width: auto;
+  margin-bottom: 8px;
+  background: #222;
+  color: #fff;
+  border-radius: 18px !important;
+  box-shadow: 0 4px 22px rgba(0,0,0,0.14);
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+  transition: opacity 0.38s, transform 0.42s;
+  padding: 15px 44px 15px 24px;
+  font-size: 1.08em;
+}
+
+.flash-slide.hide {
+  opacity: 0;
+  transform: translateY(-110%);
+  pointer-events: none;
+}
+
+.flash-slide .btn-close {
+  position: absolute;
+  top: 12px; right: 18px;
+  opacity: 0.73;
+  z-index: 2;
+}
+@media (max-width: 600px) {
+  .flash-slide, .flash-slide .alert {
+    min-width: 90vw;
+    max-width: 98vw;
+    border-radius: 0 0 10px 10px !important;
+    font-size: 0.99em;
+    padding-left: 18px;
+    padding-right: 40px;
+  }
+}
+/* ===== Цветные flash-уведомления (с прозрачностью, фирменно) ===== */
+
+/* Flash цвет: успех (зелёный, немного прозрачный) */
+.flash-slide-success {
+  background: rgba(36, 162, 100, 0.60) !important; /* Зеленый */
+  color: #fff !important;
+  backdrop-filter: blur(4px);
+}
+
+/* Flash цвет: ошибка (красный, немного прозрачный) */
+.flash-slide-danger, .flash-slide-error {
+  background: rgba(203, 70, 66, 0.60) !important; /* Красный */
+  color: #fff !important;
+  backdrop-filter: blur(4px);
+}
+
+/* Flash цвет: предупреждение (оранжевый, немного прозрачный) */
+.flash-slide-warning {
+  background: rgba(232, 154, 65, 0.60) !important; /* Оранжевый */
+  color: #fff !important;
+  backdrop-filter: blur(4px);
+}
+
+/* Flash цвет: информационный (бирюзовый, немного прозрачный) */
+.flash-slide-info {
+  background: rgba(96, 182, 178, 0.60) !important; /* Бирюзовый */
+  color: #fff !important;
+  backdrop-filter: blur(4px);
+}
+/* ===== Кнопка редактирования категории рядом с select ===== */
+.category-edit-btn {
+  border: none !important;
+  background: transparent !important;
+  padding: 2px 4px !important;
+  box-shadow: none !important;
+  transition: background 0.15s;
+}
+.category-edit-btn:hover,
+.category-edit-btn:focus {
+  background: #f3f3f3 !important;
+}
+.category-edit-btn svg {
+  display: block;
+}
