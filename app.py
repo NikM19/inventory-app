@@ -204,8 +204,11 @@ def get_category_by_id(category_id):
     return resp.data
 
 def get_product_by_id(product_id):
-    resp = supabase.table("products").select("*").eq("id", product_id).single().execute()
-    return resp.data
+    try:
+        resp = supabase.table("products").select("*").eq("id", product_id).single().execute()
+        return resp.data
+    except Exception:
+        return None
 
 # =======================
 #   Главная страница с фильтрацией (ОБНОВЛЁННЫЙ КОД!)
@@ -504,6 +507,9 @@ def edit(product_id):
 @editor_required
 def delete(product_id):
     product = get_product_by_id(product_id)
+    if not product:
+        flash(_("Товар не найден! Возможно, он уже был удалён."), "warning")
+        return redirect(url_for("index"))
     supabase.table("products").delete().eq("id", product_id).execute()
     log_action(g.user["id"], "delete", "product", product_id, _('Удалён товар: ') + (product["name"] if product else str(product_id)))
     flash(_("Товар удалён!"), "success")
