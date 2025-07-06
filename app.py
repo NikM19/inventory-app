@@ -567,7 +567,6 @@ def export_excel():
             _("Ед. изм."): p.get("unit"),
             _("Размер"): p.get("size"),
             _("Цена (€)"): p.get("price"),
-            _("Картинка"): p.get("image_url"),
         })
     df = pd.DataFrame(filtered_products)
     output = BytesIO()
