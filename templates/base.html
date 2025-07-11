@@ -46,7 +46,7 @@
       {% else %}
         {% if request.endpoint not in ['login', 'register'] %}
           <a class="btn btn-outline-light ms-2" href="{{ url_for('login') }}">{{ _('Вход') }}</a>
-          <a class="btn btn-outline-light ms-2" href="{{ url_for('register') }}">{{ _('Регистрация') }}</a>
+          <!-- <a class="btn btn-outline-light ms-2" href="{{ url_for('register') }}">{{ _('Регистрация') }}</a> -->
         {% endif %}
       {% endif %}
     </div>
@@ -97,7 +97,7 @@
       </div>
     {% else %}
       <a class="btn btn-outline-dark w-100 mb-2" href="{{ url_for('login') }}">{{ _('Вход') }}</a>
-      <a class="btn btn-outline-dark w-100" href="{{ url_for('register') }}">{{ _('Регистрация') }}</a>
+      <!-- <a class="btn btn-outline-dark w-100" href="{{ url_for('register') }}">{{ _('Регистрация') }}</a> -->
     {% endif %}
   </div>
 </div>

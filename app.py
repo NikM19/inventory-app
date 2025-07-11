@@ -309,14 +309,14 @@ def register():
             msg = Message(
                 subject=_("Активация аккаунта в системе учёта товаров"),
                 recipients=[username],
-                html=f"""
+                html=f'''
                     <h3>{_('Здравствуйте!')}</h3>
                     <p>{_('Для завершения регистрации нажмите на кнопку ниже:')}</p>
                     <p><a href="{activation_link}" style="display:inline-block;padding:8px 14px;background:#4CAF50;color:white;text-decoration:none;border-radius:3px">{_('Активировать аккаунт')}</a></p>
                     <p>{_('Или перейдите по ссылке:')}<br>{activation_link}</p>
                     <hr>
                     <small>{_('Если вы не регистрировались, просто проигнорируйте это письмо.')}</small>
-                """
+                '''
             )
             mail.send(msg)
             flash(_("На ваш email отправлено письмо для активации аккаунта."), "success")
