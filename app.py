@@ -288,7 +288,7 @@ def index():
 # =======================
 #   Остальные view-функции (без изменений)
 # =======================
-
+"""
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
@@ -325,7 +325,7 @@ def register():
             flash(_("Регистрация прошла, но письмо не отправлено. Обратитесь к администратору."), "warning")
         return redirect(url_for("login"))
     return render_template("register.html")
-
+"""
 @app.route("/activate/<token>")
 def activate_account(token):
     resp = supabase.table("users").select("*").eq("activation_token", token).execute()
