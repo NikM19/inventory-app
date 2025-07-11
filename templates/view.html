@@ -13,9 +13,9 @@
   </h2>
   <div class="row">
     {% if product.image_url %}
-      <div class="col-md-4 mb-4">
-        <img src="{{ product.image_url }}" class="img-fluid rounded border shadow-sm" alt="{{ product.name }}">
-      </div>
+    <div class="col-md-4 mb-4">
+      <img src="{{ product.image_url }}" class="img-fluid rounded border shadow-sm" alt="{{ product.name }}">
+    </div>
     {% endif %}
     <div class="col-md-8">
       <table class="table table-bordered">
@@ -41,7 +41,8 @@
       {% if g.user.role == 'editor' %}
       <div class="mt-4 d-flex gap-2">
         <a href="{{ url_for('edit', product_id=product.id) }}" class="btn btn-warning">✏️ {{ _('Редактировать') }}</a>
-        <form action="{{ url_for('delete', product_id=product.id) }}" method="POST" onsubmit="return confirm('{{ _('Удалить товар?') }}')">
+        <form action="{{ url_for('delete', product_id=product.id) }}" method="POST"
+          onsubmit="return confirm('{{ _('Удалить товар?') }}');">
           <button type="submit" class="btn btn-danger">🗑️ {{ _('Удалить') }}</button>
         </form>
       </div>

@@ -96,7 +96,7 @@
         <a href="{{ url_for('edit', product_id=product.id) }}" class="btn btn-warning btn-sm">{{ _('Редактировать')
           }}</a>
         <form action="{{ url_for('delete', product_id=product.id) }}" method="post" style="display:inline;">
-          <button type="submit" class="btn btn-danger btn-sm" data-confirm="{{ _('Удалить товар?')|escapejs }}">
+          <button type="submit" class="btn btn-danger btn-sm" data-confirm="{{ _('Удалить товар?') }}">
             {{ _('Удалить') }}
           </button>
         </form>
