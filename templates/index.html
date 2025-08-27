@@ -5,9 +5,7 @@
   {% if g.user.role == 'editor' %}
   <div>
     <a href="{{ url_for('create') }}" class="btn btn-success">➕ {{ _('Добавить товар') }}</a>
-    <a href="{{ url_for('add_category') }}"
-       id="addCatBtn"
-       class="btn btn-success">📁 {{ _('Добавить категорию') }}</a>
+    <a href="#" id="toggleAddCat" class="btn btn-success">📁 {{ _('Добавить категорию') }}</a>
     <a href="{{ url_for('export_excel') }}" class="btn btn-outline-secondary">{{ _('Скачать Excel') }}</a>
   </div>
   {% endif %}
