@@ -215,6 +215,17 @@ def get_primary_image_url(product_id: int):
         pass
     return None
 
+def get_primary_images_map(product_ids):
+    """Вернёт словарь {product_id: url} для всех главных фото разом."""
+    if not product_ids:
+        return {}
+    resp = supabase.table("product_images") \
+        .select("product_id,url") \
+        .in_("product_id", product_ids) \
+        .eq("is_primary", True) \
+        .execute()
+    rows = resp.data or []
+    return {r["product_id"]: r["url"] for r in rows}
 
 def set_primary_image(image_id: int):
     """Сделать фото главным (сбрасывает флаг у других фото товара)."""
@@ -352,18 +363,39 @@ from flask_babel import get_locale
 @app.route("/")
 @login_required
 def index():
-    products = get_products()
+    # ---- ПАГИНАЦИЯ (опционально) ----
+    try:
+        page = int(request.args.get("page", 1))
+    except Exception:
+        page = 1
+    per_page = 100  # можешь поставить 100, если пока без пагинации в UI
+    start = (page - 1) * per_page
+    end = start + per_page - 1  # Supabase .range — включительно
+
+    # Категории (их удобно позже кэшировать)
     categories = get_categories()
 
-    # Получаем текущий язык (fi, en, ru)
-    current_lang = str(get_locale())  # fi / en / ru
+    # Текущий язык
+    current_lang = str(get_locale())  # "fi" / "en" / "ru"
 
-    # --- Словарь: id -> название на нужном языке ---
+    # Товары: забираем только нужные поля + диапазон
+    prod_q = supabase.table("products") \
+        .select("id,name,description,quantity,unit,size,price,category_id,image_url,created_at") \
+        .order("created_at", desc=True) \
+        .range(start, end) \
+        .execute()
+    products_all = prod_q.data or []
+
+    # --- Фильтры из request.args ---
+    search = request.args.get('search', '').strip().lower()
+    category_id = request.args.get('category_id', '')
+    size = request.args.get('size', '').strip().lower()
+    price = request.args.get('price', '').replace(',', '.').strip()
+    quantity = request.args.get('quantity', '').replace(',', '.').strip()
+
+    # Словарь названий категорий на нужном языке
     cat_dict = {}
     for c in categories:
-        # Логика для мультиязычного отображения названия категории
-        # Структура в БД: name, name_fi, name_en, name_ru
-        # name_fi по умолчанию
         if current_lang == "fi":
             cat_dict[c["id"]] = c.get("name_fi") or c.get("name") or ""
         elif current_lang == "en":
@@ -373,44 +405,44 @@ def index():
         else:
             cat_dict[c["id"]] = c.get("name") or ""
 
-    # --- Фильтры из request.args ---
-    search = request.args.get('search', '').strip().lower()
-    category_id = request.args.get('category_id', '')
-    size = request.args.get('size', '').strip().lower()
-    price = request.args.get('price', '').replace(',', '.').strip()
-    quantity = request.args.get('quantity', '').replace(',', '.').strip()
-
-    # --- Фильтрация по всем полям ---
-    filtered = []
-    for p in products:
-        if search and search not in p.get('name', '').lower():
+    # Предварительная фильтрация по простым полям
+    prefiltered = []
+    for p in products_all:
+        if search and search not in (p.get('name') or '').lower():
             continue
-        if category_id:
-            if not p.get('category_id') or str(p.get('category_id')) != str(category_id):
+        if category_id and str(p.get('category_id') or '') != str(category_id):
+            continue
+        if size and size not in str(p.get('size') or '').lower():
+            continue
+        try:
+            if price and (p.get('price') is None or float(p['price']) > float(price)):
                 continue
-        if size and size not in str(p.get('size', '')).lower():
-            continue
-        try:
-            if price:
-                if p.get('price') is None or float(p.get('price')) > float(price):
-                    continue
         except Exception:
             pass
         try:
-            if quantity:
-                if p.get('quantity') is None or float(p.get('quantity')) < float(quantity):
-                    continue
+            if quantity and (p.get('quantity') is None or float(p['quantity']) < float(quantity)):
+                continue
         except Exception:
             pass
-        # Здесь — имя категории на нужном языке
-        p["category_name"] = cat_dict.get(p["category_id"], "")
-        # URL главного фото (если используется в index.html как превью)
-        p["primary_image_url"] = get_primary_image_url(p["id"]) or p.get("image_url")
+        prefiltered.append(p)
+
+    # ---- Одним запросом тянем главные фото (без N+1) ----
+    ids = [p["id"] for p in prefiltered]
+    prim_map = get_primary_images_map(ids)
+
+    # Дополняем поля для шаблона
+    filtered = []
+    for p in prefiltered:
+        p["category_name"] = cat_dict.get(p.get("category_id"), "")
+        # Если в шаблоне используешь product.image_url — можешь оставить как есть.
+        # Это поле синхронизируется у тебя при апдейтах. Но на всякий случай добавим удобное:
+        p["primary_image_url"] = prim_map.get(p["id"]) or p.get("image_url")
         filtered.append(p)
 
-    total_products = len(products)
+    # Статистика (быстро и просто)
+    total_products = len(products_all)  # это кол-во на текущей странице; общий count можно сделать отдельно
     total_categories = len(categories)
-    recent_products = products[:5]
+    recent_products = products_all[:5]
 
     return render_template("index.html",
         products=filtered,
@@ -418,9 +450,9 @@ def index():
         total_products=total_products,
         total_categories=total_categories,
         recent_products=recent_products,
-        current_lang=current_lang  # <-- добавили!
+        current_lang=current_lang,
+        page=page
     )
-
 # =======================
 #   Остальные view-функции (без изменений)
 # =======================
