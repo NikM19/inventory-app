@@ -3,7 +3,7 @@ import uuid
 from dotenv import load_dotenv
 load_dotenv()
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from io import BytesIO
 
 from flask import (
@@ -17,6 +17,7 @@ from supabase import create_client
 from functools import wraps
 import requests
 import mimetypes
+from flask_caching import Cache
 
 # --- Flask-Babel ---
 from flask_babel import Babel, _   # <-- здесь всё хорошо!
@@ -28,6 +29,22 @@ SUPERADMIN_EMAIL = "musatovnikita13@gmail.com"
 USE_LOCAL_UPLOADS = os.getenv("USE_LOCAL_UPLOADS", "False").lower() in ("1", "true", "yes")
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "dev_secret")
+
+# --- КЭШ + долгое кэширование статики ---
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = timedelta(days=30)  # 30 дней для /static
+
+# Версия ассетов для cache-busting (поднимай число при обновлении css/js)
+ASSET_VERSION = 7
+
+@app.context_processor
+def inject_asset_version():
+    return {"ASSET_VERSION": ASSET_VERSION}
+
+# Инициализация кэша (в проде можно RedisCache)
+cache = Cache(app, config={
+    "CACHE_TYPE": "SimpleCache",
+    "CACHE_DEFAULT_TIMEOUT": 600,  # по умолчанию 10 мин
+})
 
 # --- Настройки Flask-Mail ---
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
@@ -289,7 +306,6 @@ def superadmin_required(view_func):
 # =======================
 #   Flask hooks
 # =======================
-from flask import request  # наверху файла, вместе с остальными импортами
 
 @app.before_request
 def load_logged_in_user():
