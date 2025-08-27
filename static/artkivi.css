@@ -480,3 +480,37 @@ ul.list-group {
 .category-edit-btn svg {
   display: block;
 }
+.table-rounded-container{ 
+  border: 1px solid #dee2e6;
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #f8f9fb 0%, #f3f4f7 100%);
+  box-shadow: 0 2px 4px rgba(0,0,0,.10), 0 8px 18px rgba(0,0,0,.06);
+  }
+  /* Таблица внутри контейнера — прозрачная, без своей тени и отступа */
+.table-rounded-container .table{
+  background: transparent;
+  box-shadow: none !important;
+  margin-bottom: 0;
+}
+
+/* Ховер строк — лёгкая подсветка, чтобы читалось на новом фоне */
+.table-rounded-container .table-hover tbody tr:hover{
+  background-color: rgba(255,255,255,.55);
+}
+/* Тень под тёмной шапкой таблицы (через псевдо-элемент) */
+.table-rounded-container thead.table-dark tr {
+  position: relative;
+  z-index: 1;                          /* контент шапки над тенью */
+}
+
+.table-rounded-container thead.table-dark tr::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;                        /* сливается с нижней границей шапки */
+  height: 12px;                        /* высота «ореола» тени */
+  pointer-events: none;                /* чтобы кликать по кнопкам в шапке */
+  box-shadow: 0 10px 18px rgba(0,0,0,.18);
+}

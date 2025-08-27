@@ -37,7 +37,7 @@
   </div>
   <div class="mb-3">
     <label class="form-label">{{ _('Картинка товара') }}</label>
-    <input type="file" name="image" class="form-control" accept="image/*">
+<input type="file" name="images" multiple accept="image/*">
   </div>
   <button type="submit" class="btn btn-success">{{ _('Сохранить') }}</button>
   <a href="{{ url_for('index') }}" class="btn btn-secondary">{{ _('Отмена') }}</a>

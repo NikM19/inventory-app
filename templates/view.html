@@ -11,12 +11,67 @@
   <h2 class="mb-4">
     <span style="font-size: 1.4em;">🪨</span> {{ product.name }}
   </h2>
+
   <div class="row">
-    {% if product.image_url %}
+
+    <!-- Левая колонка: фото товара -->
     <div class="col-md-4 mb-4">
-      <img src="{{ product.image_url }}" class="img-fluid rounded border shadow-sm" alt="{{ product.name }}">
+
+      {# Есть несколько фото? Показываем карусель #}
+{% if images and images|length > 0 %}
+  {% set carousel_id = 'productCarousel_' ~ product.id %}
+  <div id="{{ carousel_id }}" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-inner">
+      {% for img in images %}
+        <div class="carousel-item {% if loop.first %}active{% endif %}">
+          <img src="{{ img.url }}" class="d-block w-100 rounded border shadow-sm" alt="{{ product.name }}">
+        </div>
+      {% endfor %}
     </div>
+
+    {% if images|length > 1 %}
+      <button class="carousel-control-prev" type="button"
+              data-bs-target="#{{ carousel_id }}" data-bs-slide="prev"
+              aria-label="{{ _('Предыдущее фото') }}">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">{{ _('Назад') }}</span>
+      </button>
+      <button class="carousel-control-next" type="button"
+              data-bs-target="#{{ carousel_id }}" data-bs-slide="next"
+              aria-label="{{ _('Следующее фото') }}">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">{{ _('Вперёд') }}</span>
+      </button>
     {% endif %}
+  </div>
+
+<!-- 🔢 Счётчик фото -->
+<div class="text-center mt-2">
+  <span id="photoCounter_{{ product.id }}" class="small text-muted">1 / {{ images|length }}</span>
+</div>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", function() {
+    var counter = document.getElementById("photoCounter_{{ product.id }}");
+    var carousel = document.getElementById("{{ carousel_id }}");
+
+    if (carousel && counter) {
+      carousel.addEventListener("slid.bs.carousel", function (event) {
+        var total = carousel.querySelectorAll(".carousel-item").length;
+        var index = event.to + 1;
+        counter.textContent = index + " / " + total;
+      });
+    }
+  });
+  </script>
+
+{% elif product.image_url %}
+  <img src="{{ product.image_url }}" class="img-fluid rounded border shadow-sm" alt="{{ product.name }}">
+{% endif %}
+
+    </div>
+
+    <!-- Правая колонка: детали -->
     <div class="col-md-8">
       <table class="table table-bordered">
         <tbody>
@@ -38,16 +93,20 @@
           </tr>
         </tbody>
       </table>
+
       {% if g.user.role == 'editor' %}
       <div class="mt-4 d-flex gap-2">
-        <a href="{{ url_for('edit', product_id=product.id) }}" class="btn btn-warning">✏️ {{ _('Редактировать') }}</a>
+        <a href="{{ url_for('edit', product_id=product.id) }}" class="btn btn-warning">
+          ✏️ {{ _('Редактировать') }}
+        </a>
         <form action="{{ url_for('delete', product_id=product.id) }}" method="POST"
-          onsubmit="return confirm('{{ _('Удалить товар?') }}');">
+              onsubmit="return confirm('{{ _('Удалить товар?') }}');">
           <button type="submit" class="btn btn-danger">🗑️ {{ _('Удалить') }}</button>
         </form>
       </div>
       {% endif %}
     </div>
+
   </div>
 </div>
 {% endblock %}

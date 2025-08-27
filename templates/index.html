@@ -54,64 +54,64 @@
   </div>
 </form>
 
-<table class="table table-bordered align-middle table-hover mb-5">
-  <thead class="table-dark">
-    <tr>
-      <th>{{ _('Название') }}</th>
-      <th>{{ _('Категория') }}</th>
-      <th>{{ _('Количество') }}</th>
-      <th>{{ _('Размер') }}</th>
-      <th>{{ _('Цена, €') }}</th>
-      <th>{{ _('Действия') }}</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for product in products %}
-    <tr>
-      <td>
-        <a href="{{ url_for('view', product_id=product.id) }}"
-          class="text-decoration-none d-flex align-items-center gap-2">
-          {% if product.image_url %}
-          <img src="{{ product.image_url }}" alt="{{ product.name }}"
-            style="height:36px; width:auto; border-radius:6px; object-fit:cover; margin-right: 7px;">
-          {% endif %}
-          {{ product.name }}
-        </a>
-      </td>
-      <td>
-        {# ВЫВОД на нужном языке! #}
-        {% if current_lang == 'fi' and product.category_name_fi %}
-        {{ product.category_name_fi }}
-        {% elif current_lang == 'en' and product.category_name_en %}
-        {{ product.category_name_en }}
-        {% else %}
-        {{ product.category_name }}
-        {% endif %}
-      </td>
-      <td>{{ product.quantity }} {{ product.unit }}</td>
-      <td>{{ product.size }}</td>
-      <td>{% if product.price is not none %}{{ '%.2f'|format(product.price) }}{% endif %}</td>
-      <td>
-        {% if g.user.role == 'editor' %}
-        <a href="{{ url_for('edit', product_id=product.id) }}" class="btn btn-warning btn-sm">{{ _('Редактировать')
-          }}</a>
-        <form action="{{ url_for('delete', product_id=product.id) }}" method="post" style="display:inline;">
-          <button type="submit" class="btn btn-danger btn-sm" data-confirm="{{ _('Удалить товар?') }}">
-            {{ _('Удалить') }}
-          </button>
-        </form>
-        {% endif %}
-      </td>
-    </tr>
-    {% endfor %}
-    {% if not products %}
-    <tr>
-      <td colspan="6" class="text-center">{{ _('Ничего не найдено') }}</td>
-    </tr>
-    {% endif %}
-  </tbody>
-</table>
+<div class="table-rounded-container">
+  <table class="table table-bordered align-middle table-hover mb-0">
+    <thead class="table-dark">
+      <tr>
+        <th>{{ _('Название') }}</th>
+        <th>{{ _('Категория') }}</th>
+        <th>{{ _('Количество') }}</th>
+        <th>{{ _('Размер') }}</th>
+        <th>{{ _('Цена, €') }}</th>
+        <th>{{ _('Действия') }}</th>
+      </tr>
+    </thead>
 
+    <tbody>
+      {% for product in products %}
+      <tr>
+        <td>
+          <a href="{{ url_for('view', product_id=product.id) }}" class="text-decoration-none d-flex align-items-center gap-2">
+            {% if product.image_url %}
+              <img src="{{ product.image_url }}" alt="{{ product.name }}"
+                   style="height:36px; width:auto; border-radius:6px; object-fit:cover; margin-right:7px;">
+            {% endif %}
+            {{ product.name }}
+          </a>
+        </td>
+        <td>
+          {% if current_lang == 'fi' and product.category_name_fi %}
+            {{ product.category_name_fi }}
+          {% elif current_lang == 'en' and product.category_name_en %}
+            {{ product.category_name_en }}
+          {% else %}
+            {{ product.category_name }}
+          {% endif %}
+        </td>
+        <td>{{ product.quantity }} {{ product.unit }}</td>
+        <td>{{ product.size }}</td>
+        <td>{% if product.price is not none %}{{ '%.2f'|format(product.price) }}{% endif %}</td>
+        <td>
+          {% if g.user.role == 'editor' %}
+            <a href="{{ url_for('edit', product_id=product.id) }}" class="btn btn-warning btn-sm">{{ _('Редактировать') }}</a>
+            <form action="{{ url_for('delete', product_id=product.id) }}" method="post" style="display:inline;">
+              <button type="submit" class="btn btn-danger btn-sm" data-confirm="{{ _('Удалить товар?') }}">
+                {{ _('Удалить') }}
+              </button>
+            </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+
+      {% if not products %}
+      <tr>
+        <td colspan="6" class="text-center">{{ _('Ничего не найдено') }}</td>
+      </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
 <!-- Фирменная карточка для статистики и новых товаров -->
 <div class="main-card mt-4 p-4" style="max-width: 600px; margin-left: auto; margin-right: auto;">
   <h5>📊 {{ _('Статистика:') }}</h5>

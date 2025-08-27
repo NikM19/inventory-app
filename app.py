@@ -3,7 +3,7 @@ import uuid
 from dotenv import load_dotenv
 load_dotenv()
 
-from datetime import datetime
+from datetime import datetime, timezone
 from io import BytesIO
 
 from flask import (
@@ -92,7 +92,7 @@ def log_action(user_id, action, object_type, object_id, details=""):
         "action": action,
         "object_type": object_type,
         "object_id": str(object_id) if object_id else None,
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "details": details
     }
     supabase.table("logs").insert(log_data).execute()
@@ -122,6 +122,114 @@ def upload_to_supabase_storage(file, filename):
     else:
         print("Ошибка загрузки в Supabase Storage:", resp.text)
         return None
+    
+    # =======================
+#   Вспомогательные функции для фото товаров
+# =======================
+def add_product_images(product_id: int, files):
+    """Загрузить список файлов в Storage и записать их в product_images.
+       Первое добавленное фото станет главным, если главного ещё нет.
+    """
+    if not files:
+        return []
+
+    # проверяем, есть ли уже главное фото
+    has_primary = False
+    try:
+        resp = supabase.table("product_images") \
+            .select("id") \
+            .eq("product_id", product_id) \
+            .eq("is_primary", True) \
+            .limit(1) \
+            .execute()
+        has_primary = bool(resp.data)
+    except Exception:
+        has_primary = False
+
+    inserted = []
+    for i, f in enumerate(files):
+        if not f or not getattr(f, "filename", ""):
+            continue
+        url = upload_to_supabase_storage(f, f.filename)
+        if not url:
+            continue
+        is_primary = False
+        # если у товара ещё нет главного фото — делаем первым добавленным главным
+        if not has_primary and i == 0:
+            is_primary = True
+            has_primary = True
+        row = {
+            "product_id": product_id,
+            "url": url,
+            "is_primary": is_primary
+        }
+        res = supabase.table("product_images").insert(row).execute()
+        if res.data:
+            inserted.append(res.data[0])
+    return inserted
+
+
+def get_product_images(product_id: int):
+    """Вернёт список фото товара (главное будет первым)."""
+    try:
+        resp = supabase.table("product_images") \
+            .select("*") \
+            .eq("product_id", product_id) \
+            .order("is_primary", desc=True) \
+            .order("created_at", desc=True) \
+            .execute()
+        return resp.data or []
+    except Exception:
+        return []
+
+
+def get_primary_image_url(product_id: int):
+    """URL главного фото товара, если есть."""
+    try:
+        resp = supabase.table("product_images") \
+            .select("url") \
+            .eq("product_id", product_id) \
+            .eq("is_primary", True) \
+            .single() \
+            .execute()
+        if resp.data:
+            return resp.data.get("url")
+    except Exception:
+        pass
+    return None
+
+
+def set_primary_image(image_id: int):
+    """Сделать фото главным (сбрасывает флаг у других фото товара)."""
+    # сначала узнаем product_id
+    img = supabase.table("product_images").select("product_id").eq("id", image_id).single().execute().data
+    if not img:
+        return False
+    pid = img["product_id"]
+    # сброс флага у всех фото товара
+    supabase.table("product_images").update({"is_primary": False}).eq("product_id", pid).execute()
+    # установить главного
+    supabase.table("product_images").update({"is_primary": True}).eq("id", image_id).execute()
+    return True
+
+
+def delete_image(image_id: int):
+    """Удалить фото. Если удалили главное, назначим другое фото главным (если осталось)."""
+    # получить картинку и товар
+    resp = supabase.table("product_images").select("*").eq("id", image_id).single().execute()
+    img = resp.data
+    if not img:
+        return False
+    pid = img["product_id"]
+    was_primary = bool(img.get("is_primary"))
+    # удалить
+    supabase.table("product_images").delete().eq("id", image_id).execute()
+    # если удалили главное — назначить новое главное, если есть
+    if was_primary:
+        left = supabase.table("product_images").select("id").eq("product_id", pid).order("created_at", desc=True).limit(1).execute().data
+        if left:
+            supabase.table("product_images").update({"is_primary": True}).eq("id", left[0]["id"]).execute()
+    return True
 
 # =======================
 #   Вспомогательные функции для пользователей
@@ -181,10 +289,20 @@ def superadmin_required(view_func):
 # =======================
 #   Flask hooks
 # =======================
+from flask import request  # наверху файла, вместе с остальными импортами
+
 @app.before_request
 def load_logged_in_user():
+    # не трогаем запросы статики (css, картинки, favicon)
+    if request.endpoint in ('static',):
+        return
+
     user_id = session.get("user_id")
-    g.user = get_user_by_id(user_id) if user_id else None
+    try:
+        g.user = get_user_by_id(user_id) if user_id else None
+    except Exception:
+        # если Supabase отвалился — не валим ответ пользователю
+        g.user = None
 
 # =======================
 #   Работа с товарами и категориями через Supabase
@@ -270,6 +388,8 @@ def index():
             pass
         # Здесь — имя категории на нужном языке
         p["category_name"] = cat_dict.get(p["category_id"], "")
+        # URL главного фото (если используется в index.html как превью)
+        p["primary_image_url"] = get_primary_image_url(p["id"]) or p.get("image_url")
         filtered.append(p)
 
     total_products = len(products)
@@ -438,6 +558,10 @@ def create():
         except ValueError:
             flash(_("Некорректное число! Введите, например, 10 или 10.5"), "warning")
             return redirect(url_for("create"))
+
+        # --- несколько фото: files из <input name="images" multiple> ---
+        new_images = request.files.getlist("images")  # список файлов
+        # создаём товар; image_url пока пусто (заполним главным фото ниже)
         prod = {
             "name": name,
             "description": description,
@@ -446,14 +570,24 @@ def create():
             "size": size,
             "price": price,
             "category_id": int(category_id) if category_id else None,
-            "created_at": datetime.utcnow().isoformat(),
-            "image_url": image_url,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "image_url": None,
         }
         result = supabase.table("products").insert(prod).execute()
         product_id = result.data[0]["id"] if result.data and "id" in result.data[0] else None
+
+        # добавляем фото в product_images
+        added = add_product_images(product_id, new_images)
+        if added:
+            # в products.image_url храним главное фото (для обратной совместимости)
+            primary = next((x for x in added if x.get("is_primary")), added[0])
+            supabase.table("products").update({"image_url": primary.get("url")}).eq("id", product_id).execute()
+
         log_action(g.user["id"], "create", "product", product_id, _('Добавлен товар: ') + name)
         flash(_('Товар "%(name)s" добавлен!', name=name), "success")
         return redirect(url_for("index"))
+
+    # GET-запрос — просто показать форму
     return render_template("create.html", categories=categories)
 
 @app.route("/edit/<int:product_id>", methods=["GET", "POST"])
@@ -465,7 +599,9 @@ def edit(product_id):
     if not product:
         flash(_("Товар не найден!"), "danger")
         return redirect(url_for("index"))
+
     if request.method == "POST":
+        # поля формы
         name        = request.form.get("name", product["name"]).strip()
         description = request.form.get("description", product.get("description", "")).strip()
         quantity    = request.form.get("quantity", str(product.get("quantity", "0"))).replace(",", ".")
@@ -474,18 +610,22 @@ def edit(product_id):
         price       = request.form.get("price", str(product.get("price", "")))
         category_id = request.form.get("category_id") or None
 
+        # одиночное «старое» главное фото (если выбрали новый файл)
         image_url = product.get("image_url")
         if "image" in request.files:
             image = request.files["image"]
             if image and image.filename:
                 image_url = upload_to_supabase_storage(image, image.filename)
 
+        # валидация чисел
         try:
             quantity = float(quantity)
             price = float(price)
         except ValueError:
             flash(_("Некорректное число! Введите, например, 10 или 10.5"), "warning")
             return redirect(url_for("edit", product_id=product_id))
+
+        # обновляем товар
         updated = {
             "name": name,
             "description": description,
@@ -497,10 +637,29 @@ def edit(product_id):
             "image_url": image_url,
         }
         supabase.table("products").update(updated).eq("id", product_id).execute()
+
+        # --- добавить несколько фото из этой же формы ---
+        files_all  = request.files.getlist("images")  # name="images" в edit.html
+        new_images = [f for f in files_all if getattr(f, "filename", "").strip()]
+        if new_images:
+            added = add_product_images(product_id, new_images)
+            if added:
+                # синхронизируем главное фото
+                primary_url = get_primary_image_url(product_id)
+                if primary_url:
+                    supabase.table("products").update({"image_url": primary_url}).eq("id", product_id).execute()
+
+        # лог/уведомление и редирект — всегда после обновления
         log_action(g.user["id"], "edit", "product", product_id, _('Обновлён товар: ') + name)
         flash(_('Товар "%(name)s" обновлён!', name=name), "success")
         return redirect(url_for("index"))
-    return render_template("edit.html", product=product, categories=categories)
+
+    # ------ GET: подготовка галереи ------
+    images = get_product_images(product_id)
+    if not images and product.get("image_url"):
+        images = [{"id": None, "url": product["image_url"], "is_primary": True}]
+
+    return render_template("edit.html", product=product, categories=categories, images=images)
 
 @app.route("/delete/<int:product_id>", methods=["POST"])
 @login_required
@@ -514,6 +673,59 @@ def delete(product_id):
     log_action(g.user["id"], "delete", "product", product_id, _('Удалён товар: ') + (product["name"] if product else str(product_id)))
     flash(_("Товар удалён!"), "success")
     return redirect(url_for("index"))
+
+@app.post("/product/<int:product_id>/images/add")
+@login_required
+@editor_required
+def add_images_route(product_id):
+    files = request.files.getlist("images")
+    if not get_product_by_id(product_id):
+        flash(_("Товар не найден!"), "danger")
+        return redirect(url_for("index"))
+    add_product_images(product_id, files)
+    # синхронизируем поле image_url в products
+    prim = get_primary_image_url(product_id)
+    if prim:
+        supabase.table("products").update({"image_url": prim}).eq("id", product_id).execute()
+    flash(_("Фото добавлены"), "success")
+    return redirect(url_for("edit", product_id=product_id))
+
+
+@app.post("/product_images/<int:image_id>/delete")
+@login_required
+@editor_required
+def delete_image_route(image_id):
+    # узнаем товар, чтобы вернуться на его страницу редактирования
+    resp = supabase.table("product_images").select("product_id").eq("id", image_id).single().execute()
+    row = resp.data
+    if not row:
+        flash(_("Фото не найдено"), "warning")
+        return redirect(url_for("index"))
+    product_id = row["product_id"]
+    delete_image(image_id)
+    # обновим products.image_url
+    prim = get_primary_image_url(product_id)
+    supabase.table("products").update({"image_url": prim}).eq("id", product_id).execute()
+    flash(_("Фото удалено"), "success")
+    return redirect(url_for("edit", product_id=product_id))
+
+
+@app.post("/product_images/<int:image_id>/set_primary")
+@login_required
+@editor_required
+def set_primary_image_route(image_id):
+    # узнаем товар, чтобы вернуться
+    resp = supabase.table("product_images").select("product_id").eq("id", image_id).single().execute()
+    row = resp.data
+    if not row:
+        flash(_("Фото не найдено"), "warning")
+        return redirect(url_for("index"))
+    product_id = row["product_id"]
+    if set_primary_image(image_id):
+        prim = get_primary_image_url(product_id)
+        supabase.table("products").update({"image_url": prim}).eq("id", product_id).execute()
+        flash(_("Главное фото обновлено"), "success")
+    return redirect(url_for("edit", product_id=product_id))
 
 @app.route("/add_category", methods=["GET", "POST"])
 @login_required
@@ -542,6 +754,8 @@ def view(product_id):
         flash(_("Товар не найден!"), "danger")
         return redirect(url_for("index"))
     category = get_category_by_id(product.get("category_id"))
+
+    # форматирование даты
     created_at_str = product.get("created_at")
     if isinstance(created_at_str, str):
         try:
@@ -551,7 +765,14 @@ def view(product_id):
             product["created_at_fmt"] = created_at_str[:16].replace('T', ' ')
     else:
         product["created_at_fmt"] = ""
-    return render_template("view.html", product=product, category=category)
+
+    # фото (новая таблица)
+    images = get_product_images(product_id)
+    # для совместимости: если в products.image_url есть ссылка, а в таблице пусто — добавим как виртуальное одно фото
+    if not images and product.get("image_url"):
+        images = [{"id": None, "url": product["image_url"], "is_primary": True}]
+
+    return render_template("view.html", product=product, category=category, images=images)
 
 @app.route("/export_excel")
 @login_required
