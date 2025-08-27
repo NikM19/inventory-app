@@ -10,3 +10,4 @@ python-dotenv
 requests
 Flask-Mail==0.9.1
 Flask-Babel==3.1.0
+Flask-Caching>=2.1.0
