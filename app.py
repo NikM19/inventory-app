@@ -806,29 +806,46 @@ def set_primary_image_route(image_id):
 @login_required
 @editor_required
 def add_category():
-    if request.method == "POST":
-        name = request.form.get("name", "").strip()
-        if not name:
-            flash(_("Введите название категории."), "warning")
-            return redirect(url_for("add_category"))
+    # GET — оставляем старую страницу как fallback (если JS выключен)
+    if request.method == "GET":
+        return render_template("add_category.html")
 
-        if any(c["name"] == name for c in get_categories()):
-            flash(_("Такая категория уже есть."), "warning")
-            return redirect(url_for("add_category"))
+    # POST — поддержим и обычную форму, и AJAX (JSON)
+    name = ""
+    if request.is_json:
+        name = (request.json.get("name") or "").strip()
+    else:
+        name = (request.form.get("name") or "").strip()
 
-        # создаём категорию
-        result = supabase.table("categories").insert({"name": name}).execute()
-        cat_id = result.data[0]["id"] if result.data and "id" in result.data[0] else None
+    if not name:
+        if request.is_json:
+            return jsonify(success=False, message=_("Введите название категории.")), 400
+        flash(_("Введите название категории."), "warning")
+        return redirect(url_for("add_category"))
 
-        # сброс кэша категорий
-        cache.delete("categories_all")
+    # проверка дубликатов (без учёта регистра/пробелов)
+    exists = any((c.get("name") or "").strip().lower() == name.lower() for c in get_categories())
+    if exists:
+        if request.is_json:
+            return jsonify(success=False, message=_("Такая категория уже есть.")), 409
+        flash(_("Такая категория уже есть."), "warning")
+        return redirect(url_for("add_category"))
 
-        log_action(g.user["id"], "create", "category", cat_id, _('Добавлена категория: ') + name)
-        flash(_('Категория "%(name)s" создана!', name=name), "success")
-        return redirect(url_for("index"))
+    # создаём
+    result = supabase.table("categories").insert({"name": name}).execute()
+    cat_id = result.data[0]["id"] if result.data and "id" in result.data[0] else None
 
-    # GET-запрос — показать форму
-    return render_template("add_category.html")
+    # сбрасываем кэш категорий
+    cache.delete("categories_all")
+
+    log_action(g.user["id"], "create", "category", cat_id, _('Добавлена категория: ') + name)
+
+    # Ответы
+    if request.is_json:
+        return jsonify(success=True, id=cat_id, name=name)
+
+    flash(_('Категория "%(name)s" создана!', name=name), "success")
+    return redirect(url_for("index"))
 
 @app.route("/view/<int:product_id>")
 @login_required

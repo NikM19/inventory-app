@@ -5,7 +5,9 @@
   {% if g.user.role == 'editor' %}
   <div>
     <a href="{{ url_for('create') }}" class="btn btn-success">➕ {{ _('Добавить товар') }}</a>
-    <a href="{{ url_for('add_category') }}" class="btn btn-success">📁 {{ _('Добавить категорию') }}</a>
+    <a href="{{ url_for('add_category') }}"
+       id="addCatBtn"
+       class="btn btn-success">📁 {{ _('Добавить категорию') }}</a>
     <a href="{{ url_for('export_excel') }}" class="btn btn-outline-secondary">{{ _('Скачать Excel') }}</a>
   </div>
   {% endif %}
@@ -53,6 +55,27 @@
     <a href="{{ url_for('index') }}" class="btn btn-link">{{ _('Сбросить фильтр') }}</a>
   </div>
 </form>
+
+<!-- Инлайн-добавление категории (скрыто по умолчанию) -->
+<div id="addCatInline" class="inline-panel" aria-hidden="true" style="display:none;">
+  <div class="row g-2 align-items-center">
+    <div class="col-md-6">
+      <input type="text" id="newCatName" class="form-control"
+             placeholder="{{ _('Название категории') }}">
+    </div>
+    <div class="col-md-3">
+      <button id="saveCatBtn" class="btn btn-success w-100">
+        {{ _('Сохранить') }}
+      </button>
+    </div>
+    <div class="col-md-3">
+      <button id="cancelCatBtn" class="btn btn-outline-secondary w-100" type="button">
+        {{ _('Отмена') }}
+      </button>
+    </div>
+  </div>
+  <div id="catError" class="text-danger mt-2" style="display:none"></div>
+</div>
 
 <div class="table-rounded-container">
   <table class="table table-bordered align-middle table-hover mb-0">
@@ -132,4 +155,91 @@
     {% endfor %}
   </ul>
 </div>
+
+<script>
+(function () {
+  const addBtn   = document.getElementById('addCatBtn');
+  const panel    = document.getElementById('addCatInline');
+  const input    = document.getElementById('newCatName');
+  const saveBtn  = document.getElementById('saveCatBtn');
+  const cancelBtn= document.getElementById('cancelCatBtn');
+  const errBox   = document.getElementById('catError');
+  const select   = document.querySelector('select[name="category_id"]'); // твой селект фильтра
+
+  function openPanel() {
+    panel.classList.add('open');
+    panel.setAttribute('aria-hidden', 'false');
+    errBox.style.display = 'none';
+    errBox.textContent = '';
+    setTimeout(() => input && input.focus(), 50);
+  }
+  function closePanel() {
+    panel.classList.remove('open');
+    panel.setAttribute('aria-hidden', 'true');
+    input.value = '';
+    errBox.style.display = 'none';
+    errBox.textContent = '';
+  }
+
+  if (addBtn) {
+    addBtn.addEventListener('click', function (e) {
+      // перехватываем переход по ссылке — открываем панель
+      e.preventDefault();
+      if (panel.classList.contains('open')) {
+        closePanel();
+      } else {
+        openPanel();
+      }
+    });
+  }
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      closePanel();
+    });
+  }
+  if (saveBtn) {
+    saveBtn.addEventListener('click', async function (e) {
+      e.preventDefault();
+      const name = (input.value || '').trim();
+      if (!name) {
+        errBox.textContent = "{{ _('Введите название категории.') }}";
+        errBox.style.display = 'block';
+        input.focus();
+        return;
+      }
+      // AJAX в тот же /add_category, но JSON-ом
+      try {
+        saveBtn.disabled = true;
+        const resp = await fetch('{{ url_for("add_category") }}', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: JSON.stringify({ name })
+        });
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok || !data.success) {
+          throw new Error(data.message || 'Request failed');
+        }
+        // Добавляем опцию в селект категорий (если он есть на странице)
+        if (select) {
+          const opt = document.createElement('option');
+          opt.value = data.id;
+          opt.textContent = data.name;
+          select.appendChild(opt);
+          select.value = data.id; // сразу выбираем новую
+        }
+        closePanel();
+      } catch (err) {
+        errBox.textContent = err.message || "{{ _('Ошибка сохранения') }}";
+        errBox.style.display = 'block';
+      } finally {
+        saveBtn.disabled = false;
+      }
+    });
+  }
+})();
+</script>
 {% endblock %}
