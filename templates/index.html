@@ -55,7 +55,7 @@
 </form>
 
 <!-- Инлайн-добавление категории (скрыто по умолчанию) -->
-<div id="addCatInline" class="inline-panel" aria-hidden="true" style="display:none;">
+<div id="addCatInline" class="inline-panel" aria-hidden="true">
   <div class="row g-2 align-items-center">
     <div class="col-md-6">
       <input type="text" id="newCatName" class="form-control"
@@ -156,48 +156,66 @@
 
 <script>
 (function () {
-  const addBtn   = document.getElementById('addCatBtn');
-  const panel    = document.getElementById('addCatInline');
-  const input    = document.getElementById('newCatName');
-  const saveBtn  = document.getElementById('saveCatBtn');
-  const cancelBtn= document.getElementById('cancelCatBtn');
-  const errBox   = document.getElementById('catError');
-  const select   = document.querySelector('select[name="category_id"]'); // твой селект фильтра
+  const addBtn    = document.getElementById('toggleAddCat');
+  const panel     = document.getElementById('addCatInline');
+  const input     = document.getElementById('newCatName');
+  const saveBtn   = document.getElementById('saveCatBtn');
+  const cancelBtn = document.getElementById('cancelCatBtn');
+  const errBox    = document.getElementById('catError');
+  const select    = document.querySelector('select[name="category_id"]');
+
+  let closing = false; // защита от «двойных» кликов во время анимации
 
   function openPanel() {
+    if (closing) return;
+    panel.style.display = 'block';
     panel.classList.add('open');
+    requestAnimationFrame(() => panel.classList.add('show'));
     panel.setAttribute('aria-hidden', 'false');
     errBox.style.display = 'none';
     errBox.textContent = '';
-    setTimeout(() => input && input.focus(), 50);
+    setTimeout(() => input && input.focus(), 80);
   }
+
   function closePanel() {
-    panel.classList.remove('open');
+    panel.classList.remove('show');       // запускаем анимацию скрытия
     panel.setAttribute('aria-hidden', 'true');
+    closing = true;
+
+    const finish = () => {
+      panel.classList.remove('open');     // окончательно спрятали
+      panel.style.display = 'none';
+      closing = false;
+    };
+
+    // Надёжный фолбэк: если transitionend не пришёл — закроем сами
+    const T = 420; // чуть больше, чем в CSS (.32s)
+    const timer = setTimeout(finish, T);
+
+    panel.addEventListener('transitionend', () => {
+      clearTimeout(timer);
+      finish();
+    }, { once: true });
+
     input.value = '';
     errBox.style.display = 'none';
     errBox.textContent = '';
   }
 
-  if (addBtn) {
-    addBtn.addEventListener('click', function (e) {
-      // перехватываем переход по ссылке — открываем панель
-      e.preventDefault();
-      if (panel.classList.contains('open')) {
-        closePanel();
-      } else {
-        openPanel();
-      }
-    });
-  }
-  if (cancelBtn) {
-    cancelBtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      closePanel();
-    });
-  }
+  addBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    // Проверяем именно .show — панель реально видна
+    panel.classList.contains('show') ? closePanel() : openPanel();
+  });
+
+  cancelBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    closePanel();
+  });
+
+  // Сохранение оставь как было (POST/redirect) — это не влияет на открытие/закрытие
   if (saveBtn) {
-    saveBtn.addEventListener('click', async function (e) {
+    saveBtn.addEventListener('click', async (e) => {
       e.preventDefault();
       const name = (input.value || '').trim();
       if (!name) {
@@ -206,32 +224,20 @@
         input.focus();
         return;
       }
-      // AJAX в тот же /add_category, но JSON-ом
       try {
         saveBtn.disabled = true;
         const resp = await fetch('{{ url_for("add_category") }}', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-          },
-          body: JSON.stringify({ name })
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({ name })
         });
-        const data = await resp.json().catch(() => ({}));
-        if (!resp.ok || !data.success) {
-          throw new Error(data.message || 'Request failed');
+        if (resp.redirected) {
+          window.location.href = resp.url; // получим flash и обновлённый список
+          return;
         }
-        // Добавляем опцию в селект категорий (если он есть на странице)
-        if (select) {
-          const opt = document.createElement('option');
-          opt.value = data.id;
-          opt.textContent = data.name;
-          select.appendChild(opt);
-          select.value = data.id; // сразу выбираем новую
-        }
-        closePanel();
+        window.location.reload();
       } catch (err) {
-        errBox.textContent = err.message || "{{ _('Ошибка сохранения') }}";
+        errBox.textContent = "{{ _('Не удалось сохранить. Попробуйте ещё раз.') }}";
         errBox.style.display = 'block';
       } finally {
         saveBtn.disabled = false;
