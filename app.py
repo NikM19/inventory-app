@@ -334,9 +334,10 @@ def load_logged_in_user():
 # =======================
 #   Работа с товарами и категориями через Supabase
 # =======================
+@cache.cached(timeout=600, key_prefix="categories_all")
 def get_categories():
     resp = supabase.table("categories").select("*").execute()
-    return resp.data if resp.data else []
+    return resp.data or []
 
 def get_products():
     resp = supabase.table("products").select("*").order("created_at", desc=True).execute()
@@ -354,6 +355,22 @@ def get_product_by_id(product_id):
         return resp.data
     except Exception:
         return None
+    
+def get_total_products_count():
+    """Возвращает общее число товаров быстро (без выборки всех строк)."""
+    try:
+        # Быстрый путь: PostgREST вернёт только заголовки и точный count
+        res = (supabase.table("products")
+               .select("id", count="exact", head=True)
+               .execute())
+        return res.count or 0
+    except Exception:
+        # Фолбэк, если head=True недоступен
+        res = (supabase.table("products")
+               .select("id", count="exact")
+               .range(0, 0)    # 0 строк данных, но count вернётся
+               .execute())
+        return res.count or 0
 
 # =======================
 #   Главная страница с фильтрацией (ОБНОВЛЁННЫЙ КОД!)
@@ -440,7 +457,7 @@ def index():
         filtered.append(p)
 
     # Статистика (быстро и просто)
-    total_products = len(products_all)  # это кол-во на текущей странице; общий count можно сделать отдельно
+    total_products = get_total_products_count()
     total_categories = len(categories)
     recent_products = products_all[:5]
 
@@ -784,14 +801,23 @@ def add_category():
         if not name:
             flash(_("Введите название категории."), "warning")
             return redirect(url_for("add_category"))
+
         if any(c["name"] == name for c in get_categories()):
             flash(_("Такая категория уже есть."), "warning")
             return redirect(url_for("add_category"))
+
+        # создаём категорию
         result = supabase.table("categories").insert({"name": name}).execute()
         cat_id = result.data[0]["id"] if result.data and "id" in result.data[0] else None
+
+        # сброс кэша категорий
+        cache.delete("categories_all")
+
         log_action(g.user["id"], "create", "category", cat_id, _('Добавлена категория: ') + name)
         flash(_('Категория "%(name)s" создана!', name=name), "success")
         return redirect(url_for("index"))
+
+    # GET-запрос — показать форму
     return render_template("add_category.html")
 
 @app.route("/view/<int:product_id>")
@@ -860,6 +886,10 @@ def edit_category_name():
     if not cat_id or not new_name:
         return jsonify(success=False, message="Нет данных")
     supabase.table("categories").update({"name": new_name}).eq("id", cat_id).execute()
+
+    # <-- сбрасываем кэш категорий
+    cache.delete("categories_all")
+
     log_action(g.user["id"], "edit", "category", cat_id, f'Переименована категория: {new_name}')
     return jsonify(success=True)
 
