@@ -21,6 +21,8 @@ from flask_caching import Cache
 
 # --- Flask-Babel ---
 from flask_babel import Babel, _   # <-- здесь всё хорошо!
+from flask_babel import get_locale
+from urllib.parse import urlencode
 
 # --- Email супер-админа ---
 SUPERADMIN_EMAIL = "musatovnikita13@gmail.com"
@@ -45,6 +47,13 @@ cache = Cache(app, config={
     "CACHE_TYPE": "SimpleCache",
     "CACHE_DEFAULT_TIMEOUT": 600,  # по умолчанию 10 мин
 })
+# Ключ кэша для главной: учитываем пользователя, роль, язык и фильтры в URL
+def _index_cache_key():
+    uid  = (g.user or {}).get("id", "anon")
+    role = (g.user or {}).get("role", "viewer")
+    lang = str(get_locale())
+    args = urlencode(sorted(request.args.items()))  # фильтры из query-строки
+    return f"idx:{uid}:{role}:{lang}:{args}"
 
 # --- Настройки Flask-Mail ---
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
@@ -379,6 +388,7 @@ from flask_babel import get_locale
 
 @app.route("/")
 @login_required
+@cache.cached(timeout=15, key_prefix=_index_cache_key)
 def index():
     # ---- ПАГИНАЦИЯ (опционально) ----
     try:
