@@ -36,7 +36,7 @@ app.secret_key = os.getenv("SECRET_KEY", "dev_secret")
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = timedelta(days=30)  # 30 дней для /static
 
 # Версия ассетов для cache-busting (поднимай число при обновлении css/js)
-ASSET_VERSION = 9
+ASSET_VERSION = 10
 
 @app.context_processor
 def inject_asset_version():
