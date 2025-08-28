@@ -164,34 +164,58 @@
   const errBox    = document.getElementById('catError');
   const select    = document.querySelector('select[name="category_id"]');
 
-  let closing = false; // защита от «двойных» кликов во время анимации
+  let closing = false; // флаг, чтобы не дёргать во время анимации
 
+  // --- плавное открытие (max-height анимация) ---
   function openPanel() {
-    if (closing) return;
+    if (closing || panel.classList.contains('show')) return;
+
     panel.style.display = 'block';
-    panel.classList.add('open');
-    requestAnimationFrame(() => panel.classList.add('show'));
-    panel.setAttribute('aria-hidden', 'false');
+    panel.classList.add('open');       // делает блок видимым (но ещё «сжатым»)
+    panel.style.maxHeight = '0px';
+
+    requestAnimationFrame(() => {
+      // форсим рефлоу, потом ставим целевую высоту контента
+      void panel.offsetHeight;
+      panel.style.maxHeight = panel.scrollHeight + 'px';
+      panel.classList.add('show');
+      panel.setAttribute('aria-hidden', 'false');
+
+      // после завершения раскрытия уберём ограничение
+      panel.addEventListener('transitionend', () => {
+        panel.style.maxHeight = 'none';
+      }, { once: true });
+    });
+
     errBox.style.display = 'none';
     errBox.textContent = '';
-    setTimeout(() => input && input.focus(), 80);
+    setTimeout(() => input && input.focus(), 90);
   }
 
+  // --- плавное закрытие (из текущей высоты к нулю) ---
   function closePanel() {
-    panel.classList.remove('show');       // запускаем анимацию скрытия
-    panel.setAttribute('aria-hidden', 'true');
+    if (!panel.classList.contains('open')) return;
+
+    // зафиксировать текущую высоту, анимировать к 0
+    panel.style.maxHeight = panel.scrollHeight + 'px';
+    requestAnimationFrame(() => {
+      void panel.offsetHeight;
+      panel.style.maxHeight = '0px';
+      panel.classList.remove('show');
+      panel.setAttribute('aria-hidden', 'true');
+    });
+
     closing = true;
 
     const finish = () => {
-      panel.classList.remove('open');     // окончательно спрятали
+      panel.classList.remove('open');
       panel.style.display = 'none';
+      panel.style.maxHeight = ''; // очистка инлайн-стиля
       closing = false;
     };
 
-    // Надёжный фолбэк: если transitionend не пришёл — закроем сами
-    const T = 420; // чуть больше, чем в CSS (.32s)
-    const timer = setTimeout(finish, T);
-
+    // страховка, если transitionend внезапно не сработает
+    const timer = setTimeout(finish, 650);
     panel.addEventListener('transitionend', () => {
       clearTimeout(timer);
       finish();
@@ -202,18 +226,19 @@
     errBox.textContent = '';
   }
 
+  // переключатель
   addBtn?.addEventListener('click', (e) => {
     e.preventDefault();
-    // Проверяем именно .show — панель реально видна
     panel.classList.contains('show') ? closePanel() : openPanel();
   });
 
+  // отмена
   cancelBtn?.addEventListener('click', (e) => {
     e.preventDefault();
     closePanel();
   });
 
-  // Сохранение оставь как было (POST/redirect) — это не влияет на открытие/закрытие
+  // сохранение (как было — POST + redirect)
   if (saveBtn) {
     saveBtn.addEventListener('click', async (e) => {
       e.preventDefault();
