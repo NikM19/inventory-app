@@ -18,6 +18,8 @@ from functools import wraps
 import requests
 import mimetypes
 from flask_caching import Cache
+import os, time
+from flask import url_for
 
 # --- Flask-Babel ---
 from flask_babel import Babel, _   # <-- здесь всё хорошо!
@@ -35,12 +37,16 @@ app.secret_key = os.getenv("SECRET_KEY", "dev_secret")
 # --- КЭШ + долгое кэширование статики ---
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = timedelta(days=30)  # 30 дней для /static
 
-# Версия ассетов для cache-busting (поднимай число при обновлении css/js)
-ASSET_VERSION = 12
-
 @app.context_processor
-def inject_asset_version():
-    return {"ASSET_VERSION": ASSET_VERSION}
+def asset_tools():
+    def asset_url(filename):
+        filepath = os.path.join(app.static_folder, filename)
+        try:
+            v = int(os.path.getmtime(filepath))  # время последнего изменения файла
+        except OSError:
+            v = int(time.time())  # fallback
+        return url_for('static', filename=filename, v=v)
+    return dict(asset_url=asset_url)
 
 # Инициализация кэша (в проде можно RedisCache)
 cache = Cache(app, config={
