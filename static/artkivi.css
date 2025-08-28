@@ -515,39 +515,40 @@ ul.list-group {
   box-shadow: 0 10px 18px rgba(0,0,0,.18);
 }
 
-/* Инлайн-панель — ещё мягче */
+/* Инлайн-панель — мягкая анимация без max-height (как в локале) */
 .inline-panel{
   display: none;                 /* скрыта, пока нет .open */
   background: #fff;
   border: 1px solid #e5e6ea;
   border-radius: 12px;
   padding: 12px;
-  margin: 10px 0 18px 0;
 
-  /* плавность */
+  /* по умолчанию отступов нет — чтобы при закрытии не было рывка */
+  margin: 0;
+
   overflow: hidden;
   opacity: 0;
   transform: translateY(-6px) scale(.995);
-  /* вместо фиксированного max-height теперь анимируем его динамически из JS */
-  max-height: 0;
 
-  /* мягкие кривые и чуть дольше время */
+  /* мягкие кривые */
   transition:
-    max-height .48s cubic-bezier(.22,.61,.36,1),
     opacity   .42s ease,
     transform .42s cubic-bezier(.22,.61,.36,1),
+    margin    .42s ease,
     box-shadow .42s ease;
-  will-change: max-height, opacity, transform;
+  will-change: opacity, transform, margin;
   box-shadow: 0 4px 14px rgba(0,0,0,0.04);
 }
 
-.inline-panel.open{              /* делаем видимой, но ещё «сжатой» */
+.inline-panel.open{              /* видимая, но ещё «спрятанная» */
   display: block;
+  margin: 0;                     /* сначала без отступов */
 }
 
 .inline-panel.open.show{         /* полностью показана */
   opacity: 1;
   transform: translateY(0) scale(1);
+  margin: 10px 0 18px;           /* отступы проявляются ПЛАВНО */
   box-shadow: 0 10px 24px rgba(0,0,0,0.08);
 }
 
@@ -561,6 +562,10 @@ ul.list-group {
   opacity: 1;
   transform: translateY(0);
 }
+
+/* Чуть комфортнее высота контролов (не влияет на ширины) */
+.inline-panel .form-control{ height: 40px; }
+.inline-panel .btn{ height: 40px; line-height: 1.1; }
 
 /* Уважение к reduce-motion */
 @media (prefers-reduced-motion: reduce){

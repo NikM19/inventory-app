@@ -54,19 +54,18 @@
   </div>
 </form>
 
-<!-- Инлайн-добавление категории (скрыто по умолчанию) -->
 <div id="addCatInline" class="inline-panel" aria-hidden="true">
   <div class="row g-2 align-items-center">
-    <div class="col-md-6">
+    <div class="col-12 col-md-6">
       <input type="text" id="newCatName" class="form-control"
              placeholder="{{ _('Название категории') }}">
     </div>
-    <div class="col-md-3">
+    <div class="col-6 col-md-3">
       <button id="saveCatBtn" class="btn btn-success w-100">
         {{ _('Сохранить') }}
       </button>
     </div>
-    <div class="col-md-3">
+    <div class="col-6 col-md-3">
       <button id="cancelCatBtn" class="btn btn-outline-secondary w-100" type="button">
         {{ _('Отмена') }}
       </button>
@@ -164,63 +163,57 @@
   const errBox    = document.getElementById('catError');
   const select    = document.querySelector('select[name="category_id"]');
 
-  let closing = false; // флаг, чтобы не дёргать во время анимации
+  let closing = false;
 
-  // --- плавное открытие (max-height анимация) ---
+  // --- плавное открытие ---
   function openPanel() {
     if (closing || panel.classList.contains('show')) return;
 
     panel.style.display = 'block';
-    panel.classList.add('open');       // делает блок видимым (но ещё «сжатым»)
-    panel.style.maxHeight = '0px';
+    panel.classList.add('open');
 
     requestAnimationFrame(() => {
-      // форсим рефлоу, потом ставим целевую высоту контента
-      void panel.offsetHeight;
-      panel.style.maxHeight = panel.scrollHeight + 'px';
       panel.classList.add('show');
       panel.setAttribute('aria-hidden', 'false');
-
-      // после завершения раскрытия уберём ограничение
-      panel.addEventListener('transitionend', () => {
-        panel.style.maxHeight = 'none';
-      }, { once: true });
     });
 
     errBox.style.display = 'none';
     errBox.textContent = '';
-    setTimeout(() => input && input.focus(), 90);
+    setTimeout(() => input && input.focus(), 80);
   }
 
-  // --- плавное закрытие (из текущей высоты к нулю) ---
+  // --- плавное закрытие ---
   function closePanel() {
     if (!panel.classList.contains('open')) return;
 
-    // зафиксировать текущую высоту, анимировать к 0
-    panel.style.maxHeight = panel.scrollHeight + 'px';
-    requestAnimationFrame(() => {
-      void panel.offsetHeight;
-      panel.style.maxHeight = '0px';
-      panel.classList.remove('show');
-      panel.setAttribute('aria-hidden', 'true');
-    });
-
+    panel.classList.remove('show');
+    panel.setAttribute('aria-hidden', 'true');
     closing = true;
 
     const finish = () => {
       panel.classList.remove('open');
       panel.style.display = 'none';
-      panel.style.maxHeight = ''; // очистка инлайн-стиля
       closing = false;
     };
 
-    // страховка, если transitionend внезапно не сработает
-    const timer = setTimeout(finish, 650);
-    panel.addEventListener('transitionend', () => {
-      clearTimeout(timer);
+    // ждём именно завершение margin (самая длинная анимация в CSS)
+    const onEnd = (e) => {
+      if (e.target !== panel) return;
+      if (e.propertyName !== 'margin') return;
+      panel.removeEventListener('transitionend', onEnd);
       finish();
-    }, { once: true });
+    };
+    panel.addEventListener('transitionend', onEnd);
 
+    // страховка, если transitionend не сработает
+    setTimeout(() => {
+      if (closing) {
+        panel.removeEventListener('transitionend', onEnd);
+        finish();
+      }
+    }, 520);
+
+    // очистка формы
     input.value = '';
     errBox.style.display = 'none';
     errBox.textContent = '';
@@ -238,7 +231,7 @@
     closePanel();
   });
 
-  // сохранение (как было — POST + redirect)
+  // сохранение (POST + redirect как было)
   if (saveBtn) {
     saveBtn.addEventListener('click', async (e) => {
       e.preventDefault();
@@ -257,7 +250,7 @@
           body: new URLSearchParams({ name })
         });
         if (resp.redirected) {
-          window.location.href = resp.url; // получим flash и обновлённый список
+          window.location.href = resp.url;
           return;
         }
         window.location.reload();
