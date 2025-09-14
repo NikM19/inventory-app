@@ -5,25 +5,24 @@ load_dotenv()
 
 from datetime import datetime, timezone, timedelta
 from io import BytesIO
+import time
+import mimetypes
+
+import pandas as pd
+import requests
+from functools import wraps
 
 from flask import (
     Flask, render_template, request,
-    redirect, url_for, flash, send_file, session, g, abort
+    redirect, url_for, flash, send_file, session, g, abort, jsonify
 )
 from flask_mail import Mail, Message
 from werkzeug.security import generate_password_hash, check_password_hash
-import pandas as pd
 from supabase import create_client
-from functools import wraps
-import requests
-import mimetypes
 from flask_caching import Cache
-import os, time
-from flask import url_for
 
 # --- Flask-Babel ---
-from flask_babel import Babel, _   # <-- здесь всё хорошо!
-from flask_babel import get_locale
+from flask_babel import Babel, _    # <-- get_locale не импортируем!
 from urllib.parse import urlencode
 
 # --- Email супер-админа ---
@@ -390,7 +389,6 @@ def get_total_products_count():
 # =======================
 #   Главная страница с фильтрацией (ОБНОВЛЁННЫЙ КОД!)
 # =======================
-from flask_babel import get_locale
 
 @app.route("/")
 @login_required
@@ -742,6 +740,106 @@ def edit(product_id):
 
     return render_template("edit.html", product=product, categories=categories, images=images)
 
+@app.post("/product/<int:product_id>/consume")
+@login_required
+@editor_required
+def consume_stock(product_id):
+    amount_raw = (request.form.get("amount") or "").replace(",", ".").strip()
+    note = (request.form.get("note") or "").strip()
+
+    # валидируем число
+    try:
+        amount = float(amount_raw)
+    except Exception:
+        flash(_("Введите корректное число."), "warning")
+        return redirect(url_for("view", product_id=product_id))
+    if amount <= 0:
+        flash(_("Количество должно быть больше нуля."), "warning")
+        return redirect(url_for("view", product_id=product_id))
+
+    # товар и остаток
+    product = get_product_by_id(product_id)
+    if not product:
+        flash(_("Товар не найден!"), "danger")
+        return redirect(url_for("index"))
+
+    unit = product.get("unit") or ""
+    current_qty = float(product.get("quantity") or 0)
+
+    if amount > current_qty:
+        flash(_("Нельзя списать %(a).2f — на складе только %(q).2f.", a=amount, q=current_qty), "danger")
+        return redirect(url_for("view", product_id=product_id))
+
+    new_qty = round(current_qty - amount, 4)
+
+    # обновляем остаток
+    supabase.table("products").update({"quantity": new_qty}).eq("id", product_id).execute()
+
+    # записываем движение
+    try:
+        supabase.table("stock_movements").insert({
+            "product_id": product_id,
+            "user_id": g.user.get("id"),
+            "delta": -amount,
+            "note": note,
+        }).execute()
+    except Exception:
+        pass
+
+    log_action(g.user["id"], "consume", "product", product_id,
+               _('Списано со склада: -%(a).2f %(u)s', a=amount, u=unit))
+    flash(_('Списано %(a).2f %(u)s. Остаток: %(r).2f %(u)s.',
+           a=amount, u=unit, r=new_qty), "success")
+    return redirect(url_for("view", product_id=product_id))
+
+@app.post("/product/<int:product_id>/add")
+@login_required
+@editor_required
+def add_stock(product_id):
+    amount_raw = (request.form.get("amount") or "").replace(",", ".").strip()
+    note = (request.form.get("note") or "").strip()
+
+    # валидируем число
+    try:
+        amount = float(amount_raw)
+    except Exception:
+        flash(_("Введите корректное число."), "warning")
+        return redirect(url_for("view", product_id=product_id))
+    if amount <= 0:
+        flash(_("Количество должно быть больше нуля."), "warning")
+        return redirect(url_for("view", product_id=product_id))
+
+    # товар и остаток
+    product = get_product_by_id(product_id)
+    if not product:
+        flash(_("Товар не найден!"), "danger")
+        return redirect(url_for("index"))
+
+    unit = product.get("unit") or ""
+    current_qty = float(product.get("quantity") or 0)
+    new_qty = round(current_qty + amount, 4)
+
+    # обновляем остаток
+    supabase.table("products").update({"quantity": new_qty}).eq("id", product_id).execute()
+
+    # записываем движение
+    try:
+        supabase.table("stock_movements").insert({
+            "product_id": product_id,
+            "user_id": g.user.get("id"),
+            "delta": amount,   # ВАЖНО: плюс
+            "note": note,
+        }).execute()
+    except Exception:
+        pass
+
+    log_action(g.user["id"], "restock", "product", product_id,
+               _('Поступление на склад: +%(a).2f %(u)s', a=amount, u=unit))
+    flash(_('Добавлено %(a).2f %(u)s. Теперь на складе: %(r).2f %(u)s.',
+           a=amount, u=unit, r=new_qty), "success")
+    return redirect(url_for("view", product_id=product_id))
+
+
 @app.route("/delete/<int:product_id>", methods=["POST"])
 @login_required
 @editor_required
@@ -875,11 +973,55 @@ def view(product_id):
 
     # фото (новая таблица)
     images = get_product_images(product_id)
-    # для совместимости: если в products.image_url есть ссылка, а в таблице пусто — добавим как виртуальное одно фото
+    # совместимость со старым полем image_url
     if not images and product.get("image_url"):
         images = [{"id": None, "url": product["image_url"], "is_primary": True}]
 
-    return render_template("view.html", product=product, category=category, images=images)
+    # ---- История движений по товару ----
+    limit = 20
+    if request.args.get('all') == '1':
+        limit = 200
+
+    mov_q = (supabase.table("stock_movements")
+             .select("id,product_id,user_id,delta,note,created_at")
+             .eq("product_id", product_id)
+             .order("created_at", desc=True)
+             .limit(limit)
+             .execute())
+    movements = mov_q.data or []
+
+    # подтянем имена пользователей по user_id
+    user_ids = {m.get("user_id") for m in movements if m.get("user_id")}
+    users_map = {}
+    if user_ids:
+        uresp = (supabase.table("users")
+                 .select("id,username")
+                 .in_("id", list(user_ids))
+                 .execute())
+        for u in uresp.data or []:
+            users_map[str(u["id"])] = u["username"]
+
+    # отформатируем дату и подставим username
+    for m in movements:
+        m["username"] = users_map.get(str(m.get("user_id")), "")
+        ts = m.get("created_at")
+        if isinstance(ts, str):
+            try:
+                dt = datetime.fromisoformat(ts.replace("Z", ""))
+                m["created_at_fmt"] = dt.strftime('%Y-%m-%d %H:%M')
+            except Exception:
+                m["created_at_fmt"] = ts[:16].replace('T', ' ')
+        else:
+            m["created_at_fmt"] = ""
+
+    return render_template(
+        "view.html",
+        product=product,
+        category=category,
+        images=images,
+        movements=movements,
+        movements_limit=limit
+    )
 
 @app.route("/export_excel")
 @login_required
@@ -907,7 +1049,6 @@ def export_excel():
         as_attachment=True,
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-from flask import jsonify
 
 @app.route("/edit_category_name", methods=["POST"])
 @login_required

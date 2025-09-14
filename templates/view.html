@@ -94,19 +94,121 @@
         </tbody>
       </table>
 
+<!-- Складские операции -->
+{% if g.user.role == 'editor' %}
+<div class="mt-4">
+  <h5 class="mb-2">{{ _('Складские операции') }}</h5>
+
+  <!-- Списать (минус) -->
+  <form class="row g-2 align-items-center"
+        action="{{ url_for('consume_stock', product_id=product.id) }}"
+        method="post">
+    <div class="col-6 col-sm-3">
+      <input name="amount" type="number" step="0.01" min="0"
+             class="form-control"
+             placeholder="{{ _('Списать, м²') }}" required>
+    </div>
+    <div class="col-6 col-sm-5">
+      <input name="note" type="text" class="form-control"
+             placeholder="{{ _('Комментарий (необязательно)') }}">
+    </div>
+    <div class="col-12 col-sm-4">
+      <button class="btn btn-danger w-100">
+        {{ _('Списать со склада') }}
+      </button>
+    </div>
+  </form>
+
+  <!-- Пополнить (плюс) -->
+  <form class="row g-2 align-items-center mt-2"
+        action="{{ url_for('add_stock', product_id=product.id) }}"
+        method="post">
+    <div class="col-6 col-sm-3">
+      <input name="amount" type="number" step="0.01" min="0"
+             class="form-control"
+             placeholder="{{ _('Пополнить, м²') }}" required>
+    </div>
+    <div class="col-6 col-sm-5">
+      <input name="note" type="text" class="form-control"
+             placeholder="{{ _('Комментарий (необязательно)') }}">
+    </div>
+    <div class="col-12 col-sm-4">
+      <button class="btn btn-success w-100">
+        {{ _('Пополнить склад') }}
+      </button>
+    </div>
+  </form>
+</div>
+{% endif %}
+
+<!-- История движений -->
+<div id="movements" class="mt-4">
+  <h5 class="mb-2">{{ _('История движений') }}</h5>
+
+  {% if movements and movements|length > 0 %}
+    <div class="table-responsive">
+      <table class="table table-sm table-bordered align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>{{ _('Операция') }}</th>
+            <th class="text-end">{{ _('Кол-во') }}</th>
+            <th>{{ _('Комментарий') }}</th>
+            <th>{{ _('Кем') }}</th>
+            <th>{{ _('Когда') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in movements %}
+          {% set is_plus = (m.delta|float) > 0 %}
+          <tr>
+            <td>
+              {% if is_plus %}
+                <span class="badge bg-success">{{ _('Поступление') }}</span>
+              {% else %}
+                <span class="badge bg-danger">{{ _('Списание') }}</span>
+              {% endif %}
+            </td>
+            <td class="text-end {% if is_plus %}text-success{% else %}text-danger{% endif %}">
+              {{ '%+.2f'|format(m.delta|float) }} {{ product.unit or '' }}
+            </td>
+            <td>{{ m.note or '—' }}</td>
+            <td>{{ m.username or '—' }}</td>
+            <td>{{ m.created_at_fmt }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if movements_limit == 20 and movements|length == 20 %}
+      <a class="btn btn-link btn-sm mt-2"
+         href="{{ url_for('view', product_id=product.id, all=1) }}#movements">
+        {{ _('Показать всё') }}
+      </a>
+    {% endif %}
+  {% else %}
+    <div class="text-muted">{{ _('Записей пока нет.') }}</div>
+  {% endif %}
+</div>
+
       {% if g.user.role == 'editor' %}
       <div class="mt-4 d-flex gap-2">
         <a href="{{ url_for('edit', product_id=product.id) }}" class="btn btn-warning">
           ✏️ {{ _('Редактировать') }}
         </a>
-        <form action="{{ url_for('delete', product_id=product.id) }}" method="POST"
-              onsubmit="return confirm('{{ _('Удалить товар?') }}');">
-          <button type="submit" class="btn btn-danger">🗑️ {{ _('Удалить') }}</button>
-        </form>
+<form action="{{ url_for('delete', product_id=product.id) }}" method="POST"
+      onsubmit="return confirmDelete()">
+  <button type="submit" class="btn btn-danger">🗑️ {{ _('Удалить') }}</button>
+</form>
       </div>
       {% endif %}
     </div>
 
   </div>
 </div>
+<script>
+  function confirmDelete() {
+    return confirm("{{ _('Удалить товар?')|e }}");
+  }
+</script>
 {% endblock %}

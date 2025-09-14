@@ -18,7 +18,7 @@
     <div class="d-flex align-items-center gap-2 desktop-menu d-none d-lg-flex">
       <div class="dropdown me-2">
         <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="color:#fff;">
-          🌐 {{ LANGUAGES[get_locale()] }}
+          🌐 
         </button>
         <!-- ИЗМЕНЕНИЕ: добавлен класс language-dropdown-menu -->
         <ul class="dropdown-menu dropdown-menu-end language-dropdown-menu">
@@ -69,7 +69,7 @@
   <div class="py-1">
     <div class="dropdown mb-2">
       <button class="btn btn-sm btn-outline-dark w-100" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-        🌐 {{ LANGUAGES[get_locale()] }}
+        🌐 
       </button>
       <ul class="dropdown-menu w-100">
         {% for code, lang in LANGUAGES.items() %}
