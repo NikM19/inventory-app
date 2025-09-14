@@ -73,7 +73,7 @@
 
 <hr class="my-4">
 
-<!-- Галерея всех фото -->
+{# --- ГАЛЕРЕЯ ФОТО --- #}
 {% if images and images|length %}
   <h5 class="mb-3">{{ _('Фотографии товара') }}</h5>
   <div class="row g-3">
@@ -81,21 +81,31 @@
       <div class="col-6 col-md-4 col-lg-3">
         <div class="card h-100">
           <img src="{{ img.url }}" class="card-img-top" alt="photo">
+
           <div class="card-body p-2">
             {% if img.is_primary %}
               <span class="badge bg-primary">{{ _('Главное') }}</span>
-            {% else %}
+            {% elif img.id %}
               <form method="post" action="{{ url_for('set_primary_image_route', image_id=img.id) }}">
-                <button class="btn btn-sm btn-outline-secondary w-100">{{ _('Сделать главным') }}</button>
+                <button class="btn btn-sm btn-outline-secondary w-100">
+                  {{ _('Сделать главным') }}
+                </button>
               </form>
+            {% else %}
+              <small class="text-muted">
+                {{ _('Это старое главное фото. Функции доступны после добавления фото в галерею.') }}
+              </small>
             {% endif %}
           </div>
+
           <div class="card-footer bg-white border-0 p-2 pt-0">
-            <form method="post"
-                  action="{{ url_for('delete_image_route', image_id=img.id) }}"
-                  onsubmit="return confirm('{{ _('Удалить фото?') }}')">
-              <button class="btn btn-sm btn-danger w-100">{{ _('Удалить') }}</button>
-            </form>
+            {% if img.id %}
+              <form method="post"
+                    action="{{ url_for('delete_image_route', image_id=img.id) }}"
+                    onsubmit="return confirmDelete();">
+                <button class="btn btn-sm btn-danger w-100">{{ _('Удалить') }}</button>
+              </form>
+            {% endif %}
           </div>
         </div>
       </div>
@@ -124,6 +134,12 @@
     </div>
   </div>
 </div>
+
+<script>
+  function confirmDelete() {
+    return confirm("{{ _('Удалить фото?')|e }}");
+  }
+</script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
