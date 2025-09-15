@@ -8,11 +8,18 @@
     ← {{ _('Назад') }}
   </a>
 
-  <h2 class="mb-4">
-    <span style="font-size: 1.4em;">🪨</span> {{ product.name }}
-  </h2>
+<h2 class="mb-4">
+  <span style="font-size: 1.4em;">🪨</span> {{ product.name }}
+</h2>
 
-  <div class="row">
+{% set loc = get_locale() %}
+{% if g.current_warehouse %}
+  <div class="text-muted mb-3">
+    📍 {{ g.current_warehouse['name_' ~ loc] or g.current_warehouse.code }}
+  </div>
+{% endif %}
+
+<div class="row">
 
     <!-- Левая колонка: фото товара -->
     <div class="col-md-4 mb-4">
@@ -83,10 +90,10 @@
             <th>{{ _('Категория') }}</th>
             <td>{{ category.name if category else '—' }}</td>
           </tr>
-          <tr>
-            <th>{{ _('Кол-во') }}</th>
-            <td>{{ product.quantity }} {{ product.unit }}</td>
-          </tr>
+         <tr>
+  <th>{{ _('Остаток на складе') }}</th>
+  <td>{{ product.wh_quantity|default(0) }} {{ product.unit }}</td>
+</tr>
           <tr>
             <th>{{ _('Дата добавления') }}</th>
             <td>{{ product.created_at_fmt }}</td>
@@ -143,7 +150,11 @@
 
 <!-- История движений -->
 <div id="movements" class="mt-4">
-  <h5 class="mb-2">{{ _('История движений') }}</h5>
+  {% set loc = get_locale() %}
+<h5 class="mb-2">
+  {{ _('История движений') }}
+  {% if g.current_warehouse %} — {{ g.current_warehouse['name_' ~ loc] or g.current_warehouse.code }}{% endif %}
+</h5>
 
   {% if movements and movements|length > 0 %}
     <div class="table-responsive">

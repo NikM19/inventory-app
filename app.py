@@ -57,8 +57,10 @@ def _index_cache_key():
     uid  = (g.user or {}).get("id", "anon")
     role = (g.user or {}).get("role", "viewer")
     lang = str(get_locale())
-    args = urlencode(sorted(request.args.items()))  # фильтры из query-строки
-    return f"idx:{uid}:{role}:{lang}:{args}"
+    # ключ берём из session и приводим к нижнему регистру
+    wh_code = (session.get("warehouse_code") or "tuusula").lower()
+    args = urlencode(sorted(request.args.items()))
+    return f"idx:{uid}:{role}:{lang}:{wh_code}:{args}"
 
 # --- Настройки Flask-Mail ---
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
@@ -113,6 +115,57 @@ def set_language(lang):
     if lang in languages:
         session['lang'] = lang
     return redirect(request.referrer or url_for('index'))
+
+@app.route('/favicon.ico')
+def favicon():
+    return redirect(url_for('static', filename='img/artkivi-logo.png'))
+
+# =======================
+#   Склады: выбор и загрузка
+# =======================
+
+def fetch_warehouses():
+    """Активные склады для дропдауна в шапке (в нужном порядке)."""
+    resp = (supabase.table("warehouses")
+            .select("id,code,name_en,name_fi,name_ru,is_active,sort_order")
+            .eq("is_active", True)
+            .order("sort_order")        # <-- порядок по sort_order
+            .order("code")              # (доп. стабильная сортировка)
+            .execute())
+    return resp.data or []
+
+def current_wh_id():
+    """ID текущего склада из g.current_warehouse."""
+    return (getattr(g, "current_warehouse", {}) or {}).get("id")
+
+@app.before_request
+def load_current_warehouse():
+    if request.endpoint in ('static',):
+        return
+
+    # код склада храним в session и нормализуем
+    code = (session.get("warehouse_code") or "tuusula").lower()
+
+    # грузим список активных складов в g
+    g.warehouses = fetch_warehouses()
+
+    # ищем текущий склад по коду (в нижнем регистре с обеих сторон)
+    g.current_warehouse = next(
+        (w for w in g.warehouses if (w.get("code", "").lower() == code)),
+        None
+    )
+
+    # если не нашли — берём первый активный и кладём его код в session (тоже lower)
+    if not g.current_warehouse and g.warehouses:
+        g.current_warehouse = g.warehouses[0]
+        session["warehouse_code"] = (g.current_warehouse.get("code") or "").lower()
+
+@app.route("/set-warehouse/<code>")
+def set_warehouse(code):
+    session["warehouse_code"] = (code or "").lower()
+    # В разработке, если хотите, можно разкомментировать очистку кэша:
+    cache.clear()
+    return redirect(request.referrer or url_for("index"))
 
 # =======================
 #   Логирование действий
@@ -385,6 +438,29 @@ def get_total_products_count():
                .range(0, 0)    # 0 строк данных, но count вернётся
                .execute())
         return res.count or 0
+    
+def change_inventory(product_id: int, delta: float):
+    """Изменяет остаток по паре (product_id, warehouse_id) и возвращает новое значение."""
+    whid = current_wh_id()
+
+    cur = (supabase.table("inventory")
+           .select("id,quantity")
+           .eq("product_id", product_id)
+           .eq("warehouse_id", whid)
+           .limit(1).execute()).data
+
+    if cur:
+        new_q = float(cur[0].get("quantity") or 0) + float(delta)
+        supabase.table("inventory").update({"quantity": new_q}).eq("id", cur[0]["id"]).execute()
+        return new_q
+    else:
+        new_q = max(float(delta), 0.0)
+        supabase.table("inventory").insert({
+            "product_id": product_id,
+            "warehouse_id": whid,
+            "quantity": new_q
+        }).execute()
+        return new_q
 
 # =======================
 #   Главная страница с фильтрацией (ОБНОВЛЁННЫЙ КОД!)
@@ -394,28 +470,37 @@ def get_total_products_count():
 @login_required
 @cache.cached(timeout=15, key_prefix=_index_cache_key)
 def index():
-    # ---- ПАГИНАЦИЯ (опционально) ----
+    # ---- ПАГИНАЦИЯ ----
     try:
         page = int(request.args.get("page", 1))
     except Exception:
         page = 1
-    per_page = 100  # можешь поставить 100, если пока без пагинации в UI
+    per_page = 100
     start = (page - 1) * per_page
-    end = start + per_page - 1  # Supabase .range — включительно
+    end = start + per_page - 1
 
-    # Категории (их удобно позже кэшировать)
+    # Категории
     categories = get_categories()
 
     # Текущий язык
-    current_lang = str(get_locale())  # "fi" / "en" / "ru"
+    current_lang = str(get_locale())
 
-    # Товары: забираем только нужные поля + диапазон
-    prod_q = supabase.table("products") \
-        .select("id,name,description,quantity,unit,size,price,category_id,image_url,created_at") \
-        .order("created_at", desc=True) \
-        .range(start, end) \
-        .execute()
+    # ИД выбранного склада
+    wh_id = current_wh_id()
+
+    # Товары из представления по складу
+    prod_q = (supabase.table("v_products_by_warehouse")
+              .select("id,name,description,unit,size,price,category_id,image_url,created_at,warehouse_id,wh_quantity")
+              .eq("warehouse_id", wh_id)
+              .gt("wh_quantity", 0)
+              .order("created_at", desc=True)
+              .range(start, end)
+              .execute())
     products_all = prod_q.data or []
+
+    # привести поле количества к привычному имени
+    for p in products_all:
+        p["quantity"] = p.get("wh_quantity") or 0
 
     # --- Фильтры из request.args ---
     search = request.args.get('search', '').strip().lower()
@@ -424,7 +509,7 @@ def index():
     price = request.args.get('price', '').replace(',', '.').strip()
     quantity = request.args.get('quantity', '').replace(',', '.').strip()
 
-    # Словарь названий категорий на нужном языке
+    # Названия категорий на нужном языке
     cat_dict = {}
     for c in categories:
         if current_lang == "fi":
@@ -436,7 +521,7 @@ def index():
         else:
             cat_dict[c["id"]] = c.get("name") or ""
 
-    # Предварительная фильтрация по простым полям
+    # Предфильтрация
     prefiltered = []
     for p in products_all:
         if search and search not in (p.get('name') or '').lower():
@@ -457,21 +542,19 @@ def index():
             pass
         prefiltered.append(p)
 
-    # ---- Одним запросом тянем главные фото (без N+1) ----
+    # Подтянуть главные фото разом
     ids = [p["id"] for p in prefiltered]
     prim_map = get_primary_images_map(ids)
 
-    # Дополняем поля для шаблона
+    # Дополнить поля для шаблона
     filtered = []
     for p in prefiltered:
         p["category_name"] = cat_dict.get(p.get("category_id"), "")
-        # Если в шаблоне используешь product.image_url — можешь оставить как есть.
-        # Это поле синхронизируется у тебя при апдейтах. Но на всякий случай добавим удобное:
         p["primary_image_url"] = prim_map.get(p["id"]) or p.get("image_url")
         filtered.append(p)
 
-    # Статистика (быстро и просто)
-    total_products = get_total_products_count()
+    # Статистика
+    total_products = len(products_all)
     total_categories = len(categories)
     recent_products = products_all[:5]
 
@@ -747,7 +830,6 @@ def consume_stock(product_id):
     amount_raw = (request.form.get("amount") or "").replace(",", ".").strip()
     note = (request.form.get("note") or "").strip()
 
-    # валидируем число
     try:
         amount = float(amount_raw)
     except Exception:
@@ -757,35 +839,37 @@ def consume_stock(product_id):
         flash(_("Количество должно быть больше нуля."), "warning")
         return redirect(url_for("view", product_id=product_id))
 
-    # товар и остаток
     product = get_product_by_id(product_id)
     if not product:
         flash(_("Товар не найден!"), "danger")
         return redirect(url_for("index"))
 
-    unit = product.get("unit") or ""
-    current_qty = float(product.get("quantity") or 0)
+    whid = current_wh_id()
+    # текущий остаток по складу
+    cur = (supabase.table("inventory")
+           .select("quantity")
+           .eq("product_id", product_id)
+           .eq("warehouse_id", whid)
+           .limit(1).execute()).data
+    current_qty = float(cur[0]["quantity"]) if cur else 0.0
 
     if amount > current_qty:
+        unit = product.get("unit") or ""
         flash(_("Нельзя списать %(a).2f — на складе только %(q).2f.", a=amount, q=current_qty), "danger")
         return redirect(url_for("view", product_id=product_id))
 
-    new_qty = round(current_qty - amount, 4)
+    new_qty = change_inventory(product_id, -amount)
 
-    # обновляем остаток
-    supabase.table("products").update({"quantity": new_qty}).eq("id", product_id).execute()
+    # движение
+    supabase.table("stock_movements").insert({
+        "product_id": product_id,
+        "user_id": g.user.get("id"),
+        "warehouse_id": whid,
+        "delta": -amount,
+        "note": note,
+    }).execute()
 
-    # записываем движение
-    try:
-        supabase.table("stock_movements").insert({
-            "product_id": product_id,
-            "user_id": g.user.get("id"),
-            "delta": -amount,
-            "note": note,
-        }).execute()
-    except Exception:
-        pass
-
+    unit = product.get("unit") or ""
     log_action(g.user["id"], "consume", "product", product_id,
                _('Списано со склада: -%(a).2f %(u)s', a=amount, u=unit))
     flash(_('Списано %(a).2f %(u)s. Остаток: %(r).2f %(u)s.',
@@ -799,7 +883,6 @@ def add_stock(product_id):
     amount_raw = (request.form.get("amount") or "").replace(",", ".").strip()
     note = (request.form.get("note") or "").strip()
 
-    # валидируем число
     try:
         amount = float(amount_raw)
     except Exception:
@@ -809,30 +892,22 @@ def add_stock(product_id):
         flash(_("Количество должно быть больше нуля."), "warning")
         return redirect(url_for("view", product_id=product_id))
 
-    # товар и остаток
     product = get_product_by_id(product_id)
     if not product:
         flash(_("Товар не найден!"), "danger")
         return redirect(url_for("index"))
 
+    new_qty = change_inventory(product_id, +amount)
+
+    supabase.table("stock_movements").insert({
+        "product_id": product_id,
+        "user_id": g.user.get("id"),
+        "warehouse_id": current_wh_id(),
+        "delta": amount,
+        "note": note,
+    }).execute()
+
     unit = product.get("unit") or ""
-    current_qty = float(product.get("quantity") or 0)
-    new_qty = round(current_qty + amount, 4)
-
-    # обновляем остаток
-    supabase.table("products").update({"quantity": new_qty}).eq("id", product_id).execute()
-
-    # записываем движение
-    try:
-        supabase.table("stock_movements").insert({
-            "product_id": product_id,
-            "user_id": g.user.get("id"),
-            "delta": amount,   # ВАЖНО: плюс
-            "note": note,
-        }).execute()
-    except Exception:
-        pass
-
     log_action(g.user["id"], "restock", "product", product_id,
                _('Поступление на склад: +%(a).2f %(u)s', a=amount, u=unit))
     flash(_('Добавлено %(a).2f %(u)s. Теперь на складе: %(r).2f %(u)s.',
@@ -971,13 +1046,22 @@ def view(product_id):
     else:
         product["created_at_fmt"] = ""
 
-    # фото (новая таблица)
+    # Кол-во на выбранном складе
+    whid = current_wh_id()
+    iq = (supabase.table("inventory")
+          .select("quantity")
+          .eq("product_id", product_id)
+          .eq("warehouse_id", whid)
+          .limit(1)
+          .execute())
+    product["wh_quantity"] = (iq.data[0]["quantity"] if iq.data else 0)
+
+    # фото
     images = get_product_images(product_id)
-    # совместимость со старым полем image_url
     if not images and product.get("image_url"):
         images = [{"id": None, "url": product["image_url"], "is_primary": True}]
 
-    # ---- История движений по товару ----
+    # История движений по выбранному складу
     limit = 20
     if request.args.get('all') == '1':
         limit = 200
@@ -985,12 +1069,13 @@ def view(product_id):
     mov_q = (supabase.table("stock_movements")
              .select("id,product_id,user_id,delta,note,created_at")
              .eq("product_id", product_id)
+             .eq("warehouse_id", whid)
              .order("created_at", desc=True)
              .limit(limit)
              .execute())
     movements = mov_q.data or []
 
-    # подтянем имена пользователей по user_id
+    # подтянем имена пользователей
     user_ids = {m.get("user_id") for m in movements if m.get("user_id")}
     users_map = {}
     if user_ids:
@@ -1001,7 +1086,7 @@ def view(product_id):
         for u in uresp.data or []:
             users_map[str(u["id"])] = u["username"]
 
-    # отформатируем дату и подставим username
+    # формат даты + username
     for m in movements:
         m["username"] = users_map.get(str(m.get("user_id")), "")
         ts = m.get("created_at")

@@ -4,6 +4,8 @@
   <meta charset="utf-8">
   <title>{% block title %}{{ _('Склад Artkivi') }}{% endblock %}</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="icon" type="image/png"
+      href="{{ url_for('static', filename='img/artkivi-logo.png') }}">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="{{ asset_url('artkivi.css') }}">
 </head>
@@ -15,20 +17,48 @@
       <span style="color: #fff; font-weight: 500;">{{ _('Склад Artkivi') }}</span>
     </a>
     <!-- Десктопное меню -->
-    <div class="d-flex align-items-center gap-2 desktop-menu d-none d-lg-flex">
-      <div class="dropdown me-2">
-        <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="color:#fff;">
-          🌐 
-        </button>
-        <!-- ИЗМЕНЕНИЕ: добавлен класс language-dropdown-menu -->
-        <ul class="dropdown-menu dropdown-menu-end language-dropdown-menu">
-          {% for code, lang in LANGUAGES.items() %}
-            <li>
-              <a class="dropdown-item {% if get_locale() == code %}active{% endif %}" href="{{ url_for('set_language', lang=code) }}">{{ lang }}</a>
-            </li>
-          {% endfor %}
-        </ul>
-      </div>
+<div class="d-flex align-items-center gap-2 desktop-menu d-none d-lg-flex">
+  {% set loc = get_locale() %}
+
+  <!-- 📍 Склад -->
+  <div class="dropdown me-2">
+<button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false"
+        style="color:#fff;"
+        aria-label="{{ _('Склад') }}"
+        title="{{ (g.current_warehouse and (g.current_warehouse['name_' ~ loc] or g.current_warehouse.code)) or '' }}">
+  📍
+</button>
+    <ul class="dropdown-menu dropdown-menu-end">
+      {% for w in g.warehouses %}
+        {% set wname = (w['name_' ~ loc] or w.code) %}
+        <li>
+          <a class="dropdown-item {% if g.current_warehouse and g.current_warehouse.id == w.id %}active{% endif %}"
+             href="{{ url_for('set_warehouse', code=w.code) }}">
+            {{ wname }}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- 🌐 Язык -->
+  <div class="dropdown me-2">
+<button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false"
+        style="color:#fff;"
+        aria-label="{{ _('Язык') }}"
+        title="{{ LANGUAGES.get(get_locale()) }}">
+  🌐
+</button>
+    <ul class="dropdown-menu dropdown-menu-end language-dropdown-menu">
+      {% for code, lang in LANGUAGES.items() %}
+        <li>
+          <a class="dropdown-item {% if get_locale() == code %}active{% endif %}"
+             href="{{ url_for('set_language', lang=code) }}">{{ lang }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+
       {% if g.user %}
         <span class="navbar-text" style="color: #fff;">
           <span style="font-size:1.3em;vertical-align: middle;">👤</span>
@@ -67,18 +97,42 @@
 <!-- Slide-down Mobile Menu (только для мобильных) -->
 <div class="mobile-slide-menu" id="mobileSlideMenu">
   <div class="py-1">
+    {% set loc = get_locale() %}
+
+    <!-- 📍 Склад -->
     <div class="dropdown mb-2">
-      <button class="btn btn-sm btn-outline-dark w-100" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-        🌐 
+      <button class="btn btn-sm btn-outline-dark w-100" type="button" data-bs-toggle="dropdown"
+              aria-expanded="false" aria-label="{{ _('Склад') }}">
+        📍
       </button>
       <ul class="dropdown-menu w-100">
-        {% for code, lang in LANGUAGES.items() %}
+        {% for w in g.warehouses %}
+          {% set wname = (w['name_' ~ loc] or w.code) %}
           <li>
-            <a class="dropdown-item {% if get_locale() == code %}active{% endif %}" href="{{ url_for('set_language', lang=code) }}">{{ lang }}</a>
+            <a class="dropdown-item {% if g.current_warehouse and g.current_warehouse.id == w.id %}active{% endif %}"
+               href="{{ url_for('set_warehouse', code=w.code) }}">
+              {{ wname }}
+            </a>
           </li>
         {% endfor %}
       </ul>
     </div>
+
+    <!-- 🌐 Язык -->
+    <div class="dropdown mb-2">
+      <button class="btn btn-sm btn-outline-dark w-100" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        🌐
+      </button>
+      <ul class="dropdown-menu w-100">
+        {% for code, lang in LANGUAGES.items() %}
+          <li>
+            <a class="dropdown-item {% if get_locale() == code %}active{% endif %}"
+               href="{{ url_for('set_language', lang=code) }}">{{ lang }}</a>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+
     {% if g.user %}
       <div class="mb-2">
         <span style="font-size:1.3em;vertical-align: middle;">👤</span>
