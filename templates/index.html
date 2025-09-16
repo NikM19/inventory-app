@@ -54,17 +54,22 @@
     <button type="submit" class="btn btn-outline-primary w-100">{{ _('Поиск') }}</button>
   </div>
 
-  <!-- ОДИН переключатель: "Только нулевые" -->
-  <div class="col-md-2 d-flex align-items-center">
-    <div class="form-check mt-2">
-      <input class="form-check-input" type="checkbox" id="zeroOnly"
-             name="zero_only" value="1"
-             {% if request.args.get('zero_only') == '1' %}checked{% endif %}>
-      <label class="form-check-label" for="zeroOnly">
-        {{ _('Только нулевые') }}
-      </label>
-    </div>
+<!-- iOS-переключатель: Нет на складе -->
+<div class="col-md-2 d-flex align-items-center">
+  <div class="switch-row mt-2">
+    <label class="ios-switch" aria-label="{{ _('Нет на складе') }}" title="{{ _('Показывать товары с нулевым остатком') }}">
+      <input
+        id="zeroOnly"
+        type="checkbox"
+        name="zero_only"
+        value="1"
+        {% if request.args.get('zero_only') == '1' %}checked{% endif %}
+        onchange="this.form.submit()">
+      <span class="ios-slider"></span>
+    </label>
+    <label class="switch-label" for="zeroOnly">{{ _('Нет на складе') }}</label>
   </div>
+</div>
 
   <div class="col-md-12 mt-2">
     <a href="{{ url_for('index') }}" class="btn btn-link">{{ _('Сбросить фильтр') }}</a>

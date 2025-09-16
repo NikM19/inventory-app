@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-09-14 16:01+0300\n"
+"POT-Creation-Date: 2025-09-16 14:45+0300\n"
 "PO-Revision-Date: 2025-07-03 13:05+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fi\n"
@@ -18,27 +18,27 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: app.py:318
+#: app.py:371
 msgid "Требуются права редактора."
 msgstr "Tarvitaan muokkausoikeudet."
 
-#: app.py:533
+#: app.py:626
 msgid "Ссылка недействительна или уже использована."
 msgstr "Linkki on virheellinen tai sitä on jo käytetty."
 
-#: app.py:537
+#: app.py:630
 msgid "Аккаунт уже активирован."
 msgstr "Tili on jo aktivoitu."
 
-#: app.py:540
+#: app.py:633
 msgid "Аккаунт успешно активирован! Теперь вы можете войти."
 msgstr "Tili aktivoitiin onnistuneesti! Voit nyt kirjautua sisään."
 
-#: app.py:550
+#: app.py:643
 msgid "Неверный логин или пароль!"
 msgstr "Virheellinen käyttäjätunnus tai salasana!"
 
-#: app.py:553
+#: app.py:646
 msgid ""
 "Аккаунт не активирован! Проверьте email и перейдите по ссылке для "
 "активации."
@@ -46,171 +46,171 @@ msgstr ""
 "Tiliä ei ole aktivoitu! Tarkista sähköpostisi ja aktivoi tili linkin "
 "avulla."
 
-#: app.py:557
+#: app.py:650
 msgid "Вход выполнен!"
 msgstr "Kirjautuminen onnistui!"
 
-#: app.py:564
+#: app.py:657
 msgid "Вы вышли из аккаунта."
 msgstr "Olet kirjautunut ulos tililtäsi."
 
-#: app.py:592 templates/logs.html:11
+#: app.py:685 templates/logs.html:11
 msgid "Пользователь"
 msgstr "Käyttäjä"
 
-#: app.py:593 templates/logs.html:12
+#: app.py:686 templates/logs.html:12
 msgid "Действие"
 msgstr "Toiminto"
 
-#: app.py:594
+#: app.py:687
 msgid "Тип объекта"
 msgstr "Kohteen tyyppi"
 
-#: app.py:595
+#: app.py:688
 msgid "ID объекта"
 msgstr "Kohteen ID"
 
-#: app.py:596 templates/logs.html:10
+#: app.py:689 templates/logs.html:10
 msgid "Дата и время"
 msgstr "Päivämäärä ja aika"
 
-#: app.py:597 templates/logs.html:14
+#: app.py:690 templates/logs.html:14
 msgid "Детали"
 msgstr "Tiedot"
 
-#: app.py:632
+#: app.py:725
 msgid "Введите название товара"
 msgstr "Syötä tuotteen nimi"
 
-#: app.py:638 app.py:704
+#: app.py:731 app.py:797
 msgid "Некорректное число! Введите, например, 10 или 10.5"
 msgstr "Virheellinen numero! Syötä esimerkiksi 10 tai 10.5"
 
-#: app.py:665
+#: app.py:758
 msgid "Добавлен товар: "
 msgstr "Lisätty tuote: "
 
-#: app.py:666
+#: app.py:759
 #, python-format
 msgid "Товар \"%(name)s\" добавлен!"
 msgstr "Tuote \"%(name)s\" lisätty!"
 
-#: app.py:679 app.py:763 app.py:815 app.py:862 app.py:959
+#: app.py:772 app.py:854 app.py:907 app.py:947 app.py:1044
 msgid "Товар не найден!"
 msgstr "Tuotetta ei löydy!"
 
-#: app.py:732
+#: app.py:825
 msgid "Обновлён товар: "
 msgstr "Päivitetty tuote: "
 
-#: app.py:733
+#: app.py:826
 #, python-format
 msgid "Товар \"%(name)s\" обновлён!"
 msgstr "Tuote \"%(name)s\" päivitetty!"
 
-#: app.py:754 app.py:806
+#: app.py:846 app.py:899
 msgid "Введите корректное число."
 msgstr "Syötä kelvollinen numero."
 
-#: app.py:757 app.py:809
+#: app.py:849 app.py:902
 msgid "Количество должно быть больше нуля."
 msgstr "Määrän on oltava suurempi kuin nolla."
 
-#: app.py:770
+#: app.py:868
 #, python-format
 msgid "Нельзя списать %(a).2f — на складе только %(q).2f."
 msgstr "Ei voi vähentää %(a).2f — varastossa on vain %(q).2f."
 
-#: app.py:790
+#: app.py:884
 #, python-format
 msgid "Списано со склада: -%(a).2f %(u)s"
 msgstr "Vähennetty varastosta: -%(a).2f %(u)s"
 
-#: app.py:791
+#: app.py:885
 #, python-format
 msgid "Списано %(a).2f %(u)s. Остаток: %(r).2f %(u)s."
 msgstr "Vähennetty %(a).2f %(u)s. Jäljellä: %(r).2f %(u)s."
 
-#: app.py:837
+#: app.py:922
 #, python-format
 msgid "Поступление на склад: +%(a).2f %(u)s"
 msgstr "Lisäys varastoon: +%(a).2f %(u)s"
 
-#: app.py:838
+#: app.py:923
 #, python-format
 msgid "Добавлено %(a).2f %(u)s. Теперь на складе: %(r).2f %(u)s."
 msgstr "Lisätty %(a).2f %(u)s. Varastossa nyt: %(r).2f %(u)s."
 
-#: app.py:849
+#: app.py:934
 msgid "Товар не найден! Возможно, он уже был удалён."
 msgstr "Tuotetta ei löydy! Se on ehkä jo poistettu."
 
-#: app.py:852
+#: app.py:937
 msgid "Удалён товар: "
 msgstr "Poistettu tuote: "
 
-#: app.py:853
+#: app.py:938
 msgid "Товар удалён!"
 msgstr "Tuote poistettu!"
 
-#: app.py:869
+#: app.py:954
 msgid "Фото добавлены"
 msgstr "Kuvat lisätty"
 
-#: app.py:881 app.py:900
+#: app.py:966 app.py:985
 msgid "Фото не найдено"
 msgstr "Kuvaa ei löytynyt"
 
-#: app.py:888
+#: app.py:973
 msgid "Фото удалено"
 msgstr "Kuva poistettu"
 
-#: app.py:906
+#: app.py:991
 msgid "Главное фото обновлено"
 msgstr "Pääkuva päivitetty"
 
-#: app.py:926 app.py:927 templates/index.html:240
+#: app.py:1011 app.py:1012 templates/index.html:262
 msgid "Введите название категории."
 msgstr "Syötä kategorian nimi."
 
-#: app.py:934 app.py:935
+#: app.py:1019 app.py:1020
 msgid "Такая категория уже есть."
 msgstr "Tällainen kategoria on jo olemassa."
 
-#: app.py:945
+#: app.py:1030
 msgid "Добавлена категория: "
 msgstr "Lisätty kategoria: "
 
-#: app.py:951
+#: app.py:1036
 #, python-format
 msgid "Категория \"%(name)s\" создана!"
 msgstr "Kategoria \"%(name)s\" luotu!"
 
-#: app.py:1034 templates/create.html:6 templates/edit.html:11
-#: templates/index.html:81 templates/reports.html:20
+#: app.py:1129 templates/create.html:6 templates/edit.html:11
+#: templates/index.html:103 templates/reports.html:20
 msgid "Название"
 msgstr "Nimi"
 
-#: app.py:1035 templates/create.html:35 templates/edit.html:56
-#: templates/view.html:79
+#: app.py:1130 templates/create.html:35 templates/edit.html:56
+#: templates/view.html:86
 msgid "Описание"
 msgstr "Kuvaus"
 
-#: app.py:1036 templates/create.html:19 templates/edit.html:36
-#: templates/index.html:83
+#: app.py:1131 templates/create.html:19 templates/edit.html:36
+#: templates/index.html:105
 msgid "Количество"
 msgstr "Määrä"
 
-#: app.py:1037
+#: app.py:1132
 msgid "Ед. изм."
 msgstr "Yksikkö"
 
-#: app.py:1038 templates/create.html:27 templates/edit.html:46
-#: templates/index.html:39 templates/index.html:84 templates/reports.html:23
+#: app.py:1133 templates/create.html:27 templates/edit.html:46
+#: templates/index.html:40 templates/index.html:106 templates/reports.html:23
 msgid "Размер"
 msgstr "Koko"
 
-#: app.py:1039
+#: app.py:1134
 msgid "Цена (€)"
 msgstr "Hinta (€)"
 
@@ -219,41 +219,49 @@ msgstr "Hinta (€)"
 msgid "Добавить категорию"
 msgstr "Lisää kategoria"
 
-#: templates/add_category.html:8 templates/index.html:61
+#: templates/add_category.html:8 templates/index.html:83
 msgid "Название категории"
 msgstr "Kategorian nimi"
 
 #: templates/add_category.html:12 templates/create.html:42
-#: templates/edit.html:69 templates/edit.html:124 templates/index.html:65
+#: templates/edit.html:69 templates/edit.html:124 templates/index.html:87
 msgid "Сохранить"
 msgstr "Tallenna"
 
 #: templates/add_category.html:13 templates/create.html:43
-#: templates/edit.html:70 templates/edit.html:123 templates/index.html:70
+#: templates/edit.html:70 templates/edit.html:123 templates/index.html:92
 msgid "Отмена"
 msgstr "Peruuta"
 
-#: templates/base.html:5 templates/base.html:15
+#: templates/base.html:5 templates/base.html:17
 msgid "Склад Artkivi"
 msgstr "Artkivi varasto"
 
-#: templates/base.html:37 templates/base.html:87
+#: templates/base.html:27 templates/base.html:105
+msgid "Склад"
+msgstr "varasto"
+
+#: templates/base.html:48
+msgid "Язык"
+msgstr "Kieli"
+
+#: templates/base.html:67 templates/base.html:141
 msgid "BOSS"
 msgstr "BOSS"
 
-#: templates/base.html:39 templates/base.html:89
+#: templates/base.html:69 templates/base.html:143
 msgid "admin"
 msgstr "admin"
 
-#: templates/base.html:43 templates/base.html:94 templates/logs.html:6
+#: templates/base.html:73 templates/base.html:148 templates/logs.html:6
 msgid "Журнал действий"
 msgstr "Toimintaloki"
 
-#: templates/base.html:45 templates/base.html:96
+#: templates/base.html:75 templates/base.html:150
 msgid "Выйти"
 msgstr "Kirjaudu ulos"
 
-#: templates/base.html:48 templates/base.html:99
+#: templates/base.html:78 templates/base.html:153
 msgid "Вход"
 msgstr "Kirjaudu sisään"
 
@@ -261,8 +269,8 @@ msgstr "Kirjaudu sisään"
 msgid "Добавить товар"
 msgstr "Lisää tuote"
 
-#: templates/create.html:10 templates/edit.html:16 templates/index.html:82
-#: templates/reports.html:21 templates/view.html:83
+#: templates/create.html:10 templates/edit.html:16 templates/index.html:104
+#: templates/reports.html:21 templates/view.html:90
 msgid "Категория"
 msgstr "Kategoria"
 
@@ -274,7 +282,7 @@ msgstr "Ei kategoriaa"
 msgid "Ед. измерения"
 msgstr "Yksikkö"
 
-#: templates/create.html:31 templates/edit.html:51 templates/index.html:85
+#: templates/create.html:31 templates/edit.html:51 templates/index.html:107
 #: templates/reports.html:24
 msgid "Цена, €"
 msgstr "Hinta, €"
@@ -284,7 +292,7 @@ msgid "Картинка товара"
 msgstr "Tuotekuva"
 
 #: templates/edit.html:4 templates/logs.html:4 templates/view.html:8
-#: templates/view.html:37
+#: templates/view.html:44
 msgid "Назад"
 msgstr "Takaisin"
 
@@ -322,7 +330,7 @@ msgstr ""
 "Tämä on vanha pääkuva. Toiminnot ovat käytettävissä, kun lisäät kuvia "
 "galleriaan."
 
-#: templates/edit.html:106 templates/index.html:119 templates/view.html:201
+#: templates/edit.html:106 templates/index.html:141 templates/view.html:212
 msgid "Удалить"
 msgstr "Poista"
 
@@ -346,59 +354,67 @@ msgstr "Lataa Excel"
 msgid "Название..."
 msgstr "Nimi..."
 
-#: templates/index.html:22
+#: templates/index.html:23
 msgid "Все категории"
 msgstr "Kaikki kategoriat"
 
-#: templates/index.html:43
+#: templates/index.html:45
 msgid "Цена ≤"
 msgstr "Hinta ≤"
 
-#: templates/index.html:47
+#: templates/index.html:50
 msgid "Кол-во ≥"
 msgstr "Määrä ≥"
 
-#: templates/index.html:50
+#: templates/index.html:54
 msgid "Поиск"
-msgstr "Haku"
+msgstr "Hae"
 
-#: templates/index.html:53
+#: templates/index.html:60 templates/index.html:70
+msgid "Нет на складе"
+msgstr "Ei varastossa"
+
+#: templates/index.html:60
+msgid "Показывать товары с нулевым остатком"
+msgstr "Näytä nollasaldoiset tuotteet"
+
+#: templates/index.html:75
 msgid "Сбросить фильтр"
-msgstr "Tyhjennä suodatin"
+msgstr "Tyhjennä suodattimet"
 
-#: templates/index.html:86
+#: templates/index.html:108
 msgid "Действия"
 msgstr "Toiminnot"
 
-#: templates/index.html:116 templates/view.html:197
+#: templates/index.html:138 templates/view.html:208
 msgid "Редактировать"
 msgstr "Muokkaa"
 
-#: templates/index.html:118 templates/view.html:211
+#: templates/index.html:140 templates/view.html:222
 msgid "Удалить товар?"
 msgstr "Poistetaanko tuote?"
 
-#: templates/index.html:129
+#: templates/index.html:151
 msgid "Ничего не найдено"
 msgstr "Ei hakutuloksia"
 
-#: templates/index.html:137
+#: templates/index.html:159
 msgid "Статистика:"
 msgstr "Tilastot:"
 
-#: templates/index.html:139
+#: templates/index.html:161
 msgid "Всего товаров:"
 msgstr "Tuotteita yhteensä:"
 
-#: templates/index.html:140
+#: templates/index.html:162
 msgid "Всего категорий:"
 msgstr "Kategorioita yhteensä:"
 
-#: templates/index.html:143
+#: templates/index.html:165
 msgid "Последние добавленные товары:"
 msgstr "Viimeksi lisätyt tuotteet:"
 
-#: templates/index.html:258
+#: templates/index.html:280
 msgid "Не удалось сохранить. Попробуйте ещё раз."
 msgstr "Tallennus epäonnistui. Yritä uudelleen."
 
@@ -436,13 +452,13 @@ msgstr "Raportit"
 
 #: templates/reports.html:15
 msgid "Общий список товаров"
-msgstr "Tuotteiden yleisluettelo"
+msgstr "Tuoteluettelo"
 
-#: templates/reports.html:22 templates/view.html:87 templates/view.html:154
+#: templates/reports.html:22 templates/view.html:165
 msgid "Кол-во"
 msgstr "Määrä"
 
-#: templates/reports.html:25 templates/view.html:91
+#: templates/reports.html:25 templates/view.html:98
 msgid "Дата добавления"
 msgstr "Lisäyspäivä"
 
@@ -454,75 +470,79 @@ msgstr "Tuotteita ei ole vielä."
 msgid "Просмотр товара"
 msgstr "Tuotteen katselu"
 
-#: templates/view.html:35
+#: templates/view.html:42
 msgid "Предыдущее фото"
 msgstr "Edellinen kuva"
 
-#: templates/view.html:41
+#: templates/view.html:48
 msgid "Следующее фото"
 msgstr "Seuraava kuva"
 
-#: templates/view.html:43
+#: templates/view.html:50
 msgid "Вперёд"
 msgstr "Seuraava"
 
-#: templates/view.html:100
+#: templates/view.html:94
+msgid "Остаток на складе"
+msgstr "Varastosaldo"
+
+#: templates/view.html:107
 msgid "Складские операции"
 msgstr "Varastotoiminnot"
 
-#: templates/view.html:109
+#: templates/view.html:116
 msgid "Списать, м²"
 msgstr "Vähennä, m²"
 
-#: templates/view.html:113 templates/view.html:133
+#: templates/view.html:120 templates/view.html:140
 msgid "Комментарий (необязательно)"
 msgstr "Kommentti (valinnainen)"
 
-#: templates/view.html:117
+#: templates/view.html:124
 msgid "Списать со склада"
 msgstr "Vähennä varastosta"
 
-#: templates/view.html:129
+#: templates/view.html:136
 msgid "Пополнить, м²"
 msgstr "Lisää, m²"
 
-#: templates/view.html:137
+#: templates/view.html:144
 msgid "Пополнить склад"
 msgstr "Lisää varastoon"
 
-#: templates/view.html:146
+#: templates/view.html:155
 msgid "История движений"
 msgstr "Tapahtumahistoria"
 
-#: templates/view.html:153
+#: templates/view.html:164
 msgid "Операция"
 msgstr "Tapahtuma"
 
-#: templates/view.html:155
+#: templates/view.html:166
 msgid "Комментарий"
 msgstr "Kommentti"
 
-#: templates/view.html:156
+#: templates/view.html:167
 msgid "Кем"
 msgstr "Tekijä"
 
-#: templates/view.html:157
+#: templates/view.html:168
 msgid "Когда"
 msgstr "Aika"
 
-#: templates/view.html:166
+#: templates/view.html:177
 msgid "Поступление"
 msgstr "Lisäys"
 
-#: templates/view.html:168
+#: templates/view.html:179
 msgid "Списание"
 msgstr "Vähennys"
 
-#: templates/view.html:186
+#: templates/view.html:197
 msgid "Показать всё"
 msgstr "Näytä kaikki"
 
-#: templates/view.html:190
+#: templates/view.html:201
 msgid "Записей пока нет."
 msgstr "Ei vielä merkintöjä."
 
