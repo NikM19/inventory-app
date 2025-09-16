@@ -488,14 +488,24 @@ def index():
     # ИД выбранного склада
     wh_id = current_wh_id()
 
-    # Товары из представления по складу
-    prod_q = (supabase.table("v_products_by_warehouse")
-              .select("id,name,description,unit,size,price,category_id,image_url,created_at,warehouse_id,wh_quantity")
-              .eq("warehouse_id", wh_id)
-              .gt("wh_quantity", 0)
-              .order("created_at", desc=True)
-              .range(start, end)
-              .execute())
+    # Режим: только нулевые?
+    zero_only = request.args.get('zero_only') == '1'
+
+    # Базовый запрос по складу
+    q = (supabase.table("v_products_by_warehouse")
+         .select("id,name,description,unit,size,price,category_id,image_url,created_at,warehouse_id,wh_quantity")
+         .eq("warehouse_id", wh_id))
+
+    # По умолчанию скрываем нули; если включён режим — показываем только нули
+    if zero_only:
+        q = q.eq("wh_quantity", 0)
+    else:
+        q = q.gt("wh_quantity", 0)
+
+    # Пагинация/сортировка
+    prod_q = (q.order("created_at", desc=True)
+               .range(start, end)
+               .execute())
     products_all = prod_q.data or []
 
     # привести поле количества к привычному имени
