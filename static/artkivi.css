@@ -204,11 +204,29 @@ ul.list-group {
 
 /* ====== Мобильная адаптация ====== */
 @media (max-width: 768px) {
-    .container, .main-card {
+    .container {
         padding: 10px 0 12px 0;
         border-radius: 0;
         margin-bottom: 14px;
     }
+    @media (max-width: 768px) {
+  /* …то, что выше уже есть… */
+
+  /* Мобильная карточка статистики – скругляем и даём воздух */
+  .main-card{
+    border-radius: 18px !important;
+    margin: 12px 10px 18px;
+    padding: 16px 14px 14px;
+    overflow: hidden;                       /* чтобы тень и фон выглядели ровно */
+    box-shadow: 0 8px 20px rgba(0,0,0,.08); /* мягкая тень */
+  }
+
+  /* опционально — сами элементы списка чуть мягче */
+  .main-card .list-group-item{
+    border-radius: 12px !important;
+    background: #fbf7ef;                    /* лёгкий «ванильный» фон, можно убрать */
+  }
+}
     .navbar-brand img {
         height: 28px;
     }
@@ -611,4 +629,300 @@ ul.list-group {
 @media (prefers-reduced-motion: reduce){
   .inline-panel{ transition: none !important; }
   .inline-panel .row{ transition: none !important; }
+}
+
+/* --- Цена: за единицу + итог --- */
+.price-cell{ text-align: right; line-height: 1.18; }
+.price-per-unit{ font-size: .95rem; color: var(--ak-black); opacity: .75; }
+.price-total{
+  display: inline-block;
+  margin-top: 2px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--ak-orange);
+  color: var(--ak-white);
+  font-weight: 600;
+  font-size: .96rem;
+}
+@media (max-width: 768px){
+  .price-cell{ text-align: left; }
+}
+
+/* Desktop default: скрыть мобильную карточку, показать старый вид */
+.ios-card { display: none; }
+.desktop-only { display: flex !important; align-items: center; gap: 12px; }
+
+/* === MOBILE: шапка сверху, слева фото, справа инфо, "Итого" справа === */
+@media (max-width: 768px){
+  /* скрыть дубли на мобиле и подпись первой ячейки */
+  .hide-mobile{ display:none !important; }
+  .desktop-only{ display:none !important; }
+  .table td.ios-cell::before{ display:none !important; }
+
+  td.ios-cell{ position:relative; }
+  .ios-card{ display:block; }
+
+  /* верхняя строка: название + категория + ⋯ */
+  .ios-head{ display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .ios-title{
+    flex:0 1 auto; max-width:58%;
+    font-weight:700; line-height:1.1;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    text-decoration:none;
+  }
+  .ios-cat{
+    flex:0 1 auto; max-width:30%;
+    font-size:.88rem; color:var(--ak-darkgray);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+
+  /* тело: слева фото, справа строки */
+  .ios-body{ display:flex; align-items:flex-start; gap: 17px;}
+/* mobile only – крупнее миниатюра */
+.ios-thumb{
+  flex: 0 0 89px;
+  width: 89px;
+  height: 89px;
+  border-radius: 16px;
+  object-fit: cover;
+  box-shadow: 0 1px 3px rgba(0,0,0,.12);
+}
+  .ios-info{ flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:2px; }
+  .ios-line{
+    font-size:.95rem;
+    line-height:1.25;
+    white-space: normal;       /* было nowrap */
+    overflow: visible;         /* было hidden  */
+    text-overflow: clip;       /* было ellipsis */
+    word-break: break-word;
+   }
+  .ios-per{ opacity:.75; white-space: normal; }
+
+  /* "Итого" – вправо */
+.ios-trailing{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:8px;
+  margin-left:auto;              /* ПРИЖАЛИ ВПРАВО */
+}
+  .ios-chip{
+    display:inline-block; padding:2px 10px; border-radius:999px;
+    background:var(--ak-orange); color:var(--ak-white);
+    font-weight:600; font-size:.92rem; white-space:nowrap;
+  }
+}
+
+@media (max-width: 768px){
+  .ios-ellipsis,
+  .ios-menu { display: none !important; }
+  .ios-trailing { margin-left: auto; } /* прижимаем чип вправо */
+}
+
+
+/* Прятать блок на мобиле (для десктопных кнопок внизу) */
+@media (max-width: 768px){
+  .hide-mobile { display: none !important; }
+}
+
+/* Мобайл: показываем блок под формами */
+.mobile-only { display: none !important; }
+@media (max-width: 768px){
+  .mobile-only { display: block !important; }
+}
+
+/* Десктоп: держим кнопки в одну строку */
+@media (min-width: 769px){
+  .view-actions-desktop{
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .view-actions-desktop .btn{ width: auto; white-space: nowrap; }
+  .view-actions-desktop form{ margin: 0; }
+}
+
+/* === DESKTOP SAFETY OVERRIDE: фикс десктопа === */
+@media (min-width: 769px){
+  /* на десктопе показываем только «старый» вид */
+  .ios-card,
+  .mobile-only { display: none !important; }
+  .desktop-only { display: flex !important; }
+
+  /* возвращаем нативную табличную раскладку */
+  .table              { display: table !important; width: 100% !important; }
+  .table thead        { display: table-header-group !important; }
+  .table tbody        { display: table-row-group !important; }
+  .table tr           { display: table-row !important; }
+  .table th, .table td{ display: table-cell !important; }
+}
+
+/* MOBILE – Variant H (glass) */
+@media (max-width:768px){
+  .product-view .view-details{ display:block!important; border:0; background:transparent; }
+  .product-view .view-details tbody{ display:block!important; }
+  .product-view .view-details tr{
+    display:block!important;
+    margin:12px 12px;
+    padding:12px 14px;
+    border-radius:16px;
+    background: rgba(255,255,255,.66);
+    border:1px solid rgba(255,255,255,.55);
+    box-shadow: 0 8px 22px rgba(0,0,0,.10);
+    -webkit-backdrop-filter: blur(8px) saturate(1.1);
+    backdrop-filter: blur(8px) saturate(1.1);
+  }
+  .product-view .view-details th,
+  .product-view .view-details td{ display:block!important; border:0; background:transparent; padding:0; }
+  .product-view .view-details th{ font-size:.9rem; font-weight:700; color:#6f6f6f; margin-bottom:4px; }
+  .product-view .view-details td{ font-size:1.05rem; color:#1f1f1f; }
+}
+
+/* === MOBILE fix для view.html (product-view) — выравниваем карточки === */
+@media (max-width:768px){
+  /* вернём боковые паддинги именно ЭТОМУ контейнеру */
+  .product-view.container{
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  /* уберём отрицательные маргины у bootstrap-rows */
+  .product-view .row{
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    --bs-gutter-x: 0.75rem;
+  }
+
+  /* обнулим внутренние паддинги у колонок, чтобы всё ровно сходилось */
+  .product-view .col-md-4,
+  .product-view .col-md-8{
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* карточки-«стекло»: горизонтальные отступы даёт контейнер */
+  .product-view .view-details{ width:100%; }
+  .product-view .view-details tr{
+    margin: 12px 0;        /* было 12px 12px — из-за этого могло «уезжать» вправо */
+    max-width: 100%;
+  }
+  .product-view .view-details tr:last-child{ margin-bottom: 18px; }
+}
+
+/* (опционально, если где-то всё ещё появится горизонтальный скролл) */
+html, body { overflow-x: hidden; }
+
+/* === MOBILE: мягкие углы на странице товара (view.html) === */
+@media (max-width:768px){
+  /* скругляем внешний белый контейнер этой страницы */
+  .product-view.container{
+    border-radius: 20px;       /* можно 18–22 по вкусу */
+    overflow: hidden;          /* чтобы тени/фон не «выпирали» за радиус */
+  }
+
+  /* чуть мягче «Назад» (если хочешь): */
+  .product-view .btn-back{
+    border-radius: 18px !important;
+  }
+
+  /* у фото/карусели тоже делаем такой же радиус, чтобы всё совпадало по форме */
+  .product-view .carousel,
+  .product-view .carousel-inner,
+  .product-view .carousel-item,
+  .product-view .carousel-item img,
+  .product-view img.img-fluid{
+    border-radius: 16px !important;
+    overflow: hidden;
+  }
+}
+
+/* MOBILE: вся карточка кликабельна */
+@media (max-width: 768px){
+  .js-card{
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent; /* убрать серый фокус на iOS */
+    position: relative;   /* на всякий случай для :active эффекта */
+    transition: transform .08s ease, box-shadow .12s ease;
+  }
+  .js-card:active{
+    transform: translateY(1px);
+    box-shadow: 0 6px 16px rgba(0,0,0,.12);
+  }
+}
+/* DESKTOP – Glass для таблицы деталей товара */
+@media (min-width: 992px){
+  .product-view .view-details{
+    /* делаем «стекло» контейнером самой таблицы */
+    border: 0 !important;
+    border-collapse: separate;   /* чтобы работал border-radius */
+    border-spacing: 0;
+    background: rgba(255,255,255,.66);
+    -webkit-backdrop-filter: blur(8px) saturate(1.1);
+    backdrop-filter: blur(8px) saturate(1.1);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 24px rgba(0,0,0,.10);
+  }
+
+  /* убираем чёрные головы и бордеры у ячеек */
+  .product-view .view-details th,
+  .product-view .view-details td{
+    background: transparent !important;
+    border: 0 !important;
+    padding: 12px 16px;
+  }
+
+  /* левый столбец – подпись (как на мобиле) */
+  .product-view .view-details th{
+    color: #6f6f6f;
+    font-weight: 700;
+    width: 42%;
+    white-space: nowrap;
+  }
+
+  /* правый столбец – значение */
+  .product-view .view-details td{
+    color: #1f1f1f;
+  }
+
+  /* деликатные разделители между строками */
+  .product-view .view-details tr + tr th,
+  .product-view .view-details tr + tr td{
+    border-top: 1px solid rgba(0,0,0,.06) !important;
+  }
+}
+
+/* Edit → галерея: маленький чип "Главное" (компактный и аккуратный) */
+.edit-gallery .badge.bg-primary{
+  display: inline-block;
+  width: auto;
+  line-height: 1;                 /* убираем лишнюю высоту */
+  padding: 2px 7px;               /* компактнее */
+  font-size: .72rem;              /* чуть меньше */
+  font-weight: 600;
+  letter-spacing: .02em;
+  border-radius: 999px;
+
+  /* фирменный «чип»: светлый, с тонкой рамкой */
+background: rgba(232,154,65,.14) !important; /* var(--ak-orange) с прозрачностью */
+color: var(--ak-orange) !important;
+border: 1px solid rgba(232,154,65,.45);
+
+  /* лёгкий объём */
+  box-shadow: 0 1px 2px rgba(0,0,0,.06);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+
+  /* красиво встаёт над кнопками */
+  vertical-align: middle;
+  margin-bottom: 6px;
+}
+
+/* На мобильном — ещё чуточку меньше */
+@media (max-width: 768px){
+  .edit-gallery .badge.bg-primary{
+    font-size: .68rem;
+    padding: 2px 6px;
+    margin-bottom: 5px;
+  }
 }

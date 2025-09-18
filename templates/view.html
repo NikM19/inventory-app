@@ -1,10 +1,12 @@
 {% extends 'base.html' %}
 {% block title %}{{ _('Просмотр товара') }}{% endblock %}
 {% block content %}
-<div class="container mt-4">
+<!-- добавили class="product-view" -->
+<div class="container mt-4 product-view">
 
   <!-- Кнопка Назад (ТОЛЬКО над товаром) -->
-  <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm mb-3">
+  <!-- добавили class="btn-back" -->
+  <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm mb-3 btn-back">
     ← {{ _('Назад') }}
   </a>
 
@@ -80,7 +82,7 @@
 
     <!-- Правая колонка: детали -->
     <div class="col-md-8">
-      <table class="table table-bordered">
+      <table class="table table-bordered view-details">
         <tbody>
           <tr>
             <th>{{ _('Описание') }}</th>
@@ -202,17 +204,32 @@
   {% endif %}
 </div>
 
-      {% if g.user.role == 'editor' %}
-      <div class="mt-4 d-flex gap-2">
-        <a href="{{ url_for('edit', product_id=product.id) }}" class="btn btn-warning">
-          ✏️ {{ _('Редактировать') }}
-        </a>
-<form action="{{ url_for('delete', product_id=product.id) }}" method="POST"
-      onsubmit="return confirmDelete()">
-  <button type="submit" class="btn btn-danger">🗑️ {{ _('Удалить') }}</button>
-</form>
-      </div>
-      {% endif %}
+{% if g.user.role == 'editor' %}
+  <!-- Мобайл: действия (только мобильная версия) -->
+  <div class="view-actions mt-3 mobile-only d-grid gap-2">
+    <a href="{{ url_for('edit', product_id=product.id) }}" class="btn btn-warning w-100">
+      ✏️ {{ _('Редактировать') }}
+    </a>
+    <form action="{{ url_for('delete', product_id=product.id) }}" method="post"
+          onsubmit="return confirmDelete()">
+      <button type="submit" class="btn btn-danger w-100">
+        🗑️ {{ _('Удалить') }}
+      </button>
+    </form>
+  </div>
+{% endif %}
+
+{% if g.user.role == 'editor' %}
+  <div class="mt-4 d-flex gap-2 hide-mobile">
+    <a href="{{ url_for('edit', product_id=product.id) }}" class="btn btn-warning">
+      ✏️ {{ _('Редактировать') }}
+    </a>
+    <form action="{{ url_for('delete', product_id=product.id) }}" method="POST"
+          onsubmit="return confirmDelete()">
+      <button type="submit" class="btn btn-danger">🗑️ {{ _('Удалить') }}</button>
+    </form>
+  </div>
+{% endif %}
     </div>
 
   </div>

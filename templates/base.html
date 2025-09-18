@@ -20,14 +20,15 @@
 <div class="d-flex align-items-center gap-2 desktop-menu d-none d-lg-flex">
   {% set loc = get_locale() %}
 
-  <!-- 📍 Склад -->
+{# 📍 Склад (десктоп) — НЕ показываем на /login #}
+{% if request.endpoint != 'login' %}
   <div class="dropdown me-2">
-<button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false"
-        style="color:#fff;"
-        aria-label="{{ _('Склад') }}"
-        title="{{ (g.current_warehouse and (g.current_warehouse['name_' ~ loc] or g.current_warehouse.code)) or '' }}">
-  📍
-</button>
+    <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false"
+            style="color:#fff;"
+            aria-label="{{ _('Склад') }}"
+            title="{{ (g.current_warehouse and (g.current_warehouse['name_' ~ loc] or g.current_warehouse.code)) or '' }}">
+      📍
+    </button>
     <ul class="dropdown-menu dropdown-menu-end">
       {% for w in g.warehouses %}
         {% set wname = (w['name_' ~ loc] or w.code) %}
@@ -40,6 +41,7 @@
       {% endfor %}
     </ul>
   </div>
+{% endif %}
 
   <!-- 🌐 Язык -->
   <div class="dropdown me-2">
@@ -99,24 +101,22 @@
   <div class="py-1">
     {% set loc = get_locale() %}
 
-    <!-- 📍 Склад -->
-    <div class="dropdown mb-2">
-      <button class="btn btn-sm btn-outline-dark w-100" type="button" data-bs-toggle="dropdown"
-              aria-expanded="false" aria-label="{{ _('Склад') }}">
-        📍
-      </button>
-      <ul class="dropdown-menu w-100">
-        {% for w in g.warehouses %}
-          {% set wname = (w['name_' ~ loc] or w.code) %}
-          <li>
-            <a class="dropdown-item {% if g.current_warehouse and g.current_warehouse.id == w.id %}active{% endif %}"
-               href="{{ url_for('set_warehouse', code=w.code) }}">
-              {{ wname }}
-            </a>
-          </li>
-        {% endfor %}
-      </ul>
-    </div>
+{# 📍 Склад (мобайл) — НЕ показываем на /login #}
+{% if request.endpoint != 'login' %}
+  <div class="dropdown mb-2">
+    <button class="btn btn-sm btn-outline-dark w-100" type="button" data-bs-toggle="dropdown"
+            aria-expanded="false" aria-label="{{ _('Склад') }}">📍</button>
+    <ul class="dropdown-menu w-100">
+      {% for w in g.warehouses %}
+        {% set wname = (w['name_' ~ loc] or w.code) %}
+        <li>
+          <a class="dropdown-item {% if g.current_warehouse and g.current_warehouse.id == w.id %}active{% endif %}"
+             href="{{ url_for('set_warehouse', code=w.code) }}">{{ wname }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}
 
     <!-- 🌐 Язык -->
     <div class="dropdown mb-2">

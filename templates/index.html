@@ -109,49 +109,98 @@
       </tr>
     </thead>
 
-    <tbody>
-      {% for product in products %}
-      <tr>
-        <td>
-          <a href="{{ url_for('view', product_id=product.id) }}" class="text-decoration-none d-flex align-items-center gap-2">
-            {% if product.image_url %}
-              <img src="{{ product.image_url }}" alt="{{ product.name }}"
-                   style="height:36px; width:auto; border-radius:6px; object-fit:cover; margin-right:7px;">
-            {% endif %}
-            {{ product.name }}
-          </a>
-        </td>
-        <td>
-          {% if current_lang == 'fi' and product.category_name_fi %}
-            {{ product.category_name_fi }}
-          {% elif current_lang == 'en' and product.category_name_en %}
-            {{ product.category_name_en }}
-          {% else %}
-            {{ product.category_name }}
-          {% endif %}
-        </td>
-        <td>{{ product.quantity }} {{ product.unit }}</td>
-        <td>{{ product.size }}</td>
-        <td>{% if product.price is not none %}{{ '%.2f'|format(product.price) }}{% endif %}</td>
-        <td>
-          {% if g.user.role == 'editor' %}
-            <a href="{{ url_for('edit', product_id=product.id) }}" class="btn btn-warning btn-sm">{{ _('Редактировать') }}</a>
-            <form action="{{ url_for('delete', product_id=product.id) }}" method="post" style="display:inline;">
-              <button type="submit" class="btn btn-danger btn-sm" data-confirm="{{ _('Удалить товар?') }}">
-                {{ _('Удалить') }}
-              </button>
-            </form>
-          {% endif %}
-        </td>
-      </tr>
-      {% endfor %}
+<tbody>
+  {% for product in products %}
+  <tr>
+    <!-- 1-я ячейка: новый комбинированный вид -->
+<td class="ios-cell" data-label="{{ _('Название') }}">
+  <!-- Десктоп: как раньше -->
+  <div class="desktop-only d-flex align-items-center gap-2">
+    {% if product.image_url %}
+      <img src="{{ product.image_url }}" alt="{{ product.name }}"
+           style="height:36px;width:auto;border-radius:6px;object-fit:cover;margin-right:7px;">
+    {% endif %}
+    <a href="{{ url_for('view', product_id=product.id) }}" class="text-decoration-none">
+      {{ product.name }}
+    </a>
+  </div>
 
-      {% if not products %}
-      <tr>
-        <td colspan="6" class="text-center">{{ _('Ничего не найдено') }}</td>
-      </tr>
+<!-- Мобайл: карточка БЕЗ меню -->
+<div
+  class="ios-card js-card"
+  data-href="{{ url_for('view', product_id=product.id) }}"
+  role="link"
+  tabindex="0"
+  aria-label="{{ _('Открыть товар:') }} {{ product.name }}"
+>
+  <!-- шапка: название + категория -->
+  <div class="ios-head">
+    <a href="{{ url_for('view', product_id=product.id) }}" class="ios-title">{{ product.name }}</a>
+    <span class="ios-cat">
+      {% if current_lang == 'fi' and product.category_name_fi %}
+        {{ product.category_name_fi }}
+      {% elif current_lang == 'en' and product.category_name_en %}
+        {{ product.category_name_en }}
+      {% else %}
+        {{ product.category_name }}
       {% endif %}
-    </tbody>
+    </span>
+  </div>
+
+  <!-- тело: слева фото, справа инфо -->
+  <div class="ios-body">
+    <img class="ios-thumb" src="{{ product.primary_image_url or product.image_url }}" alt="{{ product.name }}">
+    <div class="ios-info">
+      {% if product.size %}
+        <div class="ios-line">{{ product.size }}</div>
+      {% endif %}
+      {% if product.quantity %}
+        <div class="ios-line">{{ '%.2f'|format(product.quantity) }}&nbsp;{{ product.unit or '' }}</div>
+      {% endif %}
+      {% if product.price is not none %}
+        <div class="ios-line ios-per">
+          {{ '%.2f'|format(product.price) }}&nbsp;€&nbsp;/&nbsp;{{ product.unit or 'м²' }}
+        </div>
+        <div class="ios-trailing">
+          <span class="ios-chip">{{ _('Итого:') }} {{ '%.2f'|format(product.total_price or 0) }}&nbsp;€</span>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+</td>
+
+    <!-- Остальные колонки: скрываем на мобиле -->
+    <td class="hide-mobile">{{ product.category_name }}</td>
+    <td class="hide-mobile">{{ product.quantity }} {{ product.unit }}</td>
+    <td class="hide-mobile">{{ product.size }}</td>
+    <td class="hide-mobile price-cell" data-label="{{ _('Цена, €') }}">
+      {% if product.price is not none %}
+        <div class="price-per-unit">
+          {{ '%.2f'|format(product.price) }} € / {{ product.unit or 'м²' }}
+        </div>
+        <div class="price-total">
+          {{ _('Итого:') }} {{ '%.2f'|format(product.total_price or 0) }} €
+        </div>
+      {% endif %}
+    </td>
+    <td class="hide-mobile">
+      {% if g.user.role == 'editor' %}
+        <a href="{{ url_for('edit', product_id=product.id) }}" class="btn btn-warning btn-sm">{{ _('Редактировать') }}</a>
+        <form action="{{ url_for('delete', product_id=product.id) }}" method="post" style="display:inline;">
+          <button type="submit" class="btn btn-danger btn-sm" data-confirm="{{ _('Удалить товар?') }}">{{ _('Удалить') }}</button>
+        </form>
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+
+  {% if not products %}
+  <tr>
+    <td colspan="6" class="text-center">{{ _('Ничего не найдено') }}</td>
+  </tr>
+  {% endif %}
+</tbody>
   </table>
 </div>
 <!-- Фирменная карточка для статистики и новых товаров -->
@@ -285,5 +334,36 @@
     });
   }
 })();
+</script>
+
+<script>
+  // Делегируем клик/Enter по всей карточке (только на мобиле)
+  (function () {
+    const isMobile = () => window.matchMedia('(max-width: 768px)').matches;
+
+    // click/tap
+    document.addEventListener('click', function (e) {
+      if (!isMobile()) return;
+      const card = e.target.closest('.js-card');
+      if (!card) return;
+
+      // Не уходим, если клик по интерактивным элементам внутри
+      if (e.target.closest('a, button, input, select, textarea, label, .ios-ellipsis')) return;
+
+      const url = card.dataset.href;
+      if (url) window.location.href = url;
+    });
+
+    // поддержка клавиатуры (Enter/Space)
+    document.addEventListener('keydown', function (e) {
+      if (!isMobile()) return;
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      const card = e.target.closest('.js-card');
+      if (!card) return;
+      e.preventDefault();
+      const url = card.dataset.href;
+      if (url) window.location.href = url;
+    });
+  })();
 </script>
 {% endblock %}

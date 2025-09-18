@@ -508,16 +508,19 @@ def index():
                .execute())
     products_all = prod_q.data or []
 
-    # привести поле количества к привычному имени
+    # привести количество и посчитать итоговую цену
     for p in products_all:
-        p["quantity"] = p.get("wh_quantity") or 0
+        qty = float(p.get("wh_quantity") or 0)
+        unit_price = float(p.get("price") or 0)
+        p["quantity"] = qty
+        p["total_price"] = round(qty * unit_price, 2)
 
     # --- Фильтры из request.args ---
     search = request.args.get('search', '').strip().lower()
     category_id = request.args.get('category_id', '')
     size = request.args.get('size', '').strip().lower()
-    price = request.args.get('price', '').replace(',', '.').strip()
-    quantity = request.args.get('quantity', '').replace(',', '.').strip()
+    price_filter = request.args.get('price', '').replace(',', '.').strip()
+    quantity_filter = request.args.get('quantity', '').replace(',', '.').strip()
 
     # Названия категорий на нужном языке
     cat_dict = {}
@@ -541,12 +544,12 @@ def index():
         if size and size not in str(p.get('size') or '').lower():
             continue
         try:
-            if price and (p.get('price') is None or float(p['price']) > float(price)):
+            if price_filter and (p.get('price') is None or float(p['price']) > float(price_filter)):
                 continue
         except Exception:
             pass
         try:
-            if quantity and (p.get('quantity') is None or float(p['quantity']) < float(quantity)):
+            if quantity_filter and (p.get('quantity') is None or float(p['quantity']) < float(quantity_filter)):
                 continue
         except Exception:
             pass
@@ -989,6 +992,37 @@ def set_primary_image_route(image_id):
         prim = get_primary_image_url(product_id)
         supabase.table("products").update({"image_url": prim}).eq("id", product_id).execute()
         flash(_("Главное фото обновлено"), "success")
+    return redirect(url_for("edit", product_id=product_id))
+
+@app.post("/product/<int:product_id>/image/clear")
+@login_required
+@editor_required
+def clear_legacy_image(product_id):
+    """
+    Удаляет единственное «наследное» фото, которое хранится в products.image_url,
+    когда в таблице product_images нет записей. Если записи есть, просто
+    синхронизирует products.image_url с главным фото.
+    """
+    product = get_product_by_id(product_id)
+    if not product:
+        flash(_("Товар не найден!"), "danger")
+        return redirect(url_for("index"))
+
+    # Есть ли фото в product_images?
+    rows = (supabase.table("product_images")
+            .select("id")
+            .eq("product_id", product_id)
+            .limit(1).execute()).data or []
+
+    if rows:
+        # В галерее уже есть фото — ставим в products.image_url «главное»
+        prim = get_primary_image_url(product_id)
+        supabase.table("products").update({"image_url": prim}).eq("id", product_id).execute()
+    else:
+        # ГАЛЕРЕЯ ПУСТА — просто очищаем поле у товара
+        supabase.table("products").update({"image_url": None}).eq("id", product_id).execute()
+
+    flash(_("Фото удалено"), "success")
     return redirect(url_for("edit", product_id=product_id))
 
 @app.route("/add_category", methods=["GET", "POST"])

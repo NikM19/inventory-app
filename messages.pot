@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-09-16 14:45+0300\n"
+"POT-Creation-Date: 2025-09-17 11:48+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,193 +21,193 @@ msgstr ""
 msgid "Требуются права редактора."
 msgstr ""
 
-#: app.py:626
+#: app.py:629
 msgid "Ссылка недействительна или уже использована."
 msgstr ""
 
-#: app.py:630
+#: app.py:633
 msgid "Аккаунт уже активирован."
 msgstr ""
 
-#: app.py:633
+#: app.py:636
 msgid "Аккаунт успешно активирован! Теперь вы можете войти."
 msgstr ""
 
-#: app.py:643
+#: app.py:646
 msgid "Неверный логин или пароль!"
 msgstr ""
 
-#: app.py:646
+#: app.py:649
 msgid ""
 "Аккаунт не активирован! Проверьте email и перейдите по ссылке для "
 "активации."
 msgstr ""
 
-#: app.py:650
+#: app.py:653
 msgid "Вход выполнен!"
 msgstr ""
 
-#: app.py:657
+#: app.py:660
 msgid "Вы вышли из аккаунта."
 msgstr ""
 
-#: app.py:685 templates/logs.html:11
+#: app.py:688 templates/logs.html:11
 msgid "Пользователь"
 msgstr ""
 
-#: app.py:686 templates/logs.html:12
+#: app.py:689 templates/logs.html:12
 msgid "Действие"
 msgstr ""
 
-#: app.py:687
+#: app.py:690
 msgid "Тип объекта"
 msgstr ""
 
-#: app.py:688
+#: app.py:691
 msgid "ID объекта"
 msgstr ""
 
-#: app.py:689 templates/logs.html:10
+#: app.py:692 templates/logs.html:10
 msgid "Дата и время"
 msgstr ""
 
-#: app.py:690 templates/logs.html:14
+#: app.py:693 templates/logs.html:14
 msgid "Детали"
 msgstr ""
 
-#: app.py:725
+#: app.py:728
 msgid "Введите название товара"
 msgstr ""
 
-#: app.py:731 app.py:797
+#: app.py:734 app.py:800
 msgid "Некорректное число! Введите, например, 10 или 10.5"
 msgstr ""
 
-#: app.py:758
+#: app.py:761
 msgid "Добавлен товар: "
 msgstr ""
 
-#: app.py:759
+#: app.py:762
 #, python-format
 msgid "Товар \"%(name)s\" добавлен!"
 msgstr ""
 
-#: app.py:772 app.py:854 app.py:907 app.py:947 app.py:1044
+#: app.py:775 app.py:857 app.py:910 app.py:950 app.py:1047
 msgid "Товар не найден!"
 msgstr ""
 
-#: app.py:825
+#: app.py:828
 msgid "Обновлён товар: "
 msgstr ""
 
-#: app.py:826
+#: app.py:829
 #, python-format
 msgid "Товар \"%(name)s\" обновлён!"
 msgstr ""
 
-#: app.py:846 app.py:899
+#: app.py:849 app.py:902
 msgid "Введите корректное число."
 msgstr ""
 
-#: app.py:849 app.py:902
+#: app.py:852 app.py:905
 msgid "Количество должно быть больше нуля."
 msgstr ""
 
-#: app.py:868
+#: app.py:871
 #, python-format
 msgid "Нельзя списать %(a).2f — на складе только %(q).2f."
 msgstr ""
 
-#: app.py:884
+#: app.py:887
 #, python-format
 msgid "Списано со склада: -%(a).2f %(u)s"
 msgstr ""
 
-#: app.py:885
+#: app.py:888
 #, python-format
 msgid "Списано %(a).2f %(u)s. Остаток: %(r).2f %(u)s."
 msgstr ""
 
-#: app.py:922
+#: app.py:925
 #, python-format
 msgid "Поступление на склад: +%(a).2f %(u)s"
 msgstr ""
 
-#: app.py:923
+#: app.py:926
 #, python-format
 msgid "Добавлено %(a).2f %(u)s. Теперь на складе: %(r).2f %(u)s."
 msgstr ""
 
-#: app.py:934
+#: app.py:937
 msgid "Товар не найден! Возможно, он уже был удалён."
 msgstr ""
 
-#: app.py:937
+#: app.py:940
 msgid "Удалён товар: "
 msgstr ""
 
-#: app.py:938
+#: app.py:941
 msgid "Товар удалён!"
 msgstr ""
 
-#: app.py:954
+#: app.py:957
 msgid "Фото добавлены"
 msgstr ""
 
-#: app.py:966 app.py:985
+#: app.py:969 app.py:988
 msgid "Фото не найдено"
 msgstr ""
 
-#: app.py:973
+#: app.py:976
 msgid "Фото удалено"
 msgstr ""
 
-#: app.py:991
+#: app.py:994
 msgid "Главное фото обновлено"
 msgstr ""
 
-#: app.py:1011 app.py:1012 templates/index.html:262
+#: app.py:1014 app.py:1015 templates/index.html:271
 msgid "Введите название категории."
 msgstr ""
 
-#: app.py:1019 app.py:1020
+#: app.py:1022 app.py:1023
 msgid "Такая категория уже есть."
 msgstr ""
 
-#: app.py:1030
+#: app.py:1033
 msgid "Добавлена категория: "
 msgstr ""
 
-#: app.py:1036
+#: app.py:1039
 #, python-format
 msgid "Категория \"%(name)s\" создана!"
 msgstr ""
 
-#: app.py:1129 templates/create.html:6 templates/edit.html:11
+#: app.py:1132 templates/create.html:6 templates/edit.html:11
 #: templates/index.html:103 templates/reports.html:20
 msgid "Название"
 msgstr ""
 
-#: app.py:1130 templates/create.html:35 templates/edit.html:56
+#: app.py:1133 templates/create.html:35 templates/edit.html:56
 #: templates/view.html:86
 msgid "Описание"
 msgstr ""
 
-#: app.py:1131 templates/create.html:19 templates/edit.html:36
+#: app.py:1134 templates/create.html:19 templates/edit.html:36
 #: templates/index.html:105
 msgid "Количество"
 msgstr ""
 
-#: app.py:1132
+#: app.py:1135
 msgid "Ед. изм."
 msgstr ""
 
-#: app.py:1133 templates/create.html:27 templates/edit.html:46
+#: app.py:1136 templates/create.html:27 templates/edit.html:46
 #: templates/index.html:40 templates/index.html:106 templates/reports.html:23
 msgid "Размер"
 msgstr ""
 
-#: app.py:1134
+#: app.py:1137
 msgid "Цена (€)"
 msgstr ""
 
@@ -280,7 +280,7 @@ msgid "Ед. измерения"
 msgstr ""
 
 #: templates/create.html:31 templates/edit.html:51 templates/index.html:107
-#: templates/reports.html:24
+#: templates/index.html:135 templates/reports.html:24
 msgid "Цена, €"
 msgstr ""
 
@@ -325,7 +325,7 @@ msgstr ""
 msgid "Это старое главное фото. Функции доступны после добавления фото в галерею."
 msgstr ""
 
-#: templates/edit.html:106 templates/index.html:141 templates/view.html:212
+#: templates/edit.html:106 templates/index.html:150 templates/view.html:212
 msgid "Удалить"
 msgstr ""
 
@@ -381,35 +381,39 @@ msgstr ""
 msgid "Действия"
 msgstr ""
 
-#: templates/index.html:138 templates/view.html:208
+#: templates/index.html:141
+msgid "Итого:"
+msgstr ""
+
+#: templates/index.html:147 templates/view.html:208
 msgid "Редактировать"
 msgstr ""
 
-#: templates/index.html:140 templates/view.html:222
+#: templates/index.html:149 templates/view.html:222
 msgid "Удалить товар?"
 msgstr ""
 
-#: templates/index.html:151
+#: templates/index.html:160
 msgid "Ничего не найдено"
 msgstr ""
 
-#: templates/index.html:159
+#: templates/index.html:168
 msgid "Статистика:"
 msgstr ""
 
-#: templates/index.html:161
+#: templates/index.html:170
 msgid "Всего товаров:"
 msgstr ""
 
-#: templates/index.html:162
+#: templates/index.html:171
 msgid "Всего категорий:"
 msgstr ""
 
-#: templates/index.html:165
+#: templates/index.html:174
 msgid "Последние добавленные товары:"
 msgstr ""
 
-#: templates/index.html:280
+#: templates/index.html:289
 msgid "Не удалось сохранить. Попробуйте ещё раз."
 msgstr ""
 
