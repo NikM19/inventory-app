@@ -19,10 +19,24 @@
     <label class="form-label">{{ _('Количество') }}</label>
     <input type="number" name="quantity" step="any" min="0" class="form-control" required>
   </div>
-  <div class="mb-3">
-    <label class="form-label">{{ _('Ед. измерения') }}</label>
-    <input type="text" name="unit" value="м²" class="form-control" required>
-  </div>
+<div class="mb-3">
+  <label class="form-label">{{ _('Ед. измерения') }}</label>
+
+  {# Локализация подписей чипов #}
+  {% set loc = get_locale() %}
+  {% set m2_label = 'м²' if loc == 'ru' else 'm²' %}
+  {% set kg_label = 'кг' if loc == 'ru' else 'kg' %}
+  {% set pcs_label = 'kpl' if loc == 'fi' else ('pcs' if loc == 'en' else 'шт') %}
+
+  {# Текущая единица (в edit.html есть product, в create.html — может не быть) #}
+  {% set cu = product.unit if product is defined and product.unit else None %}
+
+  <select name="unit" class="form-select" required>
+    <option value="m2" {{ 'selected' if cu == 'm2' or cu is none }}>{{ m2_label }}</option>
+    <option value="kg" {{ 'selected' if cu == 'kg' }}>{{ kg_label }}</option>
+    <option value="pcs" {{ 'selected' if cu == 'pcs' }}>{{ pcs_label }}</option>
+  </select>
+</div>
   <div class="mb-3">
     <label class="form-label">{{ _('Размер') }}</label>
     <input type="text" name="size" class="form-control">

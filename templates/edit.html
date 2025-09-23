@@ -37,10 +37,34 @@
     <input type="number" name="quantity" step="0.01" class="form-control" value="{{ product.quantity }}" required>
   </div>
 
-  <div class="mb-3">
-    <label class="form-label">{{ _('Ед. измерения') }}</label>
-    <input type="text" name="unit" value="{{ product.unit }}" class="form-control" required>
-  </div>
+<div class="mb-3">
+  <label class="form-label">{{ _('Ед. измерения') }}</label>
+
+  {# === 1) Нормализуем то, что лежит в БД/старых данных === #}
+  {% set raw = (product.unit or '')|trim|lower %}
+  {% if raw in ['м2','м²','m2'] %}
+    {% set cur_code = 'm2' %}
+  {% elif raw in ['kg','кг'] %}
+    {% set cur_code = 'kg' %}
+  {% elif raw in ['pcs','шт','kpl'] %}
+    {% set cur_code = 'pcs' %}
+  {% else %}
+    {% set cur_code = raw %}
+  {% endif %}
+
+  {# === 2) Подписи по языку === #}
+  {% set loc = get_locale() %}
+  {% set m2_label = 'м²' if loc == 'ru' else 'm²' %}
+  {% set kg_label  = 'кг' if loc == 'ru' else 'kg' %}
+  {% set pcs_label = 'kpl' if loc == 'fi' else ('pcs' if loc == 'en' else 'шт') %}
+
+  {# === 3) Сам список — в БД пишем коды m2/kg/pcs === #}
+  <select name="unit" class="form-select" required>
+    <option value="m2" {{ 'selected' if cur_code == 'm2' else '' }}>{{ m2_label }}</option>
+    <option value="kg"  {{ 'selected' if cur_code == 'kg'  else '' }}>{{ kg_label }}</option>
+    <option value="pcs" {{ 'selected' if cur_code == 'pcs' else '' }}>{{ pcs_label }}</option>
+  </select>
+</div>
 
   <div class="mb-3">
     <label class="form-label">{{ _('Размер') }}</label>

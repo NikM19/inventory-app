@@ -94,7 +94,7 @@
           </tr>
          <tr>
   <th>{{ _('Остаток на складе') }}</th>
-  <td>{{ product.wh_quantity|default(0) }} {{ product.unit }}</td>
+  <td>{{ product.wh_quantity|default(0) }} {{ unit_label(product.unit) }}</td>
 </tr>
           <tr>
             <th>{{ _('Дата добавления') }}</th>

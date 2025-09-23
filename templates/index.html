@@ -172,7 +172,7 @@
 
     <!-- Остальные колонки: скрываем на мобиле -->
     <td class="hide-mobile">{{ product.category_name }}</td>
-    <td class="hide-mobile">{{ product.quantity }} {{ product.unit }}</td>
+    <td class="hide-mobile">{{ product.quantity }} {{ unit_label(product.unit) }}</td>
     <td class="hide-mobile">{{ product.size }}</td>
     <td class="hide-mobile price-cell" data-label="{{ _('Цена, €') }}">
       {% if product.price is not none %}
@@ -216,7 +216,7 @@
     {% for product in recent_products %}
     <li class="list-group-item">
       <a href="{{ url_for('view', product_id=product.id) }}" class="text-decoration-none">
-        {{ product.name }} ({{ product.quantity }} {{ product.unit }})
+        {{ product.name }} ({{ product.quantity }} {{ unit_label(product.unit) }})
       </a>
       — {{ product.created_at[:16].replace('T', ' ') }}
     </li>

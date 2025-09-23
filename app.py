@@ -108,6 +108,27 @@ def inject_languages():
     languages = ALL_LANGUAGES if user and user.get("username") == SUPERADMIN_EMAIL else DEFAULT_LANGUAGES
     return dict(LANGUAGES=languages, get_locale=get_locale)
 
+@app.context_processor
+def unit_helpers():
+    def unit_label(code: str) -> str:
+        """Отдаёт подпись единицы с учётом языка интерфейса."""
+        loc = str(get_locale())
+        c = (code or '').strip().lower()
+
+        # нормализация старых вариантов
+        if c in ('m2', 'm²', 'м2', 'м²'):
+            return 'm²'                    # везде одинаково
+        if c in ('kg', 'кг'):
+            return 'kg'                    # везде одинаково
+
+        if c in ('pcs', 'шт', 'kpl'):
+            # локализуем "штуки"
+            return 'kpl' if loc == 'fi' else ('pcs' if loc == 'en' else 'шт')
+
+        # неизвестное — показываем как есть
+        return code or ''
+    return dict(unit_label=unit_label)
+
 @app.route('/set_language/<lang>')
 def set_language(lang):
     user = getattr(g, 'user', None)
