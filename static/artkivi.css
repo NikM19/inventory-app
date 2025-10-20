@@ -949,3 +949,25 @@ border: 1px solid rgba(232,154,65,.45);
     transform: translate(0,0) scale(1);
   }
 }
+
+/* Reset: вариант A — чип-кнопка */
+.reset-chip{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:6px 12px;
+  border-radius:999px;
+  background:#fff;
+  color: var(--ak-black);
+  border:1px solid rgba(0,0,0,.15);
+  text-decoration:none;
+  font-weight:600;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+  transition: background .18s, color .18s, border-color .18s, box-shadow .18s;
+}
+.reset-chip:hover,
+.reset-chip:focus{
+  background: var(--ak-orange);
+  color:#fff;
+  border-color: var(--ak-orange);
+  box-shadow: 0 4px 12px rgba(232,154,65,.28);
+}
+.reset-chip:active{ transform: translateY(1px); }
