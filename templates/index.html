@@ -374,4 +374,64 @@
     });
   })();
 </script>
+
+<script>
+(function () {
+  const isDesktop = () => window.matchMedia('(min-width: 992px)').matches;
+
+  const pv = document.createElement('img');
+  pv.className = 'hover-preview';
+  document.body.appendChild(pv);
+
+  let active = false;
+  const PV_W = 320, PV_H = 200, PAD = 16;
+
+  function placeNear(x, y){
+    // базово справа-снизу от курсора
+    let left = x + PAD, top = y + PAD;
+
+    // если не влазит по ширине — прыгаем влево от курсора
+    if (left + PV_W > window.innerWidth - 8)
+      left = x - PV_W - PAD;
+
+    // если не влазит по высоте — прыгаем выше курсора
+    if (top + PV_H > window.innerHeight - 8)
+      top = y - PV_H - PAD;
+
+    // финальная «страховка» от выхода за экран
+    left = Math.max(8, Math.min(left, window.innerWidth  - PV_W - 8));
+    top  = Math.max(8, Math.min(top,  window.innerHeight - PV_H - 8));
+
+    pv.style.left = left + 'px';
+    pv.style.top  = top  + 'px';
+  }
+
+  document.addEventListener('mouseover', (e) => {
+    if (!isDesktop()) return;
+    const img = e.target.closest('.desktop-only img');
+    if (!img) { pv.classList.remove('show'); active = false; return; }
+    pv.src = img.src;
+    pv.classList.add('show');
+    active = true;
+    placeNear(e.clientX, e.clientY);
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDesktop() || !active) return;
+    placeNear(e.clientX, e.clientY);
+  });
+
+  // прячем при уходе мыши и при прокрутке
+  document.addEventListener('mouseout', (e) => {
+    if (!isDesktop()) return;
+    if (e.target.closest('.desktop-only img')) {
+      pv.classList.remove('show'); active = false;
+    }
+  });
+  window.addEventListener('scroll', () => {
+    if (!isDesktop()) return;
+    pv.classList.remove('show'); active = false;
+  }, { passive: true });
+})();
+</script>
 {% endblock %}
