@@ -99,6 +99,45 @@ button {
     border-radius: 25px !important;
 }
 
+/* Brand override for outline-primary (orange) */
+.btn-outline-primary{
+  color: var(--ak-orange) !important;
+  border: 1.5px solid var(--ak-orange) !important;
+  background: transparent !important;
+  border-radius: 25px !important;
+  font-weight: 600;
+  transition: background .18s, color .18s, box-shadow .18s, border-color .18s;
+}
+.btn-outline-primary:hover,
+.btn-outline-primary:focus{
+  background: var(--ak-orange) !important;
+  color: #fff !important;
+  border-color: var(--ak-orange) !important;
+  box-shadow: 0 6px 14px rgba(232,154,65,.28);
+}
+.btn-outline-primary:active{ transform: translateY(1px); }
+/* Иконка-лупа внутри outline-кнопки поиска */
+.btn-outline-primary .icon-left{
+  width: 1.05em;
+  height: 1.05em;
+  margin-right: 6px;
+  vertical-align: -0.15em;
+  margin-top: -1px;
+}
+.btn-outline-primary .icon-left,
+.btn-outline-primary .icon-left *{
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* удобный фокус с клавы */
+.btn-outline-primary:focus-visible{
+  outline: 2px solid rgba(232,154,65,.6);
+  outline-offset: 2px;
+}
 /* ====== Таблицы ====== */
 .table {
     border-radius: 8px;
@@ -180,7 +219,18 @@ textarea {
 }
 
 /* обёртка тумблера с подписью */
-.switch-row { display: flex; align-items: center; gap: 10px; }
+.switch-row{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;         /* можно переносить на новую строку при узкой ширине */
+  margin-top: 10px;        /* базовый «воздух» под полем Nimi… */
+}
+
+/* чуть больше воздуха на средних десктопах (у тебя там было «слипание») */
+@media (min-width: 992px) and (max-width: 1200px){
+  .switch-row{ margin-top: 14px; }
+}
 .switch-label { margin: 0; user-select: none; }
 
 /* ====== Карточки (статистика, добавленные товары) ====== */
@@ -554,12 +604,13 @@ ul.list-group {
 
 /* Ховер строк — лёгкая подсветка, чтобы читалось на новом фоне */
 .table-rounded-container .table-hover tbody tr:hover{
-  background-color: rgba(255,255,255,.55);
+  background-color: rgba(232,154,65,.06);
 }
 /* Тень под тёмной шапкой таблицы (через псевдо-элемент) */
 .table-rounded-container thead.table-dark tr {
-  position: relative;
-  z-index: 1;                          /* контент шапки над тенью */
+  position: sticky;
+  top: 0;
+  z-index: 3;                          /* контент шапки над тенью */
 }
 
 .table-rounded-container thead.table-dark tr::after {
@@ -962,6 +1013,11 @@ border: 1px solid rgba(232,154,65,.45);
   font-weight:600;
   box-shadow: 0 1px 4px rgba(0,0,0,.05);
   transition: background .18s, color .18s, border-color .18s, box-shadow .18s;
+    justify-content: center;  /* центр по горизонтали */
+  text-align: center;       /* на случай переноса текста */
+  min-height: 42px;         /* стабильная высота чипа */
+  line-height: 1.2;         /* аккуратная межстрочка */
+  padding: 10px 16px;       /* комфортный тач-таргет */
 }
 .reset-chip:hover,
 .reset-chip:focus{
@@ -971,3 +1027,123 @@ border: 1px solid rgba(232,154,65,.45);
   box-shadow: 0 4px 12px rgba(232,154,65,.28);
 }
 .reset-chip:active{ transform: translateY(1px); }
+
+/* Excel button: зелёный X в оранжевом outline */
+.btn-excel .icon-left,
+.btn-excel .icon-left *{
+  stroke: #1f7244 !important;          /* Excel green */
+}
+
+.btn-excel .icon-left rect{
+  fill: rgba(31,114,68,.08);           /* лёгкая зелёная подложка на «крышке» */
+  stroke-width: 1.6;
+}
+
+.btn-excel .icon-left path{
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Сохраняем зелёный цвет иконки при hover/focus */
+.btn-excel:hover .icon-left *,
+.btn-excel:focus .icon-left *,
+.btn-excel:active .icon-left *{
+  stroke: #1f7244 !important;
+}
+
+.filters-inline { gap: 6px; }
+@media (min-width: 992px){
+  .filters-inline .reset-chip{ white-space: nowrap; }  /* не ломать слово на десктопе */
+}
+@media (max-width: 768px){
+  .filters-inline .reset-chip{ padding: 6px 10px; font-size: .98rem; }
+}
+/* Отступ сверху для строки "тумблер + сброс", если она под полями */
+.filters-inline{ margin-top: 14px; }            /* мобильный/планшет */
+@media (min-width: 1200px){                     /* desktop-xl и шире */
+  .filters-inline{ margin-top: 0; }             /* в одну линию — без отступа */
+}
+/* если текст в чипе внезапно перенёсся — держим вертикальный ритм */
+.reset-chip > *{ line-height: 1.2; }
+
+.filters-card{
+  background: #f8f9fb;
+  border: 1px solid #e6e8ee;
+  border-radius: 12px;
+  padding: 12px 12px 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+}
+@media (max-width: 768px){
+  .filters-card{ background: transparent; border: 0; box-shadow: none; padding: 0; }
+}
+
+/* === Фильтры: единая высота и ровные отступы ============================ */
+.filters-row .form-control,
+.filters-row .form-select{
+  height: 44px;                 /* одинаковая высота инпутов/селектов */
+  padding: 8px 12px;
+}
+
+.filters-row .btn,
+.filters-row .reset-chip{
+  height: 44px;                 /* и кнопки такой же высоты */
+  display: inline-flex;
+  align-items: center;
+  padding: 0 16px;
+}
+
+/* Доп. «воздух» между полем Nimi… и строкой тумблер+чип на средних ширинах */
+@media (min-width: 992px) and (max-width: 1280px){
+  .switch-row{ margin-top: 16px; }
+}
+
+/* === Активный чип «Сбросить фильтр» ====================================== */
+.reset-chip--active{
+  background: var(--ak-orange);
+  color: #fff;
+  border-color: var(--ak-orange);
+  box-shadow: 0 4px 12px rgba(232,154,65,.28);
+}
+.reset-chip--active:hover,
+.reset-chip--active:focus{
+  background: #ffb35c;
+  border-color: #ffb35c;
+}
+
+/* === Серые маленькие кнопки в таблице (Muokkaa / Poista) ================= */
+.btn-warning.btn-sm{
+  background: #6b6b6b !important;   /* контрастнее и читаемее */
+  color: #fff !important;
+  border: none !important;
+  padding: 6px 10px !important;
+}
+.btn-warning.btn-sm:hover,
+.btn-warning.btn-sm:focus{
+  background: #5c5c5c !important;
+}
+
+.btn-danger.btn-sm{
+  background: #cb4642 !important;   /* твой фирменный красный */
+  color: #fff !important;
+  border: none !important;
+  padding: 6px 10px !important;
+}
+.btn-danger.btn-sm:hover,
+.btn-danger.btn-sm:focus{
+  background: #b43c38 !important;
+}
+
+/* === Фокус-стили (клавиатура/a11y) ======================================= */
+.form-control:focus,
+.form-select:focus{
+  border-color: var(--ak-orange) !important;
+  box-shadow: 0 0 0 3px rgba(232,154,65,.18) !important;
+}
+
+.btn:focus-visible,
+.reset-chip:focus-visible,
+a.btn:focus-visible{
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(232,154,65,.35) !important;
+}

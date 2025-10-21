@@ -3,19 +3,37 @@
 {% set show_price = (g.user.role == 'editor') %}
 {% set show_actions = (g.user.role == 'editor') %}
 {% set col_count = 4 + (1 if show_price else 0) + (1 if show_actions else 0) %}
+{% set filters_active =
+   request.args.get('search') or
+   request.args.get('category_id') or
+   request.args.get('size') or
+   request.args.get('price') or
+   request.args.get('quantity') or
+   (request.args.get('zero_only') == '1')
+%}
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h2>📦 {{ _('Учёт товаров') }}</h2>
   {% if g.user.role == 'editor' %}
   <div>
     <a href="{{ url_for('create') }}" class="btn btn-success">➕ {{ _('Добавить товар') }}</a>
     <a href="#" id="toggleAddCat" class="btn btn-success">📁 {{ _('Добавить категорию') }}</a>
-    <a href="{{ url_for('export_excel') }}" class="btn btn-outline-secondary">{{ _('Скачать Excel') }}</a>
+ <a href="{{ url_for('export_excel') }}" class="btn btn-outline-primary btn-excel">
+  <svg class="icon-left" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <!-- «лист» (основная часть файла) -->
+    <rect x="3" y="3" width="14" height="18" rx="3"></rect>
+    <!-- правый «корешок» книжки -->
+    <path d="M17 6 H20 V18 H17"></path>
+    <!-- крестик X внутри листа -->
+    <path d="M7 9 L13 15 M13 9 L7 15"></path>
+  </svg>
+  {{ _('Скачать Excel') }}
+</a>
   </div>
   {% endif %}
 </div>
 
 <!-- Фильтр поиска -->
-<form method="get" class="row g-2 mb-4">
+<form method="get" class="filters-card row g-2 mb-4 filters-row">
   <div class="col-md-3">
     <input type="text" name="search" value="{{ request.args.get('search', '') }}" class="form-control"
       placeholder="{{ _('Название...') }}">
@@ -57,28 +75,32 @@
   </div>
 
   <div class="col-md-1">
-    <button type="submit" class="btn btn-outline-primary w-100">{{ _('Поиск') }}</button>
+    <button type="submit" class="btn btn-outline-primary w-100">
+  <svg class="icon-left" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <circle cx="11" cy="11" r="7" />
+    <line x1="16.5" y1="16.5" x2="21" y2="21" />
+  </svg>
+  {{ _('Поиск') }}
+</button>
   </div>
 
-<!-- iOS-переключатель: Нет на складе -->
-<div class="col-md-2 d-flex align-items-center">
-  <div class="switch-row mt-2">
-    <label class="ios-switch" aria-label="{{ _('Нет на складе') }}" title="{{ _('Показывать товары с нулевым остатком') }}">
-      <input
-        id="zeroOnly"
-        type="checkbox"
-        name="zero_only"
-        value="1"
-        {% if request.args.get('zero_only') == '1' %}checked{% endif %}
-        onchange="this.form.submit()">
+<!-- Тумблер + Сброс — всегда в одну линию -->
+<div class="col-12 col-xl-auto d-flex align-items-center flex-nowrap gap-3 filters-inline mt-3 mt-lg-4">
+  <div class="switch-row">
+    <label class="ios-switch" aria-label="{{ _('Нет на складе') }}"
+           title="{{ _('Показывать товары с нулевым остатком') }}">
+      <input id="zeroOnly" type="checkbox" name="zero_only" value="1"
+             {% if request.args.get('zero_only') == '1' %}checked{% endif %}
+             onchange="this.form.submit()">
       <span class="ios-slider"></span>
     </label>
     <label class="switch-label" for="zeroOnly">{{ _('Нет на складе') }}</label>
   </div>
-</div>
-
-<div class="col-md-12 mt-2">
-  <a href="{{ url_for('index') }}" class="reset-chip">↺ {{ _('Сбросить фильтр') }}</a>
+<a href="{{ url_for('index') }}"
+   class="reset-chip {{ 'reset-chip--active' if filters_active else '' }}">
+  ↺ {{ _('Сбросить фильтр') }}
+</a>
+  
 </div>
 </form>
 
