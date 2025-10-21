@@ -259,8 +259,6 @@ ul.list-group {
         border-radius: 0;
         margin-bottom: 14px;
     }
-    @media (max-width: 768px) {
-  /* …то, что выше уже есть… */
 
   /* Мобильная карточка статистики – скругляем и даём воздух */
   .main-card{
@@ -321,7 +319,6 @@ ul.list-group {
         margin-bottom: 2px;
         font-size: 0.95em;
     }
-}
 
 /* ===== Только для десктопа: скрывать mobile меню и blur overlay ===== */
 @media (min-width: 992px) {
@@ -1146,4 +1143,109 @@ border: 1px solid rgba(232,154,65,.45);
 a.btn:focus-visible{
   outline: none;
   box-shadow: 0 0 0 3px rgba(232,154,65,.35) !important;
+}
+
+/* ===== Auth (login) — изолированные стили ============================= */
+.auth-wrapper{
+  min-height: calc(100vh - 160px);
+  display:flex; align-items:center; justify-content:center;
+}
+
+.auth-card{
+  width:100%;
+  max-width:380px;                        /* стало чуть уже */
+  background: #f6f6f7;                    /* на тон темнее, мягкий серовато-белый */
+  border: 1px solid #e9e9ec;              /* тонкая рамка, чтобы отделить от фона */
+  border-radius:20px;
+  box-shadow:0 12px 28px rgba(0,0,0,.10);
+  padding:22px 20px 18px;
+}
+
+/* Заголовок в карточке логина */
+.auth-title{
+  margin: 0 0 10px;
+  font-weight: 700;            /* чуть легче, чем 800 */
+  letter-spacing: .005em;
+  text-align: center;          /* по центру */
+  font-size: 1.55rem;          /* меньше, чем было */
+  line-height: 1.2;
+}
+
+/* Login: подписи к полям спокойнее */
+.auth-form .form-label{
+  color: #6d6d6d;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+/* Login: красивый фокус по Tab на кнопке-глазе */
+
+.auth-pass-toggle svg{
+  display:block;           /* убирает нижний «хвостик» inline-элемента */
+}
+
+/* ещё компактнее на узких экранах */
+@media (max-width: 420px){
+  .auth-title{ font-size: 1.35rem; }
+}
+
+.auth-form .form-control{ height:46px; }
+.auth-form .btn{ height:46px; font-weight:700; }
+
+/* поле пароля с кнопкой-глазом */
+.auth-pass{ position:relative; }
+.auth-pass .form-control{ padding-right:44px; }
+.auth-pass-toggle{
+  position:absolute;
+  right:8px;
+  top:50%;
+  transform: translateY(calc(-50% - 4px));
+  width:34px;
+  height:34px;
+  border:none;
+  border-radius:50%;
+  background:transparent;
+  color:var(--ak-darkgray);
+
+  /* ключ к ровному центру */
+  display: grid;           /* или display:flex; align-items:center; justify-content:center; */
+  place-items: center;
+  padding:0;
+  line-height: 0;          /* убираем влияние базовой линии */
+}
+.auth-pass-toggle:hover,
+.auth-pass-toggle:focus,
+.auth-pass-toggle:focus-visible{
+  background: transparent !important;
+  color: var(--ak-darkgray);    /* можно var(--ak-black), как тебе нравится */
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 420px){
+  .auth-card{ border-radius:16px; padding:18px 14px; }
+}
+
+/* Login page: контейнер без белой подложки, только там где есть .auth-card */
+.container:has(.auth-card){
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 24px 0 !important; /* чуть воздуха сверху/снизу */
+}
+
+/* Login overrides — воздействуют только внутри карточки логина */
+.auth-card .btn-primary{
+  background: var(--ak-black) !important;
+  border-color: var(--ak-black) !important;
+  color: #fff !important;
+  transition: background .18s, box-shadow .18s, border-color .18s, transform .06s;
+}
+.auth-card .btn-primary:active{ transform: translateY(1px); }
+.auth-card .btn-primary:hover,
+.auth-card .btn-primary:focus{
+  background: var(--ak-orange) !important;
+  border-color: var(--ak-orange) !important;
+  color: #fff !important;
+  box-shadow: 0 6px 14px rgba(232,154,65,.28);
 }
