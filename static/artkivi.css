@@ -540,28 +540,28 @@ ul.list-group {
 
 /* Flash цвет: успех (зелёный, немного прозрачный) */
 .flash-slide-success {
-  background: rgba(36, 162, 100, 0.60) !important; /* Зеленый */
+  background: rgba(36, 162, 100, 0.30) !important; /* Зеленый */
   color: #fff !important;
   backdrop-filter: blur(4px);
 }
 
 /* Flash цвет: ошибка (красный, немного прозрачный) */
 .flash-slide-danger, .flash-slide-error {
-  background: rgba(203, 70, 66, 0.60) !important; /* Красный */
+  background: rgba(203, 70, 66, 0.30) !important; /* Красный */
   color: #fff !important;
   backdrop-filter: blur(4px);
 }
 
 /* Flash цвет: предупреждение (оранжевый, немного прозрачный) */
 .flash-slide-warning {
-  background: rgba(232, 154, 65, 0.60) !important; /* Оранжевый */
+  background: rgba(232, 154, 65, 0.30) !important; /* Оранжевый */
   color: #fff !important;
   backdrop-filter: blur(4px);
 }
 
 /* Flash цвет: информационный (бирюзовый, немного прозрачный) */
 .flash-slide-info {
-  background: rgba(96, 182, 178, 0.60) !important; /* Бирюзовый */
+  background: rgba(96, 182, 178, 0.30) !important; /* Бирюзовый */
   color: #fff !important;
   backdrop-filter: blur(4px);
 }
@@ -1246,4 +1246,110 @@ a.btn:focus-visible{
   border-color: var(--ak-orange) !important;
   color: #fff !important;
   box-shadow: 0 6px 14px rgba(232,154,65,.28);
+}
+
+/* === iOS26: токены и мягкие пресеты =============================== */
+:root{
+  --ui-r-s: 12px;
+  --ui-r-m: 16px;
+  --ui-r-l: 20px;
+  --ui-pill: 999px;
+
+  --ui-elev-1: 0 2px 8px rgba(0,0,0,.06);
+  --ui-elev-2: 0 8px 20px rgba(0,0,0,.08);
+
+  --ui-bg-grouped: #f2f2f7;                  /* systemGroupedBackground */
+  --ui-separator: rgba(60,60,67,.29);        /* тонкий divider iOS */
+  --ui-placeholder: rgba(60,60,67,.6);
+}
+
+/* системный рендер шрифтов (ближе к SF) */
+html{
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Arial, "Noto Sans", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* фон групп (если хочешь оставить свой — закомментируй строку ниже) */
+body{ background: var(--ui-bg-grouped); }
+
+/* карточки/контейнеры — мягче радиус и тень */
+.container, .main-card{
+  border-radius: var(--ui-r-l);
+  box-shadow: var(--ui-elev-2);
+  background: var(--ak-white);
+}
+
+/* кнопки = «пилюли», высота 44px как в iOS */
+.btn, button, .artkivi-btn{
+  border-radius: var(--ui-pill) !important;
+  min-height: 44px;
+  padding: 0 18px;
+  transition: transform .06s ease, background .18s, color .18s, box-shadow .18s;
+}
+.btn:active, .artkivi-btn:active{ transform: translateY(1px); }
+
+/* поля ввода — деликатная граница и скругление */
+.form-control, select, textarea{
+  border: 1px solid var(--ui-separator);
+  border-radius: var(--ui-r-m);
+}
+.form-control::placeholder{ color: var(--ui-placeholder); }
+
+/* таблицы — тонкие разделители + мягкая тень контейнера */
+.table{ box-shadow: var(--ui-elev-1); }
+.table td{ border-top: 1px solid rgba(0,0,0,.06); }
+.table th{ border-bottom: 1px solid rgba(0,0,0,.08); }
+
+/* navbar-кнопки тоже «пилюли» и компактнее */
+.navbar .btn, .navbar .btn-outline-light{
+  border-radius: var(--ui-pill) !important;
+  min-height: 36px;
+  padding: 0 14px;
+}
+
+/* фоллбек, если blur не поддерживается */
+@supports not ((-webkit-backdrop-filter: blur(8px)) or (backdrop-filter: blur(8px))){
+  .mobile-slide-menu,
+  .product-view .view-details{
+    background:#fff !important;
+    border:1px solid #ececec !important;
+  }
+}
+
+/* === Buttons: выравнивание текста/иконок по центру ================== */
+.btn, button, .artkivi-btn{
+  display: inline-flex;               /* центрируем содержимое */
+  align-items: center;
+  justify-content: center;
+  gap: 8px;                           /* расстояние между иконкой и текстом */
+  line-height: 1.1;                   /* без «завала» по базовой линии */
+}
+
+/* Иконки внутри кнопок не должны тянуть baseline */
+.btn svg,
+.btn img,
+.btn .icon-left{
+  display: block;
+  margin: 0;
+  flex: 0 0 auto;
+}
+
+/* Маленькие кнопки в таблице (Muokkaa/Poista) */
+.btn-sm{
+  min-height: 34px;                   /* вместо 44px */
+  padding: 0 12px;
+  line-height: 1;                     /* плотнее, по центру */
+}
+
+/* На всякий случай: убираем «сдвиг» у .icon-left,
+   если он где-то прописан для outline-кнопок */
+.btn .icon-left{ margin-top: 0; vertical-align: 0; }
+
+/* Flash: центрируем крестик по вертикали */
+.flash-slide .btn-close{
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
 }
