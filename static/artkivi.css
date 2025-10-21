@@ -254,72 +254,67 @@ ul.list-group {
 
 /* ====== Мобильная адаптация ====== */
 @media (max-width: 768px) {
-    .container {
-        padding: 10px 0 12px 0;
-        border-radius: 0;
-        margin-bottom: 14px;
-    }
+  .container {
+    padding: 10px 0 12px 0;
+    border-radius: 0;
+    margin-bottom: 14px;
+  }
 
   /* Мобильная карточка статистики – скругляем и даём воздух */
   .main-card{
     border-radius: 18px !important;
     margin: 12px 10px 18px;
     padding: 16px 14px 14px;
-    overflow: hidden;                       /* чтобы тень и фон выглядели ровно */
-    box-shadow: 0 8px 20px rgba(0,0,0,.08); /* мягкая тень */
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0,0,0,.08);
   }
 
-  /* опционально — сами элементы списка чуть мягче */
   .main-card .list-group-item{
     border-radius: 12px !important;
-    background: #fbf7ef;                    /* лёгкий «ванильный» фон, можно убрать */
+    background: #fbf7ef;
   }
-}
-    .navbar-brand img {
-        height: 28px;
-    }
-    h2, h3, h5 {
-        font-size: 1.15em;
-    }
-    .btn, button, .artkivi-btn {
-        font-size: 0.96em !important;
-        padding: 12px 0 !important;
-        margin-bottom: 7px !important;
-        display: block;
-        width: 100%;
-        border-radius: 22px !important;
-    }
-    .table {
-        font-size: 0.97em;
-    }
-    .table thead {
-        display: none;
-    }
-    .table, .table tbody, .table tr, .table td {
-        display: block;
-        width: 100%;
-    }
-    .table tr {
-        margin-bottom: 16px;
-        box-shadow: 0 1px 4px #d9d9d9;
-        border-radius: 7px;
-        background: var(--ak-white);
-    }
-    .table td {
-        text-align: left;
-        border: none;
-        padding: 5px 9px;
-        position: relative;
-    }
-    .table td::before {
-        content: attr(data-label);
-        font-weight: 700;
-        color: var(--ak-darkgray);
-        display: block;
-        margin-bottom: 2px;
-        font-size: 0.95em;
-    }
 
+  /* ↓ всё это тоже внутри @media */
+  .navbar-brand img { height: 28px; }
+
+  h2, h3, h5 { font-size: 1.15em; }
+
+  .btn, button, .artkivi-btn {
+    font-size: 0.96em !important;
+    padding: 12px 0 !important;
+    margin-bottom: 7px !important;
+    display: block;
+    width: 100%;
+    border-radius: 22px !important;
+  }
+
+  .table { font-size: 0.97em; }
+  .table thead { display: none; }
+  .table, .table tbody, .table tr, .table td {
+    display: block;
+    width: 100%;
+  }
+  .table tr {
+    margin-bottom: 16px;
+    box-shadow: 0 1px 4px #d9d9d9;
+    border-radius: 7px;
+    background: var(--ak-white);
+  }
+  .table td {
+    text-align: left;
+    border: none;
+    padding: 5px 9px;
+    position: relative;
+  }
+  .table td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    color: var(--ak-darkgray);
+    display: block;
+    margin-bottom: 2px;
+    font-size: 0.95em;
+  }
+} /* ← закрываем @media тут и только тут */
 /* ===== Только для десктопа: скрывать mobile меню и blur overlay ===== */
 @media (min-width: 992px) {
     .mobile-slide-menu,
