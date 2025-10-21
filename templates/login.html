@@ -46,17 +46,20 @@
 </div>
 
 <script>
-  // Показать/скрыть пароль
-  (function(){
-    const btn = document.querySelector('.auth-pass-toggle');
-    const input = document.getElementById('password');
-    if(!btn || !input) return;
-    btn.addEventListener('click', () => {
-      const isPwd = input.type === 'password';
-      input.type = isPwd ? 'text' : 'password';
-      btn.setAttribute('aria-label', isPwd ? '{{ _("Скрыть пароль") }}' : '{{ _("Показать пароль") }}');
-    });
-  })();
+(function(){
+  const btn   = document.querySelector('.auth-pass-toggle');
+  const input = document.getElementById('password');
+  if(!btn || !input) return;
+
+  btn.setAttribute('aria-pressed', 'false'); // начальное состояние
+
+  btn.addEventListener('click', () => {
+    const willShow = input.type === 'password';   // true => показываем
+    input.type = willShow ? 'text' : 'password';
+    btn.setAttribute('aria-label', willShow ? '{{ _("Скрыть пароль") }}' : '{{ _("Показать пароль") }}');
+    btn.setAttribute('aria-pressed', String(willShow)); // включает оранжевый цвет
+  });
+})();
 </script>
 
 {% endblock %}

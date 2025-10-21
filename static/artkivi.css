@@ -1173,7 +1173,10 @@ a.btn:focus-visible{
   margin-bottom: 6px;
 }
 
-/* Login: красивый фокус по Tab на кнопке-глазе */
+/* --- Login: глаз оранжевый, когда пароль показан --- */
+.auth-card .auth-pass-toggle[aria-pressed="true"]{
+  color: var(--ak-orange);      /* SVG берёт stroke из currentColor */
+}
 
 .auth-pass-toggle svg{
   display:block;           /* убирает нижний «хвостик» inline-элемента */
@@ -1194,7 +1197,7 @@ a.btn:focus-visible{
   position:absolute;
   right:8px;
   top:50%;
-  transform: translateY(calc(-50% - 4px));
+  transform: translateY(calc(-50% ));
   width:34px;
   height:34px;
   border:none;
