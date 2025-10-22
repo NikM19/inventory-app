@@ -613,7 +613,7 @@ ul.list-group {
   bottom: -1px;                        /* сливается с нижней границей шапки */
   height: 12px;                        /* высота «ореола» тени */
   pointer-events: none;                /* чтобы кликать по кнопкам в шапке */
-  box-shadow: 0 10px 18px rgba(0,0,0,.18);
+  box-shadow: 0 4px 10px rgba(0,0,0,.12);
 }
 
 /* Инлайн-панель — мягкая анимация без max-height (как в локале) */
@@ -754,6 +754,17 @@ ul.list-group {
     background:var(--ak-orange); color:var(--ak-white);
     font-weight:600; font-size:.92rem; white-space:nowrap;
   }
+}
+
+/* iOS-чипы: тонкая кайма + лёгкое стекло */
+.price-total,
+.ios-chip {
+  background: rgba(232,154,65,.92);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.38);
+  -webkit-backdrop-filter: blur(6px) saturate(1.1);
+  backdrop-filter: blur(6px) saturate(1.1);
+  box-shadow: 0 1px 3px rgba(0,0,0,.10);
 }
 
 @media (max-width: 768px){
@@ -1248,6 +1259,22 @@ a.btn:focus-visible{
   box-shadow: 0 6px 14px rgba(232,154,65,.28);
 }
 
+/* iOS-плёнка на кнопках — лёгкий объём поверх базового цвета */
+.btn,
+.artkivi-btn,
+.btn-primary,
+.btn-success {
+  background-image: linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.06));
+  background-blend-mode: overlay;          /* не ломает твой цвет */
+  box-shadow: 0 2px 8px rgba(0,0,0,.10);
+}
+.btn:hover,
+.artkivi-btn:hover,
+.btn-primary:hover,
+.btn-success:hover {
+  box-shadow: 0 6px 14px rgba(0,0,0,.14);
+}
+
 /* === iOS26: токены и мягкие пресеты =============================== */
 :root{
   --ui-r-s: 12px;
@@ -1298,8 +1325,8 @@ body{ background: var(--ui-bg-grouped); }
 
 /* таблицы — тонкие разделители + мягкая тень контейнера */
 .table{ box-shadow: var(--ui-elev-1); }
-.table td{ border-top: 1px solid rgba(0,0,0,.06); }
-.table th{ border-bottom: 1px solid rgba(0,0,0,.08); }
+.table td{ border-top: .5px solid rgba(60,60,67,.18) !important; }
+.table th{ border-bottom: .5px solid rgba(60,60,67,.25) !important; }
 
 /* navbar-кнопки тоже «пилюли» и компактнее */
 .navbar .btn, .navbar .btn-outline-light{
@@ -1352,4 +1379,86 @@ body{ background: var(--ui-bg-grouped); }
   right: 18px;
   top: 50%;
   transform: translateY(-50%);
+}
+
+/* --- Больше «стекла» повсюду --- */
+
+/* Навбар: сильнее blur и прозрачность */
+.navbar, .navbar-dark{
+  background: rgba(28,28,30,.85) !important;        /* плотнее, меньше blur */
+  -webkit-backdrop-filter: saturate(1.3) blur(8px);
+  backdrop-filter: saturate(1.3) blur(8px);
+  border-bottom: .5px solid rgba(60,60,67,.28);
+  box-shadow: 0 2px 12px rgba(0,0,0,.18);
+  position: relative;
+  z-index: 2000;
+}
+
+.navbar .dropdown-menu{ z-index: 2100; }
+
+/* Стекло оставляем только намёком, а для таблицы – убираем вовсе */
+.container:not(:has(.auth-card)),
+.main-card,
+.filters-card{
+  background: rgba(255,255,255,.88) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  border: 1px solid rgba(0,0,0,.06);
+  box-shadow: 0 6px 16px rgba(0,0,0,.06);
+}
+
+.table-rounded-container{
+  background: #fff !important;                       /* сплошной фон — быстро */
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  border: 1px solid #e9e9ec;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+
+/* Header таблицы — «лист» вместо глухого тёмного */
+.table thead th{
+  background: #f7f7fa !important;                   /* сплошной, без стекла */
+  color: #1c1c1e !important;
+  border-bottom: .5px solid rgba(60,60,67,.2) !important;
+}
+
+
+/* Панель фильтров — стеклянная и липкая при скролле */
+.filters-card{
+  position: sticky; top: 64px; z-index: 900;
+}
+
+/* Ещё тоньше разделители (iOS hairline) */
+.table td, .table th{ border-color: rgba(60,60,67,.18) !important; }
+
+/* Flash уже полупрозрачный, слегка увеличим «стекло» оболочки */
+.flash-slide{
+  background: rgba(34,34,34,.62);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  backdrop-filter: blur(10px) saturate(1.2);
+}
+
+/* Фоллбек, если blur не поддерживается */
+@supports not ((-webkit-backdrop-filter: blur(0)) or (backdrop-filter: blur(0))){
+  .navbar, .navbar-dark{ background:#2f2f2f !important; }
+  .container:not(:has(.auth-card)), .main-card, .table-rounded-container, .filters-card{
+    background:#fff !important; border:1px solid #ececec !important;
+  }
+}
+
+@media (prefers-color-scheme: dark){
+  body{ background: #0b0b0c; }
+  .container:not(:has(.auth-card)),
+  .main-card,
+  .table-rounded-container,
+  .filters-card{
+    background: rgba(22,22,24,.52) !important;
+    border: 1px solid rgba(255,255,255,.08);
+  }
+  .table thead th,
+  .table-dark tr, .table-dark th, .table-dark td{
+    background: rgba(36,36,38,.72) !important;
+    color: #f2f2f7 !important;
+    border-bottom-color: rgba(255,255,255,.08) !important;
+  }
 }
