@@ -74,6 +74,13 @@ cache = Cache(
 )
 
 
+def clear_index_cache():
+    try:
+        cache.clear()
+    except Exception:
+        pass
+
+
 # Ключ кэша для главной: учитываем пользователя, роль, язык и фильтры в URL
 def _index_cache_key():
     uid = (g.user or {}).get("id", "anon")
@@ -98,6 +105,38 @@ mail = Mail(app)
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+# --- Soft delete support (через колонку products.deleted_at) ---
+_SOFT_DELETE_SUPPORTED = None
+
+
+def soft_delete_supported() -> bool:
+    """
+    Проверяем один раз: есть ли колонка deleted_at у products.
+    Если нет — откаты и корзина недоступны, работаем как раньше.
+    """
+    global _SOFT_DELETE_SUPPORTED
+    if _SOFT_DELETE_SUPPORTED is not None:
+        return _SOFT_DELETE_SUPPORTED
+    try:
+        # пробуем выбрать колонку; если её нет — PostgREST вернёт ошибку
+        supabase.table("products").select("id,deleted_at").limit(1).execute()
+        _SOFT_DELETE_SUPPORTED = True
+    except Exception:
+        _SOFT_DELETE_SUPPORTED = False
+    return _SOFT_DELETE_SUPPORTED
+
+
+def get_deleted_product_ids() -> set:
+    """
+    Вернёт id товаров с deleted_at != NULL. Если колонка отсутствует — пустое множество.
+    """
+    if not soft_delete_supported():
+        return set()
+    resp = supabase.table("products").select("id,deleted_at").execute()
+    rows = resp.data or []
+    return {r["id"] for r in rows if r.get("deleted_at")}
+
 
 # --- Flask-Babel config ---
 ALL_LANGUAGES = {"fi": "Suomi", "en": "English", "ru": "Русский"}
@@ -523,7 +562,11 @@ def get_products():
     resp = (
         supabase.table("products").select("*").order("created_at", desc=True).execute()
     )
-    return resp.data if resp.data else []
+    rows = resp.data if resp.data else []
+    # скрываем «удалённые», если поддерживается soft delete
+    if soft_delete_supported():
+        rows = [r for r in rows if not r.get("deleted_at")]
+    return rows
 
 
 def get_category_by_id(category_id):
@@ -657,12 +700,14 @@ def index():
             pass
 
     # Заберём все подходящие строки (без пагинации)
-    resp = (
-        q.order("created_at", desc=True)
-        .range(0, 999)  # при росте базы можно вернуть пэйджинг
-        .execute()
-    )
+    resp = q.order("created_at", desc=True).range(0, 999).execute()
     products_all = resp.data or []
+
+    # скрыть товары из «корзины» (если включён soft delete)
+    if soft_delete_supported():
+        deleted_ids = get_deleted_product_ids()
+        if deleted_ids:
+            products_all = [p for p in products_all if p["id"] not in deleted_ids]
 
     # Посчитаем derived-поля
     for p in products_all:
@@ -693,7 +738,7 @@ def index():
         p["primary_image_url"] = prim_map.get(p["id"]) or p.get("image_url")
 
     # Статистика/правый блок
-    total_products = len(products_all)  # количество с учётом текущих фильтров
+    total_products = len(products_all)
     total_categories = len(categories)
     recent_products = products_all[:5]
 
@@ -812,6 +857,8 @@ def logs():
         .execute()
     )
     logs = resp.data or []
+
+    # подтянем имена пользователей разом
     user_ids = {l["user_id"] for l in logs if l.get("user_id")}
     users_dict = {}
     if user_ids:
@@ -823,9 +870,94 @@ def logs():
         )
         for u in user_resp.data or []:
             users_dict[str(u["id"])] = u["username"]
+
+    # usernames в каждую запись
     for l in logs:
         l["username"] = users_dict.get(str(l.get("user_id")), "")
+
+    # какие delete можно откатить (если включён soft delete)
+    deleted_set = get_deleted_product_ids() if soft_delete_supported() else set()
+    for l in logs:
+        l["can_undo"] = (
+            soft_delete_supported()
+            and l.get("action") == "delete"
+            and l.get("object_type") == "product"
+            and l.get("object_id")
+            and int(l["object_id"]) in deleted_set
+        )
+
     return render_template("logs.html", logs=logs)
+
+
+@app.post("/logs/<int:log_id>/undo")
+@login_required
+@superadmin_required
+def undo_log(log_id):
+    # получаем запись журнала
+    lresp = supabase.table("logs").select("*").eq("id", log_id).single().execute()
+    log = lresp.data
+    if not log:
+        flash(_("Запись журнала не найдена."), "danger")
+        return redirect(url_for("logs"))
+
+    # поддерживаем откат только для delete product
+    if (
+        log.get("action") != "delete"
+        or log.get("object_type") != "product"
+        or not log.get("object_id")
+    ):
+        flash(_("Эту операцию нельзя отменить."), "warning")
+        return redirect(url_for("logs"))
+
+    if not soft_delete_supported():
+        flash(_("Восстановление недоступно: корзина не включена."), "warning")
+        return redirect(url_for("logs"))
+
+    pid = int(log["object_id"])
+
+    # состояние товара сейчас
+    presp = (
+        supabase.table("products")
+        .select("id,deleted_at,name")
+        .eq("id", pid)
+        .single()
+        .execute()
+    )
+    prod = presp.data
+    if not prod:
+        flash(_("Товар не найден — восстановление невозможно."), "danger")
+        return redirect(url_for("logs"))
+
+    if not prod.get("deleted_at"):
+        flash(_("Товар уже активен."), "info")
+        return redirect(url_for("logs"))
+
+    # собственно восстановление
+    supabase.table("products").update({"deleted_at": None}).eq("id", pid).execute()
+
+    log_action(
+        g.user["id"],
+        "restore",
+        "product",
+        pid,
+        _("Отмена удаления по записи журнала #%(id)s", id=log_id),
+    )
+
+    flash(
+        _(
+            'Удаление отменено: товар "%(name)s" восстановлен.',
+            name=(prod.get("name") or f"#{pid}"),
+        ),
+        "success",
+    )
+
+    clear_index_cache()  # сбросили кэш главной
+
+    # 👇 если в форме передали next — уважаем его, иначе остаёмся на /logs
+    next_url = request.form.get("next") or request.args.get("next")
+    if next_url and next_url.startswith("/"):
+        return redirect(next_url)
+    return redirect(url_for("logs"))
 
 
 @app.route("/export_logs")
@@ -1154,7 +1286,20 @@ def delete(product_id):
     if not product:
         flash(_("Товар не найден! Возможно, он уже был удалён."), "warning")
         return redirect(url_for("index"))
-    supabase.table("products").delete().eq("id", product_id).execute()
+
+    now_iso = datetime.now(timezone.utc).isoformat()
+
+    if soft_delete_supported():
+        # мягкое удаление — помечаем deleted_at
+        supabase.table("products").update({"deleted_at": now_iso}).eq(
+            "id", product_id
+        ).execute()
+        msg = _("Товар удалён!")
+    else:
+        # жёсткое удаление (как было)
+        supabase.table("products").delete().eq("id", product_id).execute()
+        msg = _("Товар удалён!")
+
     log_action(
         g.user["id"],
         "delete",
@@ -1162,7 +1307,16 @@ def delete(product_id):
         product_id,
         _("Удалён товар: ") + (product["name"] if product else str(product_id)),
     )
-    flash(_("Товар удалён!"), "success")
+
+    flash(msg, "success")
+    clear_index_cache()
+
+    # куда вернуть после удаления
+    next_url = request.form.get("next") or request.args.get("next")
+    if next_url and next_url.startswith("/"):  # защита от внешних ссылок
+        return redirect(next_url)
+
+    # по умолчанию — на главную таблицу
     return redirect(url_for("index"))
 
 

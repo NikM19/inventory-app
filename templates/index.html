@@ -133,7 +133,7 @@
     <th>{{ _('Количество') }}</th>
     <th>{{ _('Размер') }}</th>
     {% if show_price %}<th>{{ _('Цена, €') }}</th>{% endif %}
-    {% if show_actions %}<th>{{ _('Действия') }}</th>{% endif %}
+    {% if show_actions %}<th class="actions-col">{{ _('Действия') }}</th>{% endif %}
   </tr>
 </thead>
 
@@ -217,12 +217,25 @@
   </td>
 {% endif %}
 {% if show_actions %}
-  <td class="hide-mobile">
-    <a href="{{ url_for('edit', product_id=product.id) }}" class="btn btn-warning btn-sm">{{ _('Редактировать') }}</a>
-    <form action="{{ url_for('delete', product_id=product.id) }}" method="post" style="display:inline;">
-      <button type="submit" class="btn btn-danger btn-sm" data-confirm="{{ _('Удалить товар?') }}">{{ _('Удалить') }}</button>
-    </form>
-  </td>
+<td class="hide-mobile text-nowrap actions-col">
+  <a href="{{ url_for('edit', product_id=product.id) }}"
+     class="btn btn-warning btn-sm">
+    {{ _('Редактировать') }}
+  </a>
+
+  <form action="{{ url_for('delete', product_id=product.id) }}"
+        method="post"
+        class="d-inline"
+        data-confirm-title="{{ _('Подтверждение') }}"
+        data-confirm="{{ _('Удалить товар «%(name)s»?', name=product.name) }}"
+        data-confirm-ok="{{ _('Удалить') }}"
+        data-confirm-variant="danger">
+    <input type="hidden" name="next" value="{{ url_for('index') }}">
+    <button type="submit" class="btn btn-sm btn-danger">
+      {{ _('Удалить') }}
+    </button>
+  </form>
+</td>
 {% endif %}
   </tr>
   {% endfor %}

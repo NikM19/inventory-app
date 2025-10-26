@@ -1,59 +1,173 @@
 {% extends 'base.html' %}
+{% block title %}{{ _('Добавить товар') }}{% endblock %}
 {% block content %}
-<h3>{{ _('Добавить товар') }}</h3>
-<form method="post" enctype="multipart/form-data">
-  <div class="mb-3">
-    <label class="form-label">{{ _('Название') }}</label>
-    <input type="text" name="name" class="form-control" required>
-  </div>
-  <div class="mb-3">
-    <label class="form-label">{{ _('Категория') }}</label>
-    <select name="category_id" class="form-select">
-      <option value="">{{ _('Без категории') }}</option>
-      {% for cat in categories %}
-        <option value="{{ cat.id }}">{{ cat.name }}</option>
-      {% endfor %}
-    </select>
-  </div>
-  <div class="mb-3">
-    <label class="form-label">{{ _('Количество') }}</label>
-    <input type="number" name="quantity" step="any" min="0" class="form-control" required>
-  </div>
-<div class="mb-3">
-  <label class="form-label">{{ _('Ед. измерения') }}</label>
 
-  {# Локализация подписей чипов #}
-  {% set loc = get_locale() %}
-  {% set m2_label = 'м²' if loc == 'ru' else 'm²' %}
-  {% set kg_label = 'кг' if loc == 'ru' else 'kg' %}
-  {% set pcs_label = 'kpl' if loc == 'fi' else ('pcs' if loc == 'en' else 'шт') %}
+<div class="container main-card">
+  <div class="mb-2">
+    <a href="{{ url_for('index') }}" class="btn btn-outline-dark">&larr; {{ _('Назад') }}</a>
+  </div>
 
-  {# Текущая единица (в edit.html есть product, в create.html — может не быть) #}
-  {% set cu = product.unit if product is defined and product.unit else None %}
+  <h3 class="mb-3">{{ _('Добавить товар') }}</h3>
 
-  <select name="unit" class="form-select" required>
-    <option value="m2" {{ 'selected' if cu == 'm2' or cu is none }}>{{ m2_label }}</option>
-    <option value="kg" {{ 'selected' if cu == 'kg' }}>{{ kg_label }}</option>
-    <option value="pcs" {{ 'selected' if cu == 'pcs' }}>{{ pcs_label }}</option>
-  </select>
+  <form method="post" enctype="multipart/form-data" class="row g-3">
+
+    <!-- Название -->
+    <div class="col-12 col-md-6">
+      <label class="form-label">{{ _('Название') }}</label>
+      <input type="text" name="name" class="form-control" required>
+    </div>
+
+    <!-- Категория + кнопка редактирования -->
+    <div class="col-12 col-md-6">
+      <label class="form-label">{{ _('Категория') }}</label>
+      <div class="d-flex align-items-center">
+        <select name="category_id" id="categorySelect" class="form-select" style="max-width: 340px;">
+          <option value="">{{ _('Без категории') }}</option>
+          {% for cat in categories %}
+            <option value="{{ cat.id }}">{{ cat.name }}</option>
+          {% endfor %}
+        </select>
+        <button type="button"
+                class="btn btn-light btn-sm ms-2 category-edit-btn"
+                id="editCategoryBtn"
+                title="{{ _('Редактировать категорию') }}">
+          <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" stroke="#7a7a7a" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M15.232 5.232l3.536 3.536M16.732 3.732a2.5 2.5 0 0 1 3.536 3.536L7 21H3v-4l13.732-13.268z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Количество -->
+    <div class="col-6 col-md-3">
+      <label class="form-label">{{ _('Количество') }}</label>
+      <input type="number" name="quantity" step="0.01" min="0" class="form-control" required>
+    </div>
+
+    <!-- Единица измерения -->
+    <div class="col-6 col-md-3">
+      <label class="form-label">{{ _('Ед. измерения') }}</label>
+
+      {# Локализация подписей #}
+      {% set loc = get_locale() %}
+      {% set m2_label = 'м²' if loc == 'ru' else 'm²' %}
+      {% set kg_label = 'кг' if loc == 'ru' else 'kg' %}
+      {% set pcs_label = 'kpl' if loc == 'fi' else ('pcs' if loc == 'en' else 'шт') %}
+
+      {# В create обычно product нет — дефолт m2 #}
+      {% set cu = product.unit if product is defined and product.unit else None %}
+
+      <select name="unit" class="form-select" required>
+        <option value="m2" {{ 'selected' if cu == 'm2' or cu is none }}>{{ m2_label }}</option>
+        <option value="kg" {{ 'selected' if cu == 'kg' }}>{{ kg_label }}</option>
+        <option value="pcs" {{ 'selected' if cu == 'pcs' }}>{{ pcs_label }}</option>
+      </select>
+    </div>
+
+    <!-- Размер -->
+    <div class="col-12 col-md-3">
+      <label class="form-label">{{ _('Размер') }}</label>
+      <input type="text" name="size" class="form-control">
+    </div>
+
+    <!-- Цена -->
+    <div class="col-12 col-md-3">
+      <label class="form-label">{{ _('Цена, €') }}</label>
+      <input type="number" name="price" step="0.01" min="0" class="form-control">
+    </div>
+
+    <!-- Описание -->
+    <div class="col-12">
+      <label class="form-label">{{ _('Описание') }}</label>
+      <textarea name="description" class="form-control" rows="3"></textarea>
+    </div>
+
+    <!-- Фото -->
+    <div class="col-12">
+      <label class="form-label">{{ _('Картинки товара') }}</label>
+      <input type="file" name="images" multiple accept="image/*" class="form-control">
+      <div class="form-text">{{ _('Можно выбрать несколько файлов — они прикрепятся при сохранении.') }}</div>
+    </div>
+
+    <!-- Кнопки -->
+    <div class="col-12 mt-2">
+      <button type="submit" class="btn btn-success">{{ _('Сохранить') }}</button>
+      <a href="{{ url_for('index') }}" class="btn btn-secondary">{{ _('Отмена') }}</a>
+    </div>
+  </form>
 </div>
-  <div class="mb-3">
-    <label class="form-label">{{ _('Размер') }}</label>
-    <input type="text" name="size" class="form-control">
+
+<!-- Модалка редактирования категории (как в edit.html) -->
+<div class="modal fade" id="editCategoryModal" tabindex="-1" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="editCategoryForm">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editCategoryModalLabel">{{ _('Редактировать категорию') }}</h5>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Отмена') }}</button>
+          <button type="submit" class="btn btn-success">{{ _('Сохранить') }}</button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="editCategoryId">
+          <div class="mb-3">
+            <label for="editCategoryName" class="form-label">{{ _('Новое название категории') }}</label>
+            <input type="text" class="form-control" id="editCategoryName" required>
+          </div>
+        </div>
+      </form>
+    </div>
   </div>
-  <div class="mb-3">
-    <label class="form-label">{{ _('Цена, €') }}</label>
-    <input type="number" name="price" step="any" min="0" class="form-control">
-  </div>
-  <div class="mb-3">
-    <label class="form-label">{{ _('Описание') }}</label>
-    <textarea name="description" class="form-control"></textarea>
-  </div>
-  <div class="mb-3">
-    <label class="form-label">{{ _('Картинка товара') }}</label>
-<input type="file" name="images" multiple accept="image/*">
-  </div>
-  <button type="submit" class="btn btn-success">{{ _('Сохранить') }}</button>
-  <a href="{{ url_for('index') }}" class="btn btn-secondary">{{ _('Отмена') }}</a>
-</form>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  var editBtn = document.getElementById('editCategoryBtn');
+  var modalEl = document.getElementById('editCategoryModal');
+  var modal = modalEl ? new bootstrap.Modal(modalEl) : null;
+  var editCategoryForm = document.getElementById('editCategoryForm');
+  var categorySelect = document.getElementById('categorySelect');
+  var editCategoryNameInput = document.getElementById('editCategoryName');
+  var editCategoryIdInput = document.getElementById('editCategoryId');
+
+  if (editBtn && modal) {
+    editBtn.addEventListener('click', function() {
+      var selectedOption = categorySelect.options[categorySelect.selectedIndex];
+      if (!selectedOption || !selectedOption.value) {
+        // Если «Без категории» — просто не открываем редактор
+        return;
+      }
+      editCategoryIdInput.value = selectedOption.value;
+      editCategoryNameInput.value = selectedOption.text;
+      modal.show();
+    });
+  }
+
+  if (editCategoryForm) {
+    editCategoryForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      fetch('/edit_category_name', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editCategoryIdInput.value,
+          name: editCategoryNameInput.value
+        })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          // Мгновенно обновим текст в select
+          var selectedOption = categorySelect.querySelector('option[value="' + editCategoryIdInput.value + '"]');
+          if (selectedOption) selectedOption.text = editCategoryNameInput.value;
+          modal.hide();
+        } else {
+          alert(data.message || 'Ошибка');
+        }
+      })
+      .catch(() => alert('Network error'));
+    });
+  }
+});
+</script>
+
 {% endblock %}

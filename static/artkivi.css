@@ -7,16 +7,15 @@
     --ak-green: #60b6b2;
     --ak-white: #fff;
     --ak-red: #cb4642;
+    --nav-bg-glass: #3a3a3a;             /* сплошной, без альфы */
+    --ak-sticky-offset: 64px;   /* высота шапки для sticky-элементов */
+    --filters-h: 0px; /* фолбэк, когда высота фильтров не посчитана */
 }
 
 /* ====== Общий фон и шапка ====== */
 body {
     background: var(--ak-gray);
     color: var(--ak-black);
-}
-
-.navbar, .navbar-dark {
-    background: var(--ak-black) !important;
 }
 .navbar-brand img {
     height: 36px;
@@ -140,8 +139,8 @@ button {
 }
 /* ====== Таблицы ====== */
 .table {
-    border-radius: 8px;
-    overflow: hidden;
+    border-radius: 0px;
+    overflow: visible;
     background: var(--ak-white);
     color: var(--ak-black);
     font-size: 1rem;
@@ -172,6 +171,20 @@ button {
     border-radius: 7px !important;
     margin-bottom: 4px;
     background: #f9f9f9;
+}
+
+/* Logs: вертикальные разделители между колонками */
+.table-logs th + th,
+.table-logs td + td{
+  border-left: 1px solid rgba(60,60,67,.16) !important; /* тонко и деликатно */
+}
+
+/* чуть светлее в тёмной теме */
+@media (prefers-color-scheme: dark){
+  .table-logs th + th,
+  .table-logs td + td{
+    border-left-color: rgba(255,255,255,.10) !important;
+  }
 }
 
 /* ====== Формы ====== */
@@ -582,13 +595,24 @@ ul.list-group {
 }
 .table-rounded-container{ 
   border: 1px solid #dee2e6;
-  border-radius: 12px;
-  overflow: hidden;
+  border-radius: 12px;              /* радиус — тут */
+  overflow: visible;                
+  position: relative;
+  isolation: isolate;               /* изоляция перерисовки для Chrome */
   background: linear-gradient(180deg, #f8f9fb 0%, #f3f4f7 100%);
   box-shadow: 0 2px 4px rgba(0,0,0,.10), 0 8px 18px rgba(0,0,0,.06);
-  }
+}
+
+/* аккуратные верхние углы у шапки таблицы */
+.table-rounded-container thead.table-dark th:first-child{ border-top-left-radius: 12px; }
+.table-rounded-container thead.table-dark th:last-child { border-top-right-radius: 12px; }
+.table-rounded-container thead.table-dark th{ background-clip: padding-box; }
+
   /* Таблица внутри контейнера — прозрачная, без своей тени и отступа */
 .table-rounded-container .table{
+  /* важно переопределить bootstrap */
+  border-collapse: separate !important;
+  border-spacing: 0;                 /* чтобы не было зазора по периметру */
   background: transparent;
   box-shadow: none !important;
   margin-bottom: 0;
@@ -599,79 +623,75 @@ ul.list-group {
   background-color: rgba(232,154,65,.06);
 }
 /* Тень под тёмной шапкой таблицы (через псевдо-элемент) */
-.table-rounded-container thead.table-dark tr {
+/* Липкие ИМЕННО TH — корректно держат ширины колонок */
+.table-rounded-container thead.table-dark{
+  position: static;                     /* не делаем sticky на всём thead */
+  background: transparent !important;
+  border-bottom: none !important;
+}
+
+.table-rounded-container thead.table-dark tr{ position: static; }
+
+.table-rounded-container thead.table-dark th{
   position: sticky;
-  top: 0;
-  z-index: 3;                          /* контент шапки над тенью */
+  top: calc(var(--ak-sticky-offset) + var(--filters-h, 0px));
+  z-index: 10;                          /* поверх строк */
+  background: #f7f7fa !important;
+  border-bottom: .5px solid rgba(60,60,67,.2) !important;
 }
 
-.table-rounded-container thead.table-dark tr::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;                        /* сливается с нижней границей шапки */
-  height: 12px;                        /* высота «ореола» тени */
-  pointer-events: none;                /* чтобы кликать по кнопкам в шапке */
-  box-shadow: 0 4px 10px rgba(0,0,0,.12);
+/* Скругляем углы у крайней левой/правой ячейки шапки */
+.table-rounded-container thead.table-dark th:last-child{
+  border-top-right-radius: 12px;
 }
 
-/* Инлайн-панель — мягкая анимация без max-height (как в локале) */
+/* тень от строки больше не нужна — оставляем пусто */
+
+/* тень от строки больше не нужна */
+.table-rounded-container thead.table-dark tr::after{ content: none !important; }
+
+/* === Inline panel — БЕЗ transform. Анимация через max-height/opacity === */
 .inline-panel{
-  display: none;                 /* скрыта, пока нет .open */
+  display: none;               /* скрыта до открытия */
   background: #fff;
   border: 1px solid #e5e6ea;
   border-radius: 12px;
   padding: 12px;
 
-  /* по умолчанию отступов нет — чтобы при закрытии не было рывка */
+  /* никакого transform! */
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
   margin: 0;
 
-  overflow: hidden;
-  opacity: 0;
-  transform: translateY(-6px) scale(.995);
-
-  /* мягкие кривые */
   transition:
-    opacity   .42s ease,
-    transform .42s cubic-bezier(.22,.61,.36,1),
-    margin    .42s ease,
-    box-shadow .42s ease;
-  will-change: opacity, transform, margin;
+    max-height .28s ease,
+    opacity   .28s ease,
+    margin    .28s ease,
+    box-shadow .28s ease;
   box-shadow: 0 4px 14px rgba(0,0,0,0.04);
 }
 
-.inline-panel.open{              /* видимая, но ещё «спрятанная» */
+.inline-panel.open{            /* когда блок вставлен в DOM */
   display: block;
-  margin: 0;                     /* сначала без отступов */
 }
 
-.inline-panel.open.show{         /* полностью показана */
+.inline-panel.open.show{       /* когда «раскрыт» */
   opacity: 1;
-  transform: translateY(0) scale(1);
-  margin: 10px 0 18px;           /* отступы проявляются ПЛАВНО */
+  max-height: 1200px;          /* достаточно больше реального контента */
+  margin: 10px 0 18px;
   box-shadow: 0 10px 24px rgba(0,0,0,0.08);
 }
 
-/* Мягкое проявление содержимого */
+/* содержимое без отдельной анимации transform */
 .inline-panel .row{
-  opacity: 0;
-  transform: translateY(2px);
-  transition: opacity .32s ease .10s, transform .36s ease .10s;
-}
-.inline-panel.open.show .row{
   opacity: 1;
-  transform: translateY(0);
+  transform: none !important;
 }
 
-/* Чуть комфортнее высота контролов (не влияет на ширины) */
-.inline-panel .form-control{ height: 40px; }
-.inline-panel .btn{ height: 40px; line-height: 1.1; }
-
-/* Уважение к reduce-motion */
+/* уважение reduce-motion */
 @media (prefers-reduced-motion: reduce){
   .inline-panel{ transition: none !important; }
-  .inline-panel .row{ transition: none !important; }
 }
 
 /* --- Цена: за единицу + итог --- */
@@ -1383,18 +1403,33 @@ body{ background: var(--ui-bg-grouped); }
 
 /* --- Больше «стекла» повсюду --- */
 
-/* Навбар: сильнее blur и прозрачность */
+/* Навбар: один цвет везде, blur только где поддерживается */
 .navbar, .navbar-dark{
-  background: rgba(28,28,30,.85) !important;        /* плотнее, меньше blur */
-  -webkit-backdrop-filter: saturate(1.3) blur(8px);
-  backdrop-filter: saturate(1.3) blur(8px);
-  border-bottom: .5px solid rgba(60,60,67,.28);
+  background: var(--nav-bg-glass) !important;
+  border-bottom: .5px solid rgba(255,255,255,.08);
   box-shadow: 0 2px 12px rgba(0,0,0,.18);
   position: relative;
-  z-index: 2000;
+  z-index: 4000;
 }
 
-.navbar .dropdown-menu{ z-index: 2100; }
+/* Chrome/Firefox и т.п. — без blur */
+html.no-glass .navbar,
+html.no-glass .navbar-dark{
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Safari — с blur */
+html:not(.no-glass) .navbar,
+html:not(.no-glass) .navbar-dark{
+  -webkit-backdrop-filter: saturate(1.2) blur(8px);
+  backdrop-filter: saturate(1.2) blur(8px);
+}
+
+.navbar .dropdown-menu{
+  z-index: 4100;          /* выше любого контента страницы */
+  transform: translateZ(0); /* отдельный слой — помогает Safari */
+}
 
 /* Стекло оставляем только намёком, а для таблицы – убираем вовсе */
 .container:not(:has(.auth-card)),
@@ -1425,7 +1460,7 @@ body{ background: var(--ui-bg-grouped); }
 
 /* Панель фильтров — стеклянная и липкая при скролле */
 .filters-card{
-  position: sticky; top: 64px; z-index: 900;
+  position: sticky; top: var(--ak-sticky-offset); z-index: 900;
 }
 
 /* Ещё тоньше разделители (iOS hairline) */
@@ -1436,6 +1471,9 @@ body{ background: var(--ui-bg-grouped); }
   background: rgba(34,34,34,.62);
   -webkit-backdrop-filter: blur(10px) saturate(1.2);
   backdrop-filter: blur(10px) saturate(1.2);
+  text-align: center;           /* центрируем текст */
+  padding-left: 24px;           /* как было слева */
+  padding-right: 72px;          /* чуть больше справа — под крестик */
 }
 
 /* Фоллбек, если blur не поддерживается */
@@ -1460,5 +1498,300 @@ body{ background: var(--ui-bg-grouped); }
     background: rgba(36,36,38,.72) !important;
     color: #f2f2f7 !important;
     border-bottom-color: rgba(255,255,255,.08) !important;
+  }
+}
+
+/* View: единая стеклянная карточка справа */
+.product-view .glass-card{
+  background: rgba(255,255,255,.66);
+  -webkit-backdrop-filter: blur(8px) saturate(1.1);
+  backdrop-filter: blur(8px) saturate(1.1);
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 16px;
+  box-shadow: 0 10px 24px rgba(0,0,0,.10);
+  padding: 12px 16px 14px;
+}
+
+/* Внутренняя таблица в карточке — прозрачная (у тебя это уже есть для .view-details),
+   но на всякий случай усилим, чтобы рамки не дублировались: */
+.product-view .glass-card .view-details th,
+.product-view .glass-card .view-details td{
+  background: transparent !important;
+  border: 0 !important;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.product-view .glass-card .view-details tr + tr th,
+.product-view .glass-card .view-details tr + tr td{
+  border-top: 1px solid rgba(0,0,0,.06) !important;
+}
+
+/* === Chrome/не-Safari режим: глушим blur/стекло и даём сплошной фон === */
+/* Работает благодаря классу .no-glass, который ты добавляешь в <html> */
+ html.no-glass{ --ak-sticky-offset: 64px; } /* как в :root */
+.no-glass .navbar,
+.no-glass .navbar-dark{
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background: var(--nav-bg-glass) !important; /* тот же цвет, что и в Safari */
+}
+
+.no-glass .blur-overlay{
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background: rgba(40,44,52,.42); /* без сильного blur */
+}
+
+/* Мобильное меню – карточка вместо стекла */
+.no-glass .mobile-slide-menu{
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background: #1f1f1f !important;
+  border: 1px solid #2a2a2a !important;
+  box-shadow: 0 14px 38px rgba(0,0,0,.28);
+  color: #fff;
+}
+
+/* Общие контейнеры/карточки */
+.no-glass .container:not(:has(.auth-card)),
+.no-glass .main-card,
+.no-glass .filters-card,
+.no-glass .table-rounded-container{
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background: #fff !important;
+  border: 1px solid #e9e9ec !important;
+  box-shadow: 0 6px 16px rgba(0,0,0,.06);
+}
+
+/* Таблица деталей товара и «glass-card» на view.html */
+.no-glass .product-view .view-details,
+.no-glass .product-view .glass-card{
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background: #fff !important;
+  border: 1px solid #ececee !important;
+  box-shadow: 0 10px 24px rgba(0,0,0,.08);
+}
+
+/* Flash-уведомления – непрозрачная тёмная плашка */
+/* По умолчанию (когда нет success/danger/warning/info) — тёмная плашка */
+.no-glass .flash-slide:not(.flash-slide-success):not(.flash-slide-danger):not(.flash-slide-warning):not(.flash-slide-info){
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background: rgba(34,34,34,.62) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,.14);
+}
+
+/* Цветные флеши в режиме Glass: OFF */
+.no-glass .flash-slide-success{
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background: rgba(36,162,100,.30) !important;
+  color: #fff !important;
+  border: 1px solid rgba(36,162,100,.45);
+}
+
+.no-glass .flash-slide-danger,
+.no-glass .flash-slide-error{
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background: rgba(203,70,66,.30) !important;
+  color: #fff !important;
+  border: 1px solid rgba(203,70,66,.45);
+}
+
+.no-glass .flash-slide-warning{
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background: rgba(232,154,65,.30) !important;
+  /* если хочешь как в стеклянных .flash-glass — тёмный текст: */
+  color: #1f1f1f !important;  /* ← можно сменить на #fff, если так больше нравится */
+  border: 1px solid rgba(232,154,65,.45);
+}
+
+.no-glass .flash-slide-info{
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background: rgba(96,182,178,.30) !important;
+  color: #fff !important;
+  border: 1px solid rgba(96,182,178,.45);
+}
+
+/* Крестик остаётся читаемым на цветных фонах */
+.no-glass .flash-slide .btn-close{
+  filter: invert(1) grayscale(100%);
+  opacity: .85;
+}
+
+/* Стеклянные чипы/кнопки – делаем ровными */
+.no-glass .price-total,
+.no-glass .ios-chip{
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background: var(--ak-orange) !important;
+  border: 1px solid rgba(0,0,0,.04) !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,.10);
+}
+
+/* Положение модалки — чуть ниже верха окна */
+#confirmModalDialog { margin: 9vh auto; }         /* можно 6–12vh по вкусу */
+
+/* ===== MODAL (glass) — аккуратный дизайн подтверждения ===== */
+
+/* Подложка за модалкой: затемнение + лёгкий blur */
+.modal-backdrop.show{
+  background: rgba(15,16,19,.55) !important;
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+
+/* Плавное появление диалога */
+.modal.fade .modal-dialog{
+  transform: translateY(-6px) scale(.98);
+  transition: transform .22s ease, opacity .22s ease;
+}
+.modal.fade.show .modal-dialog{
+  transform: translateY(0) scale(1);
+}
+
+/* Контент модалки — стекло + мягкая тень */
+.glass-modal{
+  background: rgba(28,28,30,.72) !important;
+  color: #fff !important;
+  -webkit-backdrop-filter: blur(14px) saturate(1.25);
+  backdrop-filter: blur(14px) saturate(1.25);
+  border: 1px solid rgba(255,255,255,.16) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 24px 60px rgba(0,0,0,.5);
+  overflow: hidden;
+}
+.glass-modal .modal-header,
+.glass-modal .modal-footer{ border-color: rgba(255,255,255,.10) !important; }
+.glass-modal .modal-header{ padding:14px 18px; }
+.glass-modal .modal-body  { padding:14px 18px; opacity:.95; }
+.glass-modal .modal-footer{ padding:12px 18px; gap:10px; }
+
+/* Крестик — светлый */
+.glass-modal .btn-close{
+  filter: invert(1) grayscale(100%);
+  opacity:.85;
+}
+.glass-modal .btn-close:hover{ opacity:1; }
+
+/* Кнопки */
+.glass-modal .btn{
+  border-radius: 999px !important;
+  min-height: 40px; padding: 0 18px;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+/* Отмена */
+.glass-modal .btn-secondary,
+.glass-modal .btn-outline-secondary{
+  background: transparent !important;
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,.35) !important;
+}
+.glass-modal .btn-secondary:hover,
+.glass-modal .btn-outline-secondary:hover{
+  background: rgba(255,255,255,.10) !important;
+  border-color: rgba(255,255,255,.55) !important;
+}
+
+/* OK — красный фирменный или (ниже) оранжевый вариант */
+.glass-modal .btn-danger{
+  background: var(--ak-red) !important;
+  border: 1px solid rgba(255,255,255,.20) !important;
+  box-shadow: 0 8px 18px rgba(203,70,66,.35);
+}
+.glass-modal .btn-danger:hover{
+  background: #d85a56 !important;
+  box-shadow: 0 10px 22px rgba(203,70,66,.45);
+}
+
+/* Если хочешь OK оранжевым — раскомментируй:
+.glass-modal .btn-danger{
+  background: var(--ak-orange) !important;
+  box-shadow: 0 8px 18px rgba(232,154,65,.35);
+}
+.glass-modal .btn-danger:hover{
+  background: #ffb35c !important;
+  box-shadow: 0 10px 22px rgba(232,154,65,.45);
+}
+*/
+
+@media (max-width: 420px){
+  #confirmModalDialog{ margin: 10vh auto; }
+}
+
+/* Confirm-modal: текст вопроса — белый и поконтрастнее */
+.glass-modal .modal-body {
+  opacity: 1 !important;            /* убираем полупрозрачность */
+}
+
+#confirmMessage{
+  font-weight: 700;
+  font-size: 1.1rem;
+  line-height: 1.25;
+}
+
+/* Текст вопроса в модалке — сделать ярким и контрастным */
+#confirmMessage{
+  color: #fff !important;
+  opacity: 1 !important;
+  font-weight: 600;
+}
+.glass-modal .modal-title{ color:#fff !important; }
+
+/* Центр заголовка модалки, крестик остаётся справа */
+#confirmModal .modal-header{
+  position: relative;
+  justify-content: center;
+}
+#confirmModal .modal-header .modal-title{
+  width: 100%;
+  text-align: center;
+  margin: 0;
+  padding-right: 40px;  /* запас под крестик */
+}
+#confirmModal .modal-header .btn-close{
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* На мобилке шапка не фиксируется */
+@media (max-width: 991.98px){
+  .table-rounded-container thead.table-dark th{
+    position: static !important;
+    top: auto !important;
+    z-index: auto !important;
+  }
+}
+
+/* = Actions column — ужимаем ширину на десктопе = */
+@media (min-width: 992px){
+  /* последняя колонка (Действия) — минимум места и без переносов */
+  .table-rounded-container .table th:last-child,
+  .table-rounded-container .table td:last-child{
+    width: 1%;
+    white-space: nowrap;
+  }
+
+  /* кнопки в этой колонке — компактнее */
+  .table-rounded-container .table td:last-child .btn{
+    min-height: 32px;
+    padding: 4px 10px !important; /* было больше */
+    line-height: 1;               /* плотнее по вертикали */
+  }
+
+  /* меньше зазор между кнопками */
+  .table-rounded-container .table td:last-child .btn.me-2{
+    margin-right: 6px !important;
   }
 }

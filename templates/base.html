@@ -8,6 +8,34 @@
       href="{{ url_for('static', filename='img/artkivi-logo.png') }}">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="{{ asset_url('artkivi.css') }}">
+
+<script>
+  (function () {
+    var doc  = document.documentElement;
+    var mode = localStorage.getItem('ak_glass_mode') || 'auto';
+
+    function isSafari(){
+      var ua = navigator.userAgent;
+      return /^((?!chrome|android).)*safari/i.test(ua);
+    }
+
+    if (mode === 'on') {
+      // принудительно включить «стекло»
+      doc.classList.remove('no-glass');
+      doc.classList.add('force-glass');
+    } else if (mode === 'off') {
+      // принудительно выключить «стекло»
+      doc.classList.add('no-glass');
+      doc.classList.remove('force-glass');
+    } else {
+      // авто: как раньше — «стекло» только в Safari
+      doc.classList.remove('force-glass');
+      if (!isSafari()) doc.classList.add('no-glass');
+      else             doc.classList.remove('no-glass');
+    }
+  })();
+</script>
+
 </head>
 <body>
 <nav class="navbar navbar-expand-lg" style="background: #454545;">
@@ -74,6 +102,11 @@
         {% if g.user.username == 'musatovnikita13@gmail.com' %}
           <a class="btn btn-warning ms-2" href="{{ url_for('logs') }}">{{ _('Журнал действий') }}</a>
         {% endif %}
+        {% if g.user and g.user.username == 'musatovnikita13@gmail.com' %}
+  <button id="glassToggle" class="btn btn-outline-light ms-2" type="button" title="Toggle glass (auto/on/off)">
+    Glass: AUTO
+  </button>
+{% endif %}
         <a class="btn btn-link ms-2" style="color: #fff;" href="{{ url_for('logout') }}">{{ _('Выйти') }}</a>
       {% else %}
         {% if request.endpoint not in ['login', 'register'] %}
@@ -207,18 +240,25 @@
     });
   });
 
-   // === ДОБАВЛЯЕМ ПОЗИЦИОНИРОВАНИЕ FLASH SLIDE ===
-    function setFlashPanelTop() {
-      var navbar = document.querySelector('.navbar');
-      var panel = document.querySelector('.flash-slide-panel');
-      if (navbar && panel) {
-        var navHeight = navbar.offsetHeight;
-        // 14px — "воздух" между шапкой и уведомлением
-        panel.style.top = (navHeight + 14) + 'px';
-      }
-    }
-    setFlashPanelTop();
-    window.addEventListener('resize', setFlashPanelTop);
+// Позиция флеш-панели + sticky-offset для шапки таблицы
+function setLayoutVars() {
+  var navbar  = document.querySelector('.navbar');
+  var panel   = document.querySelector('.flash-slide-panel');
+  var filters = document.querySelector('.filters-card');
+  var root    = document.documentElement;
+
+  var navHeight = navbar ? navbar.offsetHeight : 64;
+  if (panel) panel.style.top = (navHeight + 14) + 'px';
+  root.style.setProperty('--ak-sticky-offset', navHeight + 'px');
+  root.style.setProperty('--filters-h', (filters ? filters.offsetHeight : 0) + 'px');
+}
+setLayoutVars();
+window.addEventListener('resize', setLayoutVars);
+
+// Обновление страницы при возврате из BFCache (кнопка «Назад»)
+window.addEventListener('pageshow', function (e) {
+  if (e.persisted) { window.location.reload(); }
+});
 
     // ======= FLASH SLIDE AUTOCLOSE =======
     setTimeout(function(){
@@ -229,6 +269,140 @@
         }, 480);
       });
     }, 5000);
+</script>
+
+<script>
+  (function(){
+    var btn = document.getElementById('glassToggle');
+    if (!btn) return;
+
+    function isSafari(){
+      var ua = navigator.userAgent;
+      return /^((?!chrome|android).)*safari/i.test(ua);
+    }
+
+    function apply(mode){
+      var doc = document.documentElement;
+      localStorage.setItem('ak_glass_mode', mode);
+
+      if (mode === 'on') {
+        doc.classList.remove('no-glass');
+        doc.classList.add('force-glass');
+        btn.textContent = 'Glass: ON';
+      } else if (mode === 'off') {
+        doc.classList.add('no-glass');
+        doc.classList.remove('force-glass');
+        btn.textContent = 'Glass: OFF';
+      } else {
+        // AUTO — как по умолчанию: стекло только в Safari
+        doc.classList.remove('force-glass');
+        if (!isSafari()) doc.classList.add('no-glass');
+        else             doc.classList.remove('no-glass');
+        btn.textContent = 'Glass: AUTO';
+      }
+    }
+
+    // инициализация состояния кнопки
+    apply(localStorage.getItem('ak_glass_mode') || 'auto');
+
+    // цикл по режимам: AUTO → ON → OFF → …
+    btn.addEventListener('click', function(){
+      var cur = localStorage.getItem('ak_glass_mode') || 'auto';
+      var next = (cur === 'auto') ? 'on' : (cur === 'on') ? 'off' : 'auto';
+      apply(next);
+    });
+  })();
+</script>
+
+<!-- Confirm Modal (кастомный) -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog" id="confirmModalDialog">
+    <div class="modal-content glass-modal">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmTitle">{{ _('Подтверждение') }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Закрыть') }}"></button>
+      </div>
+      <div class="modal-body">
+        <div id="confirmMessage" class="text-muted small"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="confirmCancelBtn" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+          {{ _('Отмена') }}
+        </button>
+        <button type="button" id="confirmOkBtn" class="btn btn-primary">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  let callback = null;
+
+  const modalEl   = document.getElementById('confirmModal');
+  const titleEl   = modalEl.querySelector('.modal-title');
+  const messageEl = document.getElementById('confirmMessage');
+  const okBtn     = document.getElementById('confirmOkBtn');
+  const bsModal   = new bootstrap.Modal(modalEl);
+
+  // Клик по OK
+  okBtn.addEventListener('click', function () {
+    bsModal.hide();
+    if (callback) { const cb = callback; callback = null; cb(); }
+  });
+
+  // Утилита: применить вариант цвета к OK
+  function setOkVariant(variant) {
+    const v = (variant || 'danger').trim();    // по умолчанию — красный
+    okBtn.className = 'btn';                   // сброс классов
+    // поддерживаем btn-XXX и btn-outline-XXX
+    if (v.startsWith('outline-')) {
+      okBtn.classList.add('btn', 'btn-' + v);  // например outline-secondary
+    } else {
+      okBtn.classList.add('btn', 'btn-' + v);  // например danger / primary / success
+    }
+  }
+
+  // Показать модалку
+  function askConfirm(opts, cb) {
+    const { message, title, okText, okVariant } = opts || {};
+    if (title && titleEl)  titleEl.textContent = title;
+    messageEl.textContent = message || '';
+    okBtn.textContent = okText || (okVariant === 'danger' ? '{{ _("Удалить") }}' : 'OK');
+    setOkVariant(okVariant);
+    callback = cb;
+    bsModal.show();
+  }
+
+  // Перехватываем submit у форм с data-confirm*
+  document.addEventListener('submit', function (e) {
+    const form = e.target.closest('form');
+    if (!form) return;
+
+// Проверяем: есть ли вообще атрибуты подтверждения на форме
+const hasAnyConfirm =
+  form.dataset.confirm ||
+  form.dataset.confirmTitle ||
+  form.dataset.confirmHeader ||
+  form.dataset.confirmMessage;
+
+if (!hasAnyConfirm) return; // нет атрибутов — обычная отправка
+
+e.preventDefault();
+
+// ЧТО читаем из data-атрибутов формы
+const titleText = form.dataset.confirmTitle || form.dataset.confirmHeader || '{{ _("Подтверждение") }}';
+const msg       = form.dataset.confirm || form.dataset.confirmMessage || '';
+
+// Показ модалки
+askConfirm({
+  message:   msg,
+  title:     titleText,
+  okText:    form.dataset.confirmOk || 'OK',
+  okVariant: form.dataset.confirmVariant || 'danger'
+}, () => form.submit());
+  }, true);
+})();
 </script>
 </body>
 </html>
