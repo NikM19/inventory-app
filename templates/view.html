@@ -30,6 +30,8 @@
       </div>
     {% endif %}
 
+    {% set can_manage = g.user and g.user.role in ['editor'] %}
+
     <div class="row">
       <!-- ФОТО -->
       <div class="col-md-4 mb-4">
@@ -156,6 +158,29 @@
       </form>
     {% endif %}
   </div>
+
+{# ----- MOBILE actions (внизу карточки) ----- #}
+{% if can_manage %}
+<div class="mobile-only mt-3 view-actions-mobile">
+  <a href="{{ url_for('edit', product_id=product.id) }}"
+     class="btn btn-warning w-100 mb-2">
+    ✏️ {{ _('Редактировать') }}
+  </a>
+
+  <form id="mobileDeleteForm"
+        action="{{ url_for('delete', product_id=product.id) }}"
+        method="post" class="d-grid">
+    <button type="button"
+            class="btn btn-danger w-100"
+            data-bs-toggle="modal"
+            data-bs-target="#confirmModal"
+            data-form-id="mobileDeleteForm"
+            data-confirm="{{ _('Удалить товар «%(name)s»?', name=product.name) }}">
+      🗑️ {{ _('Удалить') }}
+    </button>
+  </form>
+</div>
+{% endif %}
 
   {% if g.user.role == 'editor' %}
     <!-- Десктопные действия под карточкой (как было) -->

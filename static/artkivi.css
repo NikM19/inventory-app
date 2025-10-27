@@ -412,11 +412,10 @@ ul.list-group {
 }
 .blur-overlay.show { display: block; opacity: 1; }
 
+
 .mobile-slide-menu {
     position: fixed;
     left: 50%;
-    top: 20%;
-    transform: translate(-50%, -50%) scale(0.96); /* Центрируем */
     width: 96vw;
     max-width: 390px;
     min-width: 220px;
@@ -438,6 +437,7 @@ ul.list-group {
     transform: translate(-50%, -50%) scale(1); /* Центр + scale-аним. */
     pointer-events: auto;
 }
+
 /* Landscape: чуть меньше высота и больше ширина */
 @media (max-width: 991.98px) and (orientation: landscape) {
   .mobile-slide-menu {
@@ -1083,7 +1083,7 @@ border: 1px solid rgba(232,154,65,.45);
   .filters-inline .reset-chip{ padding: 6px 10px; font-size: .98rem; }
 }
 /* Отступ сверху для строки "тумблер + сброс", если она под полями */
-.filters-inline{ margin-top: 14px; }            /* мобильный/планшет */
+.filters-inline{ margin: 14px 0 12px; }           /* мобильный/планшет */
 @media (min-width: 1200px){                     /* desktop-xl и шире */
   .filters-inline{ margin-top: 0; }             /* в одну линию — без отступа */
 }
@@ -1098,7 +1098,20 @@ border: 1px solid rgba(232,154,65,.45);
   box-shadow: 0 2px 8px rgba(0,0,0,.04);
 }
 @media (max-width: 768px){
-  .filters-card{ background: transparent; border: 0; box-shadow: none; padding: 0; }
+  .filters-card{
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+
+    /* базовый отступ снизу */
+    padding: 0 0 1px;
+
+    /* старый iOS 11 (constant) — если вдруг встретится */
+    padding-bottom: calc(1px + constant(safe-area-inset-bottom));
+
+    /* актуальный iOS (env) — главный */
+    padding-bottom: calc(1px + env(safe-area-inset-bottom));
+  }
 }
 
 /* === Фильтры: единая высота и ровные отступы ============================ */
@@ -1793,5 +1806,42 @@ html:not(.no-glass) .navbar-dark{
   /* меньше зазор между кнопками */
   .table-rounded-container .table td:last-child .btn.me-2{
     margin-right: 6px !important;
+  }
+}
+
+/* === Mobile: док-меню под шапкой (Variant A) — финальная версия === */
+@media (max-width: 991.98px){
+  /* Оверлей начинается под navbar и не перекрывает его */
+  .blur-overlay{
+    top: calc(var(--ak-sticky-offset) + env(safe-area-inset-top, 0px));
+    height: calc(100vh - var(--ak-sticky-offset) - env(safe-area-inset-top, 0px));
+    z-index: 3500; /* ниже navbar (у тебя 4000), но выше контента */
+  }
+
+  /* Карточка меню: появляется сразу под шапкой и с ОКРУГЛЁННЫМИ ВЕРХНИМИ УГЛАМИ */
+  .mobile-slide-menu{
+    position: fixed;
+    left: 50%;
+    top: calc(var(--ak-sticky-offset) + env(safe-area-inset-top, 0px) + 6px); /* небольшой зазор */
+    transform: translate(-50%, 0) scale(.98);   /* старт — чуть меньше */
+    width: min(96vw, 420px);
+    max-width: 420px;
+
+    /* скругления всех углов (верхние помягче, нижние как были) */
+    border-radius: 18px 18px 24px 24px;
+
+    /* чтобы радиус не «срезался» и был аккуратный скролл */
+    overflow: hidden;
+    overflow-y: auto;
+
+    opacity: 0;
+    pointer-events: none;
+    z-index: 3600; /* ниже navbar */
+  }
+
+  .mobile-slide-menu.open{
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);    /* «выезд» вниз */
+    pointer-events: auto;
   }
 }
